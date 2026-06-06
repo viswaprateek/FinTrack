@@ -137,6 +137,13 @@ export function CategoriesPage() {
 
       {categories.length > 0 ? (
         <Card>
+          <CardHeader>
+            <CardTitle>Envelopes</CardTitle>
+            <Button size="sm" onClick={() => setAddOpen(true)}>
+              <IconPlus className="h-4 w-4" />
+              Add Category
+            </Button>
+          </CardHeader>
           <CardContent className="p-0">
             <table className="w-full text-sm">
               <thead>
