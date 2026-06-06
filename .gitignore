@@ -1,0 +1,17 @@
+# mac
+.DS_Store
+
+# frontend
+client/node_modules
+client/dist
+client/.env
+client/.env.local
+client/.vite
+
+# backend
+server/.venv
+server/.env
+server/__pycache__
+server/app/__pycache__
+*.pyc.DS_Store
+client/.vite
