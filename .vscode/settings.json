@@ -1,0 +1,17 @@
+{
+  "python.defaultInterpreterPath": "./server/.venv/bin/python",
+  "python.terminal.activateEnvironment": false,
+  "python.envFile": "${workspaceFolder}/server/.env",
+  "python.analysis.extraPaths": ["./server"],
+  "files.exclude": {
+    "**/.venv": true,
+    "**/__pycache__": true
+  },
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnSave": true
+  },
+  "terminal.integrated.env.osx": {
+    "PYTHONPATH": "${workspaceFolder}/server"
+  }
+}
