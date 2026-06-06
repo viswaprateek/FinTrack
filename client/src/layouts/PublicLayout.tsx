@@ -1,6 +1,7 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react'
 import { Button } from '../components/ui/Button'
+import { Logo } from '../components/ui/Logo'
 
 export function PublicLayout() {
   const { pathname } = useLocation()
@@ -11,9 +12,7 @@ export function PublicLayout() {
       <header className="border-b border-slate-800/80">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
           <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500 text-base font-bold text-slate-950">
-              F
-            </div>
+            <Logo />
             <span className="text-lg font-bold tracking-tight text-white">FinTrack</span>
           </Link>
 

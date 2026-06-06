@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { ProgressBar } from '../../components/ui/ProgressBar'
+import { LoadingState } from '../../components/ui/Spinner'
 import { useApiClient, budgetsApi, categoriesApi, incomeSourcesApi } from '../../api'
 import { cn, formatCurrency } from '../../lib/utils'
 import { IconArrowRight, IconPlus } from '../../components/ui/icons'
@@ -72,7 +73,7 @@ export function BudgetDetailPage() {
   const incomeSources = incomeSourcesQuery.data ?? []
 
   if (budgetQuery.isLoading) {
-    return <p className="text-sm text-slate-500">Loading budget…</p>
+    return <LoadingState label="Loading budget…" />
   }
 
   if (!budget) {

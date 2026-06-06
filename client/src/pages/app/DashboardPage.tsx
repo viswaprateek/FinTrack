@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
+import { LoadingState } from '../../components/ui/Spinner'
 import { StatCard } from '../../components/ui/StatCard'
 import { ProgressBar } from '../../components/ui/ProgressBar'
 import { Badge } from '../../components/ui/Badge'
@@ -46,7 +47,7 @@ export function DashboardPage() {
   const overspentCount = categories.filter((c) => c.spent > c.planned).length
 
   if (!currentBudget && budgetsQuery.isLoading) {
-    return <p className="text-sm text-slate-500">Loading dashboard…</p>
+    return <LoadingState label="Loading dashboard…" />
   }
 
   if (!currentBudget) {

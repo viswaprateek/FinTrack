@@ -1,18 +1,11 @@
 import { useAuth } from '@clerk/clerk-react'
 import { Navigate, Outlet } from 'react-router-dom'
-
-function FullPageSpinner() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-950">
-      <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-700 border-t-emerald-400" />
-    </div>
-  )
-}
+import { PageLoader } from '../ui/Spinner'
 
 export function ProtectedRoute() {
   const { isLoaded, isSignedIn } = useAuth()
 
-  if (!isLoaded) return <FullPageSpinner />
+  if (!isLoaded) return <PageLoader label="Signing you in…" />
   if (!isSignedIn) return <Navigate to="/sign-in" replace />
 
   return <Outlet />

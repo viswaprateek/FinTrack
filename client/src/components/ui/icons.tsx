@@ -124,3 +124,20 @@ export const IconSearch = (props: IconProps) => (
     <path d="m21 21-4.3-4.3" />
   </svg>
 )
+
+export const IconLogo = (props: IconProps) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" {...props}>
+    <rect x="3" y="13" width="3.5" height="8" rx="1" fill="currentColor" />
+    <rect x="9.25" y="9" width="3.5" height="12" rx="1" fill="currentColor" />
+    <rect x="15.5" y="5" width="3.5" height="16" rx="1" fill="currentColor" />
+    <path
+      d="M3 12.5 8.5 7l3.5 3 6-6"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      fill="none"
+    />
+    <path d="M14 4h4v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+  </svg>
+)

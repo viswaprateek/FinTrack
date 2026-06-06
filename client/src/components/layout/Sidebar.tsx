@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { UserButton } from '@clerk/clerk-react'
 import { cn } from '../../lib/utils'
+import { Logo } from '../ui/Logo'
 import {
   IconLayoutDashboard,
   IconWallet,
@@ -23,9 +24,7 @@ export function Sidebar() {
   return (
     <aside className="hidden w-64 shrink-0 flex-col border-r border-slate-800 bg-slate-950/80 lg:flex">
       <div className="flex items-center gap-2 px-6 py-6">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500 text-base font-bold text-slate-950">
-          F
-        </div>
+        <Logo />
         <span className="text-lg font-bold tracking-tight text-white">FinTrack</span>
       </div>
 
