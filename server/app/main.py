@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="Personal Finance API")
+from app.core.database import check_database_connection
+
+app = FastAPI(title="FinTrack API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -15,3 +17,9 @@ app.add_middleware(
 @app.get("/api/health")
 def health_check():
     return {"status": "ok"}
+
+
+@app.get("/api/db-health")
+def db_health_check():
+    check_database_connection()
+    return {"database": "connected"}
