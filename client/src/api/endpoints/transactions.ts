@@ -26,6 +26,7 @@ export interface TransactionCreateInput {
   reimbursable?: ReimbursementStatus
   notes?: string | null
   splits?: TransactionSplitInput[]
+  source?: 'manual' | 'assistant'
 }
 
 export interface TransactionUpdateInput {

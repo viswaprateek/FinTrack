@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom'
+import { AssistantWidget } from '../components/assistant/AssistantWidget'
 import { Sidebar } from '../components/layout/Sidebar'
 import { Topbar } from '../components/layout/Topbar'
 
@@ -12,6 +13,7 @@ export function AppLayout() {
           <Outlet />
         </main>
       </div>
+      <AssistantWidget />
     </div>
   )
 }

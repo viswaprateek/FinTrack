@@ -1,0 +1,26 @@
+import { useAppSelector } from '../../app/hooks'
+import { AssistantChat } from './AssistantChat'
+import { useAssistant } from './useAssistant'
+
+export function AssistantWidget() {
+  const { isOpen, toggle } = useAssistant()
+  const hasPending = useAppSelector((s) => !!s.assistant.pendingTransaction)
+
+  return (
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+      {isOpen && <AssistantChat />}
+
+      <button
+        type="button"
+        onClick={toggle}
+        className="relative flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-fuchsia-600 text-2xl text-white shadow-lg shadow-purple-900/40 transition-transform hover:scale-105"
+        aria-label={isOpen ? 'Close finance assistant' : 'Open finance assistant'}
+      >
+        ✨
+        {!isOpen && hasPending && (
+          <span className="absolute right-0 top-0 h-3.5 w-3.5 rounded-full border-2 border-slate-950 bg-red-500" />
+        )}
+      </button>
+    </div>
+  )
+}

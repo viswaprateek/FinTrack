@@ -1,3 +1,4 @@
+from app.models.audit_log import AuditLog
 from app.models.budget import Budget
 from app.models.budget_category_plan import BudgetCategoryPlan
 from app.models.category import Category
@@ -17,4 +18,5 @@ __all__ = [
     "RecurringRule",
     "IncomeSource",
     "FundTransfer",
+    "AuditLog",
 ]

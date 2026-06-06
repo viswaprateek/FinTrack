@@ -9,6 +9,7 @@ from app.api.v1.routers._helpers import not_found, parse_id
 from app.api.v1.routers.budgets import _get_owned_budget
 from app.api.v1.routers.categories import _get_owned_category
 from app.core.database import get_db
+from app.models.audit_log import AuditLog
 from app.models.budget import Budget
 from app.models.category import Category
 from app.models.transaction import Transaction, TransactionSplit
@@ -125,6 +126,16 @@ def create_transaction(
                 category_id=split_category.id if split_category else None,
                 amount=split.amount,
                 notes=split.notes,
+            )
+        )
+
+    if payload.source == "assistant":
+        db.add(
+            AuditLog(
+                user_id=current_user.id,
+                entity_type="transaction_created",
+                entity_id=transaction.id,
+                description=f"Transaction added via AI assistant: {transaction.description} ₹{transaction.amount}",
             )
         )
 

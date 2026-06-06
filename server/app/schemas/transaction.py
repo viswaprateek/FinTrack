@@ -25,6 +25,7 @@ class TransactionCreate(BaseModel):
     reimbursable: ReimbursementStatus = "none"
     notes: str | None = None
     splits: list[TransactionSplitInput] | None = None
+    source: Literal["manual", "assistant"] = "manual"
 
 
 class TransactionUpdate(BaseModel):
