@@ -38,10 +38,11 @@ personal_finance/
 │       └── types/         # Shared TypeScript types
 ├── server/
 │   └── app/
-│       ├── api/v1/        # FastAPI routers
-│       ├── models/        # SQLAlchemy models
-│       ├── schemas/       # Pydantic request/response types
-│       └── core/          # Config, database session
+│       ├── api/v1/routers/  # HTTP routes (thin controllers)
+│       ├── services/        # Business logic
+│       ├── models/          # SQLAlchemy models
+│       ├── schemas/         # Pydantic request/response types
+│       └── core/            # Config, database, utils, exceptions
 ├── docker-compose.yml     # Local MySQL
 └── Makefile               # Common dev commands
 ```

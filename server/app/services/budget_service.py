@@ -1,0 +1,79 @@
+from decimal import Decimal
+
+from sqlalchemy import func, select
+from sqlalchemy.orm import Session
+
+from app.core.exceptions import NotFoundError
+from app.core.utils import format_period, parse_id
+from app.models.budget import Budget
+from app.models.budget_category_plan import BudgetCategoryPlan
+from app.models.transaction import Transaction
+from app.models.user import User
+from app.schemas.budget import BudgetCreate, BudgetResponse, BudgetUpdate
+
+
+class BudgetService:
+    def __init__(self, db: Session):
+        self.db = db
+
+    def _planned_total(self, budget_id: int) -> Decimal:
+        total = self.db.scalar(
+            select(func.coalesce(func.sum(BudgetCategoryPlan.planned_amount), 0)).where(
+                BudgetCategoryPlan.budget_id == budget_id
+            )
+        )
+        return Decimal(total)
+
+    def _spent_total(self, budget_id: int) -> Decimal:
+        total = self.db.scalar(
+            select(func.coalesce(func.sum(Transaction.amount), 0)).where(
+                Transaction.budget_id == budget_id, Transaction.type == "expense"
+            )
+        )
+        return Decimal(total)
+
+    def _to_response(self, budget: Budget) -> BudgetResponse:
+        return BudgetResponse(
+            id=str(budget.id),
+            name=budget.name,
+            period=format_period(budget.period_start, budget.period_end),
+            plannedTotal=self._planned_total(budget.id),
+            spentTotal=self._spent_total(budget.id),
+        )
+
+    def get_owned_budget(self, user: User, budget_id_raw: str) -> Budget:
+        budget_id = parse_id(budget_id_raw, label="budget id")
+        budget = self.db.get(Budget, budget_id)
+        if budget is None or budget.user_id != user.id:
+            raise NotFoundError("Budget")
+        return budget
+
+    def list_budgets(self, user: User) -> list[BudgetResponse]:
+        budgets = self.db.scalars(
+            select(Budget).where(Budget.user_id == user.id).order_by(Budget.period_start.desc())
+        ).all()
+        return [self._to_response(b) for b in budgets]
+
+    def get_budget(self, user: User, budget_id: str) -> BudgetResponse:
+        budget = self.get_owned_budget(user, budget_id)
+        return self._to_response(budget)
+
+    def create_budget(self, user: User, payload: BudgetCreate) -> BudgetResponse:
+        budget = Budget(user_id=user.id, **payload.model_dump())
+        self.db.add(budget)
+        self.db.commit()
+        self.db.refresh(budget)
+        return self._to_response(budget)
+
+    def update_budget(self, user: User, budget_id: str, payload: BudgetUpdate) -> BudgetResponse:
+        budget = self.get_owned_budget(user, budget_id)
+        for field, value in payload.model_dump(exclude_unset=True).items():
+            setattr(budget, field, value)
+        self.db.commit()
+        self.db.refresh(budget)
+        return self._to_response(budget)
+
+    def delete_budget(self, user: User, budget_id: str) -> None:
+        budget = self.get_owned_budget(user, budget_id)
+        self.db.delete(budget)
+        self.db.commit()
