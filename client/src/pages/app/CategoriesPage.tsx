@@ -6,6 +6,7 @@ import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
 import { useApiClient, budgetsApi, categoriesApi } from '../../api'
 import { useCurrency } from '../../contexts/CurrencyContext'
+import { ContentLoader } from '../../components/ui/Spinner'
 import { IconArrowLeftRight, IconPlus } from '../../components/ui/icons'
 import type { Category, RolloverType } from '../../types'
 
@@ -115,6 +116,10 @@ export function CategoriesPage() {
     setEditPlanned(String(c.planned))
     setEditRollover(c.rolloverType)
     setEditCap(c.rolloverCap != null ? String(c.rolloverCap) : '')
+  }
+
+  if (budgetQuery.isLoading || categoriesQuery.isLoading) {
+    return <ContentLoader label="Loading categories…" />
   }
 
   return (

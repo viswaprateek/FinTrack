@@ -1,3 +1,4 @@
+import { useState, useMemo, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import {
@@ -16,7 +17,8 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
-import { LoadingState } from '../../components/ui/Spinner'
+import { ContentLoader } from '../../components/ui/Spinner'
+import { useInitialLoading } from '../../hooks/useInitialLoading'
 import { StatCard } from '../../components/ui/StatCard'
 import { ProgressBar } from '../../components/ui/ProgressBar'
 import { Badge } from '../../components/ui/Badge'
@@ -35,7 +37,10 @@ import {
   IconSparkles,
   IconZap,
   IconPlus,
+  IconChevronLeft,
+  IconChevronRight,
 } from '../../components/ui/icons'
+import type { Budget } from '../../types'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -46,17 +51,30 @@ const CHART_COLORS = [
 
 // ─── Data helpers ─────────────────────────────────────────────────────────────
 
-function buildSpendingTrend(transactions: Transaction[]) {
+function toNum(value: number | string | null | undefined): number {
+  const n = Number(value)
+  return Number.isFinite(n) ? n : 0
+}
+
+function buildSpendingTrend(
+  transactions: Transaction[],
+  periodStart: string,
+  periodEnd: string,
+) {
   const byDate = new Map<string, number>()
+  const hasPeriod = Boolean(periodStart && periodEnd)
   transactions
-    .filter((t) => t.amount < 0)
+    .filter((t) => {
+      const day = t.date.substring(0, 10)
+      const inPeriod = !hasPeriod || (day >= periodStart && day <= periodEnd)
+      return toNum(t.amount) < 0 && inPeriod
+    })
     .forEach((t) => {
       const day = t.date.substring(0, 10)
-      byDate.set(day, (byDate.get(day) || 0) + Math.abs(t.amount))
+      byDate.set(day, (byDate.get(day) || 0) + Math.abs(toNum(t.amount)))
     })
   return [...byDate.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
-    .slice(-14)
     .map(([date, spending]) => ({
       date: new Date(date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       spending: Math.round(spending * 100) / 100,
@@ -65,24 +83,27 @@ function buildSpendingTrend(transactions: Transaction[]) {
 
 function buildCategoryPie(categories: Category[], spentTotal: number) {
   return categories
-    .filter((c) => c.spent > 0)
-    .sort((a, b) => b.spent - a.spent)
+    .filter((c) => toNum(c.spent) > 0)
+    .sort((a, b) => toNum(b.spent) - toNum(a.spent))
     .slice(0, 8)
-    .map((c) => ({
-      name: c.name,
-      value: Math.round(c.spent * 100) / 100,
-      pct: spentTotal > 0 ? Math.round((c.spent / spentTotal) * 100) : 0,
-    }))
+    .map((c) => {
+      const spent = toNum(c.spent)
+      return {
+        name: c.name,
+        value: Math.round(spent * 100) / 100,
+        pct: spentTotal > 0 ? Math.round((spent / spentTotal) * 100) : 0,
+      }
+    })
 }
 
 function buildBudgetVsActual(categories: Category[]) {
   return categories
-    .sort((a, b) => b.planned - a.planned)
+    .sort((a, b) => toNum(b.planned) - toNum(a.planned))
     .slice(0, 6)
     .map((c) => ({
       name: c.name.length > 13 ? c.name.substring(0, 13) + '…' : c.name,
-      Planned: Math.round(c.planned * 100) / 100,
-      Spent: Math.round(c.spent * 100) / 100,
+      Planned: Math.round(toNum(c.planned) * 100) / 100,
+      Spent: Math.round(toNum(c.spent) * 100) / 100,
     }))
 }
 
@@ -95,13 +116,13 @@ function getBudgetHealth(spent: number, planned: number) {
 }
 
 function getSpendingVelocity(transactions: Transaction[], plannedTotal: number) {
-  const expenses = transactions.filter((t) => t.amount < 0)
-  if (expenses.length < 2 || plannedTotal === 0) return null
-  const dates = expenses.map((t) => t.date).sort()
+  const expenses = transactions.filter((t) => toNum(t.amount) < 0)
+  if (expenses.length < 1 || plannedTotal === 0) return null
+  const dates = expenses.map((t) => t.date.substring(0, 10)).sort()
   const earliest = new Date(dates[0] + 'T00:00:00')
   const latest = new Date(dates[dates.length - 1] + 'T00:00:00')
-  const daySpan = Math.max(1, Math.round((latest.getTime() - earliest.getTime()) / 86400000))
-  const totalSpent = expenses.reduce((sum, t) => sum + Math.abs(t.amount), 0)
+  const daySpan = Math.max(1, Math.round((latest.getTime() - earliest.getTime()) / 86400000) + 1)
+  const totalSpent = expenses.reduce((sum, t) => sum + Math.abs(toNum(t.amount)), 0)
   const dailyRate = totalSpent / daySpan
   const projectedMonthly = dailyRate * 30
   return { dailyRate, projectedMonthly, onTrack: projectedMonthly <= plannedTotal }
@@ -163,6 +184,73 @@ const healthStyles = {
   slate:   { badge: 'bg-slate-500/10 border-slate-500/20 text-slate-400',     dot: 'bg-slate-400'   },
 }
 
+// ─── Budget period selector ───────────────────────────────────────────────────
+
+interface BudgetPeriodSelectorProps {
+  budgets: Budget[]
+  currentId: string
+  onChange: (id: string) => void
+}
+
+function BudgetPeriodSelector({ budgets, currentId, onChange }: BudgetPeriodSelectorProps) {
+  // budgets arrive sorted period_start DESC → [Jun, May, Apr, …]
+  // "older" = higher index in the array; "newer" = lower index
+  const idx = budgets.findIndex((b) => b.id === currentId)
+  const olderBudget = budgets[idx + 1] ?? null
+  const newerBudget = budgets[idx - 1] ?? null
+
+  const btnBase =
+    'flex h-8 w-8 items-center justify-center rounded-lg border border-slate-700 bg-slate-800 ' +
+    'text-slate-400 transition-colors hover:bg-slate-700 hover:text-slate-200 ' +
+    'disabled:cursor-not-allowed disabled:opacity-30'
+
+  return (
+    <div className="flex items-center gap-1">
+      {/* ← older */}
+      <button
+        className={btnBase}
+        disabled={!olderBudget}
+        onClick={() => olderBudget && onChange(olderBudget.id)}
+        title={olderBudget ? `Go to ${olderBudget.period}` : 'No older budgets'}
+      >
+        <IconChevronLeft className="h-4 w-4" />
+      </button>
+
+      {/* period dropdown */}
+      <select
+        value={currentId}
+        onChange={(e) => onChange(e.target.value)}
+        className="h-8 cursor-pointer rounded-lg border border-slate-700 bg-slate-800 px-3 text-sm
+                   font-medium text-slate-200 transition-colors hover:border-slate-600
+                   focus:border-emerald-500 focus:outline-none"
+      >
+        {budgets.map((b) => (
+          <option key={b.id} value={b.id}>
+            {b.period}
+          </option>
+        ))}
+      </select>
+
+      {/* → newer */}
+      <button
+        className={btnBase}
+        disabled={!newerBudget}
+        onClick={() => newerBudget && onChange(newerBudget.id)}
+        title={newerBudget ? `Go to ${newerBudget.period}` : 'No newer budgets'}
+      >
+        <IconChevronRight className="h-4 w-4" />
+      </button>
+
+      {/* budget count hint when multiple exist */}
+      {budgets.length > 1 && (
+        <span className="ml-1 text-xs text-slate-600">
+          {idx + 1} / {budgets.length}
+        </span>
+      )}
+    </div>
+  )
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export function DashboardPage() {
@@ -170,7 +258,28 @@ export function DashboardPage() {
   const { formatCurrency } = useCurrency()
 
   const budgetsQuery = useQuery({ queryKey: ['budgets'], queryFn: () => budgetsApi.list(client) })
-  const currentBudget = budgetsQuery.data?.[0]
+  const allBudgets = budgetsQuery.data ?? []
+
+  // Persist the selected budget id across page refreshes.
+  // Falls back to the most-recent budget (index 0) if nothing is stored
+  // or if the stored id no longer exists (e.g. budget was deleted).
+  const [selectedBudgetId, setSelectedBudgetId] = useState<string | null>(
+    () => localStorage.getItem('dashboard_budget_id'),
+  )
+
+  const currentBudget = useMemo(() => {
+    if (!allBudgets.length) return null
+    if (selectedBudgetId) {
+      const found = allBudgets.find((b) => b.id === selectedBudgetId)
+      if (found) return found
+    }
+    return allBudgets[0] // default: most recent
+  }, [allBudgets, selectedBudgetId])
+
+  const selectBudget = useCallback((id: string) => {
+    setSelectedBudgetId(id)
+    localStorage.setItem('dashboard_budget_id', id)
+  }, [])
 
   const categoriesQuery = useQuery({
     queryKey: ['categories', currentBudget?.id],
@@ -191,10 +300,10 @@ export function DashboardPage() {
   const transactions = transactionsQuery.data ?? []
   const upcomingBills = upcomingBillsQuery.data ?? []
 
-  const plannedTotal  = categories.reduce((sum, c) => sum + c.planned, 0)
-  const spentTotal    = categories.reduce((sum, c) => sum + c.spent, 0)
+  const plannedTotal  = categories.reduce((sum, c) => sum + toNum(c.planned), 0)
+  const spentTotal    = categories.reduce((sum, c) => sum + toNum(c.spent), 0)
   const remaining     = plannedTotal - spentTotal
-  const overspentCategories = categories.filter((c) => c.spent > c.planned)
+  const overspentCategories = categories.filter((c) => toNum(c.spent) > toNum(c.planned))
   const savingsRate   = plannedTotal > 0 ? Math.max(0, Math.round(((plannedTotal - spentTotal) / plannedTotal) * 100)) : 0
   const reimbursableTotal = transactions
     .filter((t) => t.reimbursable === 'pending')
@@ -202,14 +311,23 @@ export function DashboardPage() {
 
   const health         = getBudgetHealth(spentTotal, plannedTotal)
   const velocity       = getSpendingVelocity(transactions, plannedTotal)
-  const spendingTrend  = buildSpendingTrend(transactions)
+  const spendingTrend  = buildSpendingTrend(
+    transactions,
+    currentBudget?.periodStart ?? '',
+    currentBudget?.periodEnd ?? '',
+  )
   const categoryPie    = buildCategoryPie(categories, spentTotal)
   const budgetVsActual = buildBudgetVsActual(categories)
   const hc             = healthStyles[health.color]
 
   const formatY = (v: number) => (v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(Math.round(v)))
 
-  if (!currentBudget && budgetsQuery.isLoading) return <LoadingState label="Loading dashboard…" />
+  const pageLoading = useInitialLoading([
+    budgetsQuery,
+    ...(currentBudget ? [categoriesQuery, transactionsQuery] : []),
+  ])
+
+  if (pageLoading) return <ContentLoader label="Loading dashboard…" />
 
   if (!currentBudget) {
     return (
@@ -233,11 +351,14 @@ export function DashboardPage() {
         <div>
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-2xl font-bold text-slate-100">{currentBudget.name}</h1>
-            <span className="rounded-full bg-slate-800 px-3 py-1 text-xs font-medium text-slate-400">
-              {currentBudget.period}
-            </span>
           </div>
-          <p className="mt-1 text-sm text-slate-500">Personal finance overview</p>
+          <div className="mt-2">
+            <BudgetPeriodSelector
+              budgets={allBudgets}
+              currentId={currentBudget.id}
+              onChange={selectBudget}
+            />
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <div className={`flex items-center gap-2 rounded-xl border px-4 py-2 ${hc.badge}`}>
@@ -309,11 +430,13 @@ export function DashboardPage() {
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Spending Trend</CardTitle>
-            <span className="text-xs text-slate-500">Last 14 days of activity</span>
+            <span className="text-xs text-slate-500">
+              Daily spending · {currentBudget.period}
+            </span>
           </CardHeader>
           <CardContent>
-            {spendingTrend.length > 1 ? (
-              <ResponsiveContainer width="100%" height={220}>
+            {spendingTrend.length > 0 ? (
+              <ResponsiveContainer key={`spending-${currentBudget.id}`} width="100%" height={220}>
                 <AreaChart data={spendingTrend} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
                   <defs>
                     <linearGradient id="spendGrad" x1="0" y1="0" x2="0" y2="1">

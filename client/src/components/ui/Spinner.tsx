@@ -50,3 +50,29 @@ export function PageLoader({ label = 'Loading…' }: { label?: string }) {
     </div>
   )
 }
+
+/** Centered loader for page content areas (sidebar + topbar remain visible). */
+export function ContentLoader({ label = 'Loading…' }: { label?: string }) {
+  return (
+    <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4">
+      <Spinner size="lg" />
+      <p className="text-sm font-medium text-slate-400">{label}</p>
+    </div>
+  )
+}
+
+/** Placeholder while chart data is still fetching. */
+export function ChartSkeleton({ height = 220 }: { height?: number }) {
+  return (
+    <div className="animate-pulse space-y-3" style={{ height }}>
+      <div className="flex h-full items-end gap-2 rounded-xl bg-slate-800/30 px-4 pb-4 pt-8">
+        <div className="h-[35%] flex-1 rounded-md bg-slate-800" />
+        <div className="h-[55%] flex-1 rounded-md bg-slate-800" />
+        <div className="h-[40%] flex-1 rounded-md bg-slate-800" />
+        <div className="h-[70%] flex-1 rounded-md bg-slate-800" />
+        <div className="h-[45%] flex-1 rounded-md bg-slate-800" />
+        <div className="h-[60%] flex-1 rounded-md bg-slate-800" />
+      </div>
+    </div>
+  )
+}

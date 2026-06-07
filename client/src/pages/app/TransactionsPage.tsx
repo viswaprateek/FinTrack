@@ -4,6 +4,7 @@ import { Card, CardContent } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
 import { EmptyState } from '../../components/ui/EmptyState'
+import { ContentLoader } from '../../components/ui/Spinner'
 import { useApiClient, budgetsApi, categoriesApi, transactionsApi } from '../../api'
 import type { TransactionSplitInput } from '../../api/endpoints/transactions'
 import { useCurrency } from '../../contexts/CurrencyContext'
@@ -137,6 +138,10 @@ export function TransactionsPage() {
 
   const canSubmit =
     !!activeFormBudgetId && !!formDate && !!formAmount && !!formDescription && (!splitOn || splitLines.some((s) => s.categoryId && s.amount))
+
+  if (budgetsQuery.isLoading || transactionsQuery.isLoading) {
+    return <ContentLoader label="Loading transactions…" />
+  }
 
   return (
     <div className="space-y-6">

@@ -6,6 +6,7 @@ import { Badge } from '../../components/ui/Badge'
 import { useApiClient, budgetsApi, categoriesApi, recurringApi } from '../../api'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { formatShortDate } from '../../lib/utils'
+import { ContentLoader } from '../../components/ui/Spinner'
 import { IconClock, IconPlus } from '../../components/ui/icons'
 import type { RecurringFrequency, RecurringRule, RecurringStatus } from '../../types'
 
@@ -124,6 +125,16 @@ export function RecurringPage() {
   })
 
   const canSubmitAdd = !!formName && !!formAmount && !!formNextDue
+
+  const pageLoading =
+    budgetsQuery.isLoading ||
+    rulesQuery.isLoading ||
+    upcomingQuery.isLoading ||
+    (!!currentBudget && categoriesQuery.isLoading)
+
+  if (pageLoading) {
+    return <ContentLoader label="Loading recurring bills…" />
+  }
 
   return (
     <div className="space-y-6">

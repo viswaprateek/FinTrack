@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Ca
 import { Badge } from '../../components/ui/Badge'
 import { useApiClient, budgetsApi, categoriesApi, transactionsApi } from '../../api'
 import { useCurrency } from '../../contexts/CurrencyContext'
+import { ContentLoader } from '../../components/ui/Spinner'
 import { cn, formatShortDate } from '../../lib/utils'
 
 const tabs = ['Spending by Category', 'Reimbursements'] as const
@@ -41,6 +42,15 @@ export function ReportsPage() {
   const totalPending = reimbursable
     .filter((t) => t.reimbursable === 'pending')
     .reduce((sum, t) => sum + Math.abs(t.amount), 0)
+
+  const pageLoading =
+    budgetsQuery.isLoading ||
+    transactionsQuery.isLoading ||
+    (!!currentBudget && categoriesQuery.isLoading)
+
+  if (pageLoading) {
+    return <ContentLoader label="Loading reports…" />
+  }
 
   return (
     <div className="space-y-6">

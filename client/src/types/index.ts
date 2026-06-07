@@ -4,6 +4,8 @@ export interface Budget {
   id: string
   name: string
   period: string
+  periodStart: string
+  periodEnd: string
   plannedTotal: number
   spentTotal: number
 }

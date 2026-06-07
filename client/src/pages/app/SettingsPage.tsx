@@ -3,6 +3,7 @@ import { useUser, UserProfile } from '@clerk/clerk-react'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { useCurrency } from '../../contexts/CurrencyContext'
+import { ContentLoader } from '../../components/ui/Spinner'
 import { SUPPORTED_CURRENCIES } from '../../lib/currencies'
 
 export function SettingsPage() {
@@ -21,6 +22,10 @@ export function SettingsPage() {
   }
 
   const currencyDirty = selectedCurrency !== currency
+
+  if (isLoading) {
+    return <ContentLoader label="Loading settings…" />
+  }
 
   return (
     <div className="space-y-6">

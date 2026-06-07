@@ -6,6 +6,7 @@ import { Button } from '../../components/ui/Button'
 import { ProgressBar } from '../../components/ui/ProgressBar'
 import { useApiClient, budgetsApi } from '../../api'
 import { useCurrency } from '../../contexts/CurrencyContext'
+import { ContentLoader } from '../../components/ui/Spinner'
 import { IconPlus } from '../../components/ui/icons'
 
 export function BudgetListPage() {
@@ -43,6 +44,10 @@ export function BudgetListPage() {
   function submitCreate() {
     if (!name || !periodStart || !periodEnd) return
     createBudget.mutate()
+  }
+
+  if (budgetsQuery.isLoading) {
+    return <ContentLoader label="Loading budgets…" />
   }
 
   return (

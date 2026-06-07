@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom'
 import { AssistantWidget } from '../components/assistant/AssistantWidget'
+import { QueryLoadingBar } from '../components/layout/QueryLoadingBar'
 import { Sidebar } from '../components/layout/Sidebar'
 import { Topbar } from '../components/layout/Topbar'
 import { CurrencyProvider } from '../contexts/CurrencyContext'
@@ -7,6 +8,7 @@ import { CurrencyProvider } from '../contexts/CurrencyContext'
 export function AppLayout() {
   return (
     <CurrencyProvider>
+      <QueryLoadingBar />
       <div className="flex min-h-screen bg-slate-950 text-slate-100">
         <Sidebar />
         <div className="flex min-h-screen flex-1 flex-col">

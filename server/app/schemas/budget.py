@@ -24,5 +24,7 @@ class BudgetResponse(BaseModel):
     id: str
     name: str
     period: str
+    periodStart: date
+    periodEnd: date
     plannedTotal: Decimal
     spentTotal: Decimal

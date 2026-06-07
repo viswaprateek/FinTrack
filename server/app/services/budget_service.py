@@ -37,6 +37,8 @@ class BudgetService:
             id=str(budget.id),
             name=budget.name,
             period=format_period(budget.period_start, budget.period_end),
+            periodStart=budget.period_start,
+            periodEnd=budget.period_end,
             plannedTotal=self._planned_total(budget.id),
             spentTotal=self._spent_total(budget.id),
         )
