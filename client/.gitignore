@@ -6,28 +6,27 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env
+
+# Dependencies & build
 node_modules
 dist
 dist-ssr
+.vite
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Local overrides
 *.local
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
+# Editor (Windows/Visual Studio)
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-node_modules
-dist
-.env
-.env.local
+
+# Private registry auth (if used)
 .npmrc

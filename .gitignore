@@ -1,17 +1,9 @@
-# mac
+# OS
 .DS_Store
+Thumbs.db
 
-# frontend
-client/node_modules
-client/dist
-client/.env
-client/.env.local
-client/.vite
-
-# backend
-server/.venv
-server/.env
-server/__pycache__
-server/app/__pycache__
-*.pyc.DS_Store
-client/.vite
+# Editor & AI (local only)
+.vscode/
+.idea/
+.cursor/
+.claude/
