@@ -18,6 +18,10 @@ class UserInDB(UserBase):
     clerk_user_id: str
 
 
+class UserPreferencesUpdate(BaseModel):
+    default_currency: str | None = None
+
+
 class UserResponse(BaseModel):
     """Shape expected by the frontend's `MeResponse` (client/src/api/endpoints/users.ts)."""
 
@@ -25,3 +29,4 @@ class UserResponse(BaseModel):
     clerk_user_id: str
     email: str
     first_name: str | None = None
+    default_currency: str

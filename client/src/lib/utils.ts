@@ -4,13 +4,7 @@ export function cn(...values: ClassValue[]): string {
   return values.filter(Boolean).join(' ')
 }
 
-export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: amount % 1 === 0 ? 0 : 2,
-  }).format(amount)
-}
+export { formatCurrencyAmount as formatCurrency } from './currencies'
 
 export function formatDate(date: string | Date): string {
   const d = typeof date === 'string' ? new Date(date) : date

@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from sqlalchemy import inspect, text
 
 from app.api import api_router
 from app.core.config import settings
@@ -13,10 +14,28 @@ from app.core.exceptions import AppError
 import app.models  # noqa: F401
 
 
+def _apply_schema_patches() -> None:
+    """Lightweight dev migrations until Alembic is in place."""
+    inspector = inspect(engine)
+    if "users" not in inspector.get_table_names():
+        return
+
+    columns = {column["name"] for column in inspector.get_columns("users")}
+    if "default_currency" not in columns:
+        with engine.begin() as conn:
+            conn.execute(
+                text(
+                    "ALTER TABLE users ADD COLUMN default_currency VARCHAR(3) "
+                    "NOT NULL DEFAULT 'USD'"
+                )
+            )
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Development convenience — use Alembic migrations in production instead.
     Base.metadata.create_all(bind=engine)
+    _apply_schema_patches()
     check_database_connection()
     print("Database tables verified and connection OK")
     yield

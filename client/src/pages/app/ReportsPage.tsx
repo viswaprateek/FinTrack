@@ -3,13 +3,15 @@ import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
 import { useApiClient, budgetsApi, categoriesApi, transactionsApi } from '../../api'
-import { cn, formatCurrency, formatShortDate } from '../../lib/utils'
+import { useCurrency } from '../../contexts/CurrencyContext'
+import { cn, formatShortDate } from '../../lib/utils'
 
 const tabs = ['Spending by Category', 'Reimbursements'] as const
 type Tab = (typeof tabs)[number]
 
 export function ReportsPage() {
   const client = useApiClient()
+  const { formatCurrency } = useCurrency()
   const [tab, setTab] = useState<Tab>('Spending by Category')
   const [reimbursableFilter, setReimbursableFilter] = useState<'All' | 'Pending' | 'Received'>('All')
 

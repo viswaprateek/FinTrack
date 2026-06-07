@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Ca
 import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
 import { useApiClient, budgetsApi, categoriesApi, recurringApi } from '../../api'
-import { formatCurrency, formatShortDate } from '../../lib/utils'
+import { useCurrency } from '../../contexts/CurrencyContext'
+import { formatShortDate } from '../../lib/utils'
 import { IconClock, IconPlus } from '../../components/ui/icons'
 import type { RecurringFrequency, RecurringRule, RecurringStatus } from '../../types'
 
@@ -25,6 +26,7 @@ const frequencyOptions: RecurringFrequency[] = ['weekly', 'monthly', 'quarterly'
 export function RecurringPage() {
   const client = useApiClient()
   const queryClient = useQueryClient()
+  const { formatCurrency } = useCurrency()
 
   const [addOpen, setAddOpen] = useState(false)
   const [formName, setFormName] = useState('')

@@ -6,7 +6,8 @@ import { Badge } from '../../components/ui/Badge'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { useApiClient, budgetsApi, categoriesApi, transactionsApi } from '../../api'
 import type { TransactionSplitInput } from '../../api/endpoints/transactions'
-import { formatCurrency, formatShortDate } from '../../lib/utils'
+import { useCurrency } from '../../contexts/CurrencyContext'
+import { formatShortDate } from '../../lib/utils'
 import { IconPlus, IconSearch, IconSplit } from '../../components/ui/icons'
 import type { ReimbursementStatus } from '../../types'
 
@@ -24,6 +25,7 @@ interface SplitLine {
 export function TransactionsPage() {
   const client = useApiClient()
   const queryClient = useQueryClient()
+  const { formatCurrency } = useCurrency()
 
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('All categories')

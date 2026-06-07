@@ -5,12 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Ca
 import { Button } from '../../components/ui/Button'
 import { ProgressBar } from '../../components/ui/ProgressBar'
 import { useApiClient, budgetsApi } from '../../api'
-import { formatCurrency } from '../../lib/utils'
+import { useCurrency } from '../../contexts/CurrencyContext'
 import { IconPlus } from '../../components/ui/icons'
 
 export function BudgetListPage() {
   const client = useApiClient()
   const queryClient = useQueryClient()
+  const { currency, formatCurrency } = useCurrency()
   const [createOpen, setCreateOpen] = useState(false)
   const [name, setName] = useState('')
   const [periodStart, setPeriodStart] = useState('')
@@ -19,7 +20,8 @@ export function BudgetListPage() {
   const budgetsQuery = useQuery({ queryKey: ['budgets'], queryFn: () => budgetsApi.list(client) })
 
   const createBudget = useMutation({
-    mutationFn: () => budgetsApi.create(client, { name, period_start: periodStart, period_end: periodEnd }),
+    mutationFn: () =>
+      budgetsApi.create(client, { name, period_start: periodStart, period_end: periodEnd, currency }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['budgets'] })
       setCreateOpen(false)

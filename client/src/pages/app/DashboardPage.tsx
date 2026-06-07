@@ -7,7 +7,8 @@ import { ProgressBar } from '../../components/ui/ProgressBar'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { useApiClient, budgetsApi, categoriesApi, transactionsApi, recurringApi } from '../../api'
-import { formatCurrency, formatShortDate } from '../../lib/utils'
+import { useCurrency } from '../../contexts/CurrencyContext'
+import { formatShortDate } from '../../lib/utils'
 import {
   IconWallet,
   IconTrendingUp,
@@ -18,6 +19,7 @@ import {
 
 export function DashboardPage() {
   const client = useApiClient()
+  const { formatCurrency } = useCurrency()
 
   const budgetsQuery = useQuery({ queryKey: ['budgets'], queryFn: () => budgetsApi.list(client) })
   const currentBudget = budgetsQuery.data?.[0]

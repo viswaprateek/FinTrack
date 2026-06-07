@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Button } from '../ui/Button'
-import { formatCurrency, formatDate } from '../../lib/utils'
+import { useCurrency } from '../../contexts/CurrencyContext'
+import { formatDate } from '../../lib/utils'
 import type { Category } from '../../types'
 import type { ParsedTransaction } from './assistant.types'
 
@@ -19,6 +20,7 @@ export function TransactionConfirmCard({
   onChange,
   onConfirm,
 }: TransactionConfirmCardProps) {
+  const { formatCurrency } = useCurrency()
   const [isEditing, setIsEditing] = useState(false)
 
   const selectedCategoryId = transaction.category_id != null ? String(transaction.category_id) : ''

@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { useApiClient, budgetsApi, categoriesApi, transactionsApi } from '../../api'
+import { useCurrency } from '../../contexts/CurrencyContext'
+import { DEFAULT_CURRENCY } from '../../lib/currencies'
 import {
   addMessage,
   clearPendingTransaction,
@@ -124,11 +126,11 @@ function fileToBase64(file: File): Promise<string> {
   })
 }
 
-function toParsedTransaction(payload: GeminiTransactionPayload): ParsedTransaction {
+function toParsedTransaction(payload: GeminiTransactionPayload, defaultCurrency: string): ParsedTransaction {
   return {
     type: payload.type ?? 'unknown',
     amount: payload.amount ?? null,
-    currency: payload.currency ?? 'INR',
+    currency: payload.currency ?? defaultCurrency,
     date: payload.date ?? todayIso(),
     description: payload.description ?? null,
     account: payload.account ?? null,
@@ -141,8 +143,8 @@ function toParsedTransaction(payload: GeminiTransactionPayload): ParsedTransacti
   }
 }
 
-function summarize(transaction: ParsedTransaction): string {
-  const amountLabel = transaction.amount != null ? `₹${transaction.amount}` : 'an unknown amount'
+function summarize(transaction: ParsedTransaction, formatCurrency: (amount: number) => string): string {
+  const amountLabel = transaction.amount != null ? formatCurrency(transaction.amount) : 'an unknown amount'
   const verb = transaction.type === 'income' ? 'received' : 'spent'
   const description = transaction.description ? ` on ${transaction.description}` : ''
   return `Looks like you ${verb} ${amountLabel}${description}. Review the details below and confirm.`
@@ -170,6 +172,7 @@ export function useAssistant() {
   const dispatch = useAppDispatch()
   const state = useAppSelector((s) => s.assistant)
   const client = useApiClient()
+  const { currency, formatCurrency } = useCurrency()
 
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined
 
@@ -221,7 +224,7 @@ export function useAssistant() {
 
   const handleParsedPayload = useCallback(
     (payload: GeminiTransactionPayload, rawInput: string, spokenInput: boolean) => {
-      const transaction = toParsedTransaction(payload)
+      const transaction = toParsedTransaction(payload, currency || DEFAULT_CURRENCY)
       transaction.category_id = resolveCategoryId(transaction.category_suggestion)
 
       const needsClarification = transaction.confidence === 'low' || !!transaction.clarification_needed
@@ -242,12 +245,12 @@ export function useAssistant() {
         transaction.confidence === 'medium'
           ? "Please review — I'm not fully confident about these details. "
           : ''
-      const content = `${warning}${summarize(transaction)}`
+      const content = `${warning}${summarize(transaction, formatCurrency)}`
       const message = makeMessage({ role: 'assistant', content, pendingTransaction: transaction })
       dispatch(addMessage(message))
       if (spokenInput) speak(content)
     },
-    [dispatch, resolveCategoryId, speak],
+    [currency, dispatch, formatCurrency, resolveCategoryId, speak],
   )
 
   const runGeminiText = useCallback(

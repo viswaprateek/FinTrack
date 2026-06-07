@@ -6,7 +6,8 @@ import { Button } from '../../components/ui/Button'
 import { ProgressBar } from '../../components/ui/ProgressBar'
 import { LoadingState } from '../../components/ui/Spinner'
 import { useApiClient, budgetsApi, categoriesApi, incomeSourcesApi } from '../../api'
-import { cn, formatCurrency } from '../../lib/utils'
+import { useCurrency } from '../../contexts/CurrencyContext'
+import { cn } from '../../lib/utils'
 import { IconArrowRight, IconPlus } from '../../components/ui/icons'
 import type { IncomeSchedule } from '../../types'
 
@@ -19,6 +20,7 @@ export function BudgetDetailPage() {
   const { id } = useParams()
   const budgetId = id!
   const client = useApiClient()
+  const { formatCurrency } = useCurrency()
   const queryClient = useQueryClient()
   const [tab, setTab] = useState<Tab>('Overview')
 

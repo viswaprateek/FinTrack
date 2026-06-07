@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Ca
 import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
 import { useApiClient, budgetsApi, categoriesApi } from '../../api'
-import { formatCurrency } from '../../lib/utils'
+import { useCurrency } from '../../contexts/CurrencyContext'
 import { IconArrowLeftRight, IconPlus } from '../../components/ui/icons'
 import type { Category, RolloverType } from '../../types'
 
@@ -21,6 +21,7 @@ export function CategoriesPage() {
   const { id } = useParams()
   const budgetId = id!
   const client = useApiClient()
+  const { formatCurrency } = useCurrency()
   const queryClient = useQueryClient()
 
   const [moveFundsOpen, setMoveFundsOpen] = useState(false)
