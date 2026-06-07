@@ -101,6 +101,21 @@ export const IconClock = (props: IconProps) => (
   </svg>
 )
 
+export const IconCalculator = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <rect x="4" y="2" width="16" height="20" rx="2" />
+    <rect x="7" y="5" width="10" height="4" rx="1" />
+    <rect x="7" y="11" width="2.75" height="2.75" rx="0.75" />
+    <rect x="10.625" y="11" width="2.75" height="2.75" rx="0.75" />
+    <rect x="14.25" y="11" width="2.75" height="2.75" rx="0.75" />
+    <rect x="7" y="15" width="2.75" height="2.75" rx="0.75" />
+    <rect x="10.625" y="15" width="2.75" height="2.75" rx="0.75" />
+    <rect x="14.25" y="15" width="2.75" height="2.75" rx="0.75" />
+    <rect x="7" y="19" width="6.125" height="2.75" rx="0.75" />
+    <rect x="14.25" y="19" width="2.75" height="2.75" rx="0.75" />
+  </svg>
+)
+
 export const IconArrowLeftRight = (props: IconProps) => (
   <svg {...base} {...props}>
     <path d="m17 3 4 4-4 4" />
