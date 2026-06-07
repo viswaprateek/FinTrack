@@ -4,7 +4,8 @@ export interface ExchangeRateQuote {
   source: 'frankfurter' | 'exchangerate-api'
 }
 
-const FRANKFURTER_API = 'https://api.frankfurter.dev/v1'
+/** https://frankfurter.dev — v2 API, no key required */
+const FRANKFURTER_API = 'https://api.frankfurter.dev'
 const ER_API = 'https://open.er-api.com/v6/latest/USD'
 
 export async function fetchExchangeRate(from: string, to: string): Promise<ExchangeRateQuote> {
@@ -19,21 +20,31 @@ export async function fetchExchangeRate(from: string, to: string): Promise<Excha
   }
 }
 
+/**
+ * Frankfurter has no conversion endpoint — fetch the pair rate and multiply client-side.
+ * @see https://frankfurter.dev — GET /v2/rate/{base}/{quote}
+ */
 async function fetchFromFrankfurter(from: string, to: string): Promise<ExchangeRateQuote> {
   const response = await fetch(
-    `${FRANKFURTER_API}/latest?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+    `${FRANKFURTER_API}/v2/rate/${encodeURIComponent(from)}/${encodeURIComponent(to)}`,
   )
+
   if (!response.ok) {
     throw new Error('Frankfurter request failed')
   }
 
-  const data = (await response.json()) as { date: string; rates: Record<string, number> }
-  const rate = data.rates[to]
-  if (rate == null) {
+  const data = (await response.json()) as {
+    date: string
+    base: string
+    quote: string
+    rate: number
+  }
+
+  if (data.rate == null) {
     throw new Error(`No Frankfurter rate for ${from} → ${to}`)
   }
 
-  return { rate, date: data.date, source: 'frankfurter' }
+  return { rate: data.rate, date: data.date, source: 'frankfurter' }
 }
 
 async function fetchFromExchangeRateApi(from: string, to: string): Promise<ExchangeRateQuote> {
@@ -70,5 +81,5 @@ export function convertAmount(amount: number, rate: number): number {
 }
 
 export function rateSourceLabel(source: ExchangeRateQuote['source']): string {
-  return source === 'frankfurter' ? 'ECB' : 'ExchangeRate-API'
+  return source === 'frankfurter' ? 'Frankfurter' : 'ExchangeRate-API'
 }
