@@ -65,7 +65,7 @@ export function SettingsPage() {
               Default currency
             </label>
             <p className="mb-2 text-xs text-slate-500">
-              Used to format amounts across the app and as the default for new budgets.
+              Used to format amounts across the app.
             </p>
             <select
               id="default-currency"

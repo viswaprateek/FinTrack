@@ -8,7 +8,6 @@ class BudgetCreate(BaseModel):
     name: str
     period_start: date
     period_end: date
-    currency: str = "USD"
     copy_from_budget_id: str | None = None
 
 

@@ -36,6 +36,8 @@ class TransactionService:
     def _to_response(self, transaction: Transaction) -> TransactionResponse:
         return TransactionResponse(
             id=str(transaction.id),
+            budgetId=str(transaction.budget_id),
+            categoryId=str(transaction.category_id) if transaction.category_id else None,
             date=transaction.date.isoformat(),
             description=transaction.description,
             category=transaction.category.name if transaction.category else UNCATEGORIZED,
@@ -159,6 +161,11 @@ class TransactionService:
         transaction = self._get_owned_transaction(user, transaction_id)
         data = payload.model_dump(exclude_unset=True)
 
+        if "budget_id" in data:
+            raw = data.pop("budget_id")
+            budget = self.budgets.get_owned_budget(user, raw)
+            transaction.budget_id = budget.id
+
         if "category_id" in data:
             raw = data.pop("category_id")
             transaction.category_id = (
@@ -170,7 +177,8 @@ class TransactionService:
         for field, value in data.items():
             setattr(transaction, field, value)
 
-        self._assert_date_in_budget(transaction.budget, transaction.date)
+        budget = self.budgets.get_owned_budget(user, str(transaction.budget_id))
+        self._assert_date_in_budget(budget, transaction.date)
         if transaction.category_id:
             self.categories.ensure_envelope_plan(
                 user, str(transaction.budget_id), str(transaction.category_id)

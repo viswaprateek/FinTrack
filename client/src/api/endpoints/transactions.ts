@@ -30,6 +30,7 @@ export interface TransactionCreateInput {
 }
 
 export interface TransactionUpdateInput {
+  budget_id?: string
   category_id?: string | null
   date?: string
   description?: string

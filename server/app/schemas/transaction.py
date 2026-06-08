@@ -29,6 +29,7 @@ class TransactionCreate(BaseModel):
 
 
 class TransactionUpdate(BaseModel):
+    budget_id: str | None = None
     category_id: str | None = None
     date: dt.date | None = None
     description: str | None = None
@@ -45,6 +46,8 @@ class TransactionResponse(BaseModel):
     `amount` is signed: negative for expenses, positive for income."""
 
     id: str
+    budgetId: str
+    categoryId: str | None = None
     date: str
     description: str
     category: str

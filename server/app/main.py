@@ -36,6 +36,12 @@ def _apply_schema_patches() -> None:
             with engine.begin() as conn:
                 conn.execute(text("ALTER TABLE categories ADD COLUMN icon VARCHAR(50) NULL"))
 
+    if "budgets" in inspector.get_table_names():
+        budget_columns = {column["name"] for column in inspector.get_columns("budgets")}
+        if "currency" in budget_columns:
+            with engine.begin() as conn:
+                conn.execute(text("ALTER TABLE budgets DROP COLUMN currency"))
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

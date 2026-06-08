@@ -10,7 +10,7 @@ import { SignUpPage } from '../pages/public/SignUpPage'
 import { DashboardPage } from '../pages/app/DashboardPage'
 import { BudgetListPage } from '../pages/app/BudgetListPage'
 import { BudgetDetailPage } from '../pages/app/BudgetDetailPage'
-import { CategoriesPage } from '../pages/app/CategoriesPage'
+import { BudgetCategoriesRedirect } from '../pages/app/BudgetCategoriesRedirect'
 import { CategoryLibraryPage } from '../pages/app/CategoryLibraryPage'
 import { TransactionsPage } from '../pages/app/TransactionsPage'
 import { RecurringPage } from '../pages/app/RecurringPage'
@@ -35,7 +35,7 @@ export const router = createBrowserRouter([
           { path: '/dashboard', element: <DashboardPage /> },
           { path: '/budgets', element: <BudgetListPage /> },
           { path: '/budgets/:id', element: <BudgetDetailPage /> },
-          { path: '/budgets/:id/categories', element: <CategoriesPage /> },
+          { path: '/budgets/:id/categories', element: <BudgetCategoriesRedirect /> },
           { path: '/categories', element: <CategoryLibraryPage /> },
           { path: '/transactions', element: <TransactionsPage /> },
           { path: '/recurring', element: <RecurringPage /> },

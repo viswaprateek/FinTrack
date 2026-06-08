@@ -3,7 +3,7 @@ from decimal import Decimal
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.core.exceptions import NotFoundError
+from app.core.exceptions import ConflictError, NotFoundError
 from app.core.utils import format_period, parse_id
 from app.models.budget import Budget
 from app.models.budget_category_plan import BudgetCategoryPlan
@@ -61,6 +61,19 @@ class BudgetService:
         return self._to_response(budget)
 
     def create_budget(self, user: User, payload: BudgetCreate) -> BudgetResponse:
+        duplicate = self.db.scalar(
+            select(Budget).where(
+                Budget.user_id == user.id,
+                Budget.period_start == payload.period_start,
+                Budget.period_end == payload.period_end,
+            )
+        )
+        if duplicate is not None:
+            raise ConflictError(
+                f"A budget already exists for {payload.period_start.isoformat()} "
+                f"to {payload.period_end.isoformat()}"
+            )
+
         data = payload.model_dump(exclude={"copy_from_budget_id"})
         budget = Budget(user_id=user.id, **data)
         self.db.add(budget)

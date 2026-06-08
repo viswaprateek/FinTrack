@@ -1,6 +1,8 @@
 import { useLocation } from 'react-router-dom'
 import { UserButton } from '@clerk/clerk-react'
+import { BudgetPeriodSelector } from '../budgets/BudgetPeriodSelector'
 import { CurrencyConverter } from '../currency/CurrencyConverter'
+import { useBudgetPeriod } from '../../contexts/BudgetPeriodContext'
 
 const titles: Record<string, string> = {
   '/dashboard': 'Dashboard',
@@ -18,17 +20,29 @@ function pageTitle(pathname: string): string {
   return 'FinTrack'
 }
 
+/** Pages that manage budgets themselves — month selector lives in page content. */
+const HIDE_PERIOD_SELECTOR = new Set(['/budgets'])
+
 export function Topbar() {
   const { pathname } = useLocation()
+  const { budgets, currentBudget, selectBudget } = useBudgetPeriod()
+  const showPeriodSelector = !HIDE_PERIOD_SELECTOR.has(pathname) && budgets.length > 0 && currentBudget
 
   return (
-    <header className="relative z-50 flex items-center justify-between border-b border-slate-800 bg-slate-950/60 px-6 py-4 backdrop-blur-sm lg:px-8">
-      <div>
+    <header className="relative z-50 flex items-center justify-between gap-4 border-b border-slate-800 bg-slate-950/60 px-6 py-4 backdrop-blur-sm lg:px-8">
+      <div className="flex min-w-0 flex-wrap items-center gap-3">
         <h1 className="text-lg font-semibold text-white">{pageTitle(pathname)}</h1>
-        <p className="text-sm text-slate-500">June 2026</p>
+        {showPeriodSelector && (
+          <BudgetPeriodSelector
+            budgets={budgets}
+            currentId={currentBudget.id}
+            onChange={selectBudget}
+            compact
+          />
+        )}
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex shrink-0 items-center gap-2">
         <CurrencyConverter />
         <div className="lg:hidden">
           <UserButton afterSignOutUrl="/" />

@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
-import { useApiClient, budgetsApi, categoriesApi, transactionsApi } from '../../api'
+import { useApiClient, categoriesApi, transactionsApi } from '../../api'
+import { useBudgetPeriod } from '../../contexts/BudgetPeriodContext'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { ContentLoader } from '../../components/ui/Spinner'
 import { cn, formatShortDate } from '../../lib/utils'
@@ -16,15 +17,18 @@ export function ReportsPage() {
   const [tab, setTab] = useState<Tab>('Spending by Category')
   const [reimbursableFilter, setReimbursableFilter] = useState<'All' | 'Pending' | 'Received'>('All')
 
-  const budgetsQuery = useQuery({ queryKey: ['budgets'], queryFn: () => budgetsApi.list(client) })
-  const currentBudget = budgetsQuery.data?.[0]
+  const { currentBudget, isLoading: budgetsLoading } = useBudgetPeriod()
 
   const categoriesQuery = useQuery({
     queryKey: ['categories', currentBudget?.id],
     queryFn: () => categoriesApi.listForBudget(client, currentBudget!.id),
     enabled: !!currentBudget,
   })
-  const transactionsQuery = useQuery({ queryKey: ['transactions'], queryFn: () => transactionsApi.list(client) })
+  const transactionsQuery = useQuery({
+    queryKey: ['transactions', { budgetId: currentBudget?.id }],
+    queryFn: () => transactionsApi.list(client, { budget_id: currentBudget!.id }),
+    enabled: !!currentBudget,
+  })
 
   const categories = categoriesQuery.data ?? []
   const transactions = transactionsQuery.data ?? []
@@ -44,7 +48,7 @@ export function ReportsPage() {
     .reduce((sum, t) => sum + Math.abs(t.amount), 0)
 
   const pageLoading =
-    budgetsQuery.isLoading ||
+    budgetsLoading ||
     transactionsQuery.isLoading ||
     (!!currentBudget && categoriesQuery.isLoading)
 

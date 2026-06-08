@@ -3,7 +3,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
-import { useApiClient, budgetsApi, categoriesApi, recurringApi } from '../../api'
+import { useApiClient, categoriesApi, recurringApi } from '../../api'
+import { useBudgetPeriod } from '../../contexts/BudgetPeriodContext'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { formatShortDate } from '../../lib/utils'
 import { ContentLoader } from '../../components/ui/Spinner'
@@ -43,8 +44,7 @@ export function RecurringPage() {
   const [editNextDue, setEditNextDue] = useState('')
   const [editStatus, setEditStatus] = useState<RecurringStatus>('active')
 
-  const budgetsQuery = useQuery({ queryKey: ['budgets'], queryFn: () => budgetsApi.list(client) })
-  const currentBudget = budgetsQuery.data?.[0]
+  const { currentBudget, isLoading: budgetsLoading } = useBudgetPeriod()
 
   const categoriesQuery = useQuery({
     queryKey: ['categories', currentBudget?.id],
@@ -127,7 +127,7 @@ export function RecurringPage() {
   const canSubmitAdd = !!formName && !!formAmount && !!formNextDue
 
   const pageLoading =
-    budgetsQuery.isLoading ||
+    budgetsLoading ||
     rulesQuery.isLoading ||
     upcomingQuery.isLoading ||
     (!!currentBudget && categoriesQuery.isLoading)

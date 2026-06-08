@@ -29,6 +29,8 @@ export type ReimbursementStatus = 'none' | 'pending' | 'received'
 
 export interface Transaction {
   id: string
+  budgetId: string
+  categoryId?: string | null
   date: string
   description: string
   category: string

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Ca
 import { Button } from '../../components/ui/Button'
 import { ProgressBar } from '../../components/ui/ProgressBar'
 import { useApiClient, budgetsApi } from '../../api'
+import { useBudgetPeriod } from '../../contexts/BudgetPeriodContext'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { MONTH_OPTIONS, monthlyBudgetPeriod } from '../../lib/budgets'
 import { ContentLoader } from '../../components/ui/Spinner'
@@ -13,7 +14,8 @@ import { IconPlus } from '../../components/ui/icons'
 export function BudgetListPage() {
   const client = useApiClient()
   const queryClient = useQueryClient()
-  const { currency, formatCurrency } = useCurrency()
+  const { formatCurrency } = useCurrency()
+  const { currentBudget, selectBudget } = useBudgetPeriod()
   const now = new Date()
 
   const [createOpen, setCreateOpen] = useState(false)
@@ -31,6 +33,15 @@ export function BudgetListPage() {
 
   const monthlyPreview = useMemo(() => monthlyBudgetPeriod(year, month), [year, month])
 
+  const periodDuplicate = useMemo(() => {
+    if (customPeriod) {
+      return !!periodStart && !!periodEnd && budgets.some((b) => b.periodStart === periodStart && b.periodEnd === periodEnd)
+    }
+    return budgets.some(
+      (b) => b.periodStart === monthlyPreview.periodStart && b.periodEnd === monthlyPreview.periodEnd,
+    )
+  }, [budgets, customPeriod, periodStart, periodEnd, monthlyPreview])
+
   const yearOptions = useMemo(() => {
     const y = now.getFullYear()
     return [y - 1, y, y + 1]
@@ -39,20 +50,20 @@ export function BudgetListPage() {
   const createBudget = useMutation({
     mutationFn: () => {
       const payload = customPeriod
-        ? { name, period_start: periodStart, period_end: periodEnd, currency }
+        ? { name, period_start: periodStart, period_end: periodEnd }
         : {
             name: monthlyPreview.name,
             period_start: monthlyPreview.periodStart,
             period_end: monthlyPreview.periodEnd,
-            currency,
           }
       return budgetsApi.create(client, {
         ...payload,
         copy_from_budget_id: copyEnvelopes && copyFromBudgetId ? copyFromBudgetId : null,
       })
     },
-    onSuccess: () => {
+    onSuccess: (budget) => {
       queryClient.invalidateQueries({ queryKey: ['budgets'] })
+      selectBudget(budget.id)
       setCreateOpen(false)
     },
   })
@@ -64,13 +75,14 @@ export function BudgetListPage() {
     setName('')
     setPeriodStart('')
     setPeriodEnd('')
-    setCopyFromBudgetId(budgets[0]?.id ?? '')
+    setCopyFromBudgetId(currentBudget?.id ?? budgets[0]?.id ?? '')
     setCopyEnvelopes(budgets.length > 0)
     setCreateOpen(true)
   }
 
   function submitCreate() {
     if (customPeriod && (!name || !periodStart || !periodEnd)) return
+    if (periodDuplicate) return
     createBudget.mutate()
   }
 
@@ -246,12 +258,15 @@ export function BudgetListPage() {
                   )}
                 </div>
               )}
+              {periodDuplicate && (
+                <p className="text-sm text-amber-400">A budget already exists for this period.</p>
+              )}
               {createBudget.isError && (
                 <p className="text-sm text-red-400">Failed to create budget. It may already exist for this month.</p>
               )}
               <div className="flex items-center justify-end gap-2 pt-1">
                 <Button variant="secondary" onClick={() => setCreateOpen(false)}>Cancel</Button>
-                <Button onClick={submitCreate} disabled={createBudget.isPending}>
+                <Button onClick={submitCreate} disabled={createBudget.isPending || periodDuplicate}>
                   {createBudget.isPending ? 'Creating…' : 'Create Budget'}
                 </Button>
               </div>

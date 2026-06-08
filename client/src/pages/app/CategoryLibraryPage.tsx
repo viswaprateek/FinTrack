@@ -1,22 +1,33 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
 import { ContentLoader } from '../../components/ui/Spinner'
 import { CategoryIcon } from '../../components/categories/CategoryIcon'
-import { useApiClient, budgetsApi, categoriesApi } from '../../api'
+import { useApiClient, categoriesApi } from '../../api'
+import { useBudgetPeriod } from '../../contexts/BudgetPeriodContext'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { CATEGORY_TEMPLATES } from '../../lib/categoryTemplates'
-import { budgetForDate } from '../../lib/budgets'
-import { IconPlus } from '../../components/ui/icons'
+import { IconArrowLeftRight, IconPlus } from '../../components/ui/icons'
+import type { Category, RolloverType } from '../../types'
+
+const rolloverTone: Record<RolloverType, 'neutral' | 'success' | 'info'> = {
+  reset: 'neutral',
+  rollover: 'success',
+  capped: 'info',
+}
+
+const rolloverOptions: RolloverType[] = ['reset', 'rollover', 'capped']
 
 export function CategoryLibraryPage() {
   const client = useApiClient()
   const queryClient = useQueryClient()
   const { formatCurrency } = useCurrency()
+  const { currentBudget, isLoading: budgetsLoading } = useBudgetPeriod()
+  const activeBudgetId = currentBudget?.id ?? ''
 
-  const [selectedBudgetId, setSelectedBudgetId] = useState('')
   const [customOpen, setCustomOpen] = useState(false)
   const [customName, setCustomName] = useState('')
   const [customIcon, setCustomIcon] = useState('shopping')
@@ -26,22 +37,18 @@ export function CategoryLibraryPage() {
   const [envelopeAmount, setEnvelopeAmount] = useState('')
   const [libraryOnlyNotice, setLibraryOnlyNotice] = useState<string | null>(null)
 
-  const budgetsQuery = useQuery({ queryKey: ['budgets'], queryFn: () => budgetsApi.list(client) })
+  const [moveFundsOpen, setMoveFundsOpen] = useState(false)
+  const [fromCategoryId, setFromCategoryId] = useState('')
+  const [toCategoryId, setToCategoryId] = useState('')
+  const [moveAmount, setMoveAmount] = useState('')
+  const [moveNote, setMoveNote] = useState('')
+
+  const [editTarget, setEditTarget] = useState<Category | null>(null)
+  const [editPlanned, setEditPlanned] = useState('')
+  const [editRollover, setEditRollover] = useState<RolloverType>('reset')
+  const [editCap, setEditCap] = useState('')
+
   const libraryQuery = useQuery({ queryKey: ['category-library'], queryFn: () => categoriesApi.listAll(client) })
-
-  const budgets = budgetsQuery.data ?? []
-  const defaultBudgetId = useMemo(() => {
-    const today = new Date().toISOString().substring(0, 10)
-    return budgetForDate(budgets, today)?.id ?? budgets[0]?.id ?? ''
-  }, [budgets])
-  const activeBudgetId = selectedBudgetId || defaultBudgetId
-
-  useEffect(() => {
-    if (!selectedBudgetId && defaultBudgetId) {
-      setSelectedBudgetId(defaultBudgetId)
-    }
-  }, [defaultBudgetId, selectedBudgetId])
-
   const envelopeQuery = useQuery({
     queryKey: ['categories', activeBudgetId],
     queryFn: () => categoriesApi.listForBudget(client, activeBudgetId),
@@ -52,6 +59,13 @@ export function CategoryLibraryPage() {
   const envelopes = envelopeQuery.data ?? []
   const envelopeIds = useMemo(() => new Set(envelopes.map((c) => c.id)), [envelopes])
   const libraryNames = useMemo(() => new Set(library.map((c) => c.name.toLowerCase())), [library])
+
+  useEffect(() => {
+    if (envelopes.length > 0 && (!fromCategoryId || !toCategoryId)) {
+      setFromCategoryId(envelopes[0].id)
+      setToCategoryId(envelopes[1]?.id ?? envelopes[0].id)
+    }
+  }, [envelopes, fromCategoryId, toCategoryId])
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ['category-library'] })
@@ -65,7 +79,7 @@ export function CategoryLibraryPage() {
   })
 
   const addToEnvelope = useMutation({
-    mutationFn: (payload: { categoryId: string; name: string; icon?: string | null; planned: number }) =>
+    mutationFn: (payload: { name: string; icon?: string | null; planned: number }) =>
       categoriesApi.create(client, activeBudgetId, {
         name: payload.name,
         planned_amount: payload.planned,
@@ -74,12 +88,47 @@ export function CategoryLibraryPage() {
     onSuccess: invalidate,
   })
 
+  const updateCategory = useMutation({
+    mutationFn: () =>
+      categoriesApi.update(client, activeBudgetId, editTarget!.id, {
+        planned_amount: Number(editPlanned || 0),
+        rollover_type: editRollover,
+        rollover_cap: editRollover === 'capped' && editCap ? Number(editCap) : null,
+      }),
+    onSuccess: () => {
+      invalidate()
+      setEditTarget(null)
+    },
+  })
+
+  const moveFunds = useMutation({
+    mutationFn: () =>
+      categoriesApi.moveFunds(client, activeBudgetId, {
+        from_category_id: fromCategoryId,
+        to_category_id: toCategoryId,
+        amount: Number(moveAmount),
+        note: moveNote || null,
+      }),
+    onSuccess: () => {
+      invalidate()
+      setMoveFundsOpen(false)
+      setMoveAmount('')
+      setMoveNote('')
+    },
+  })
+
   function openEnvelopeModal(item: { id: string; name: string; icon?: string | null }) {
     setEnvelopeTarget(item)
     setEnvelopeAmount('')
   }
 
-  /** Add suggestion to library only — envelope is optional via modal. */
+  function openEditEnvelope(c: Category) {
+    setEditTarget(c)
+    setEditPlanned(String(c.planned))
+    setEditRollover(c.rolloverType)
+    setEditCap(c.rolloverCap != null ? String(c.rolloverCap) : '')
+  }
+
   async function addTemplateToLibrary(template: (typeof CATEGORY_TEMPLATES)[0]) {
     const existing = library.find((c) => c.name.toLowerCase() === template.name.toLowerCase())
     if (existing) {
@@ -113,7 +162,6 @@ export function CategoryLibraryPage() {
     if (!envelopeTarget || !activeBudgetId) return
     const libItem = library.find((c) => c.id === envelopeTarget.id)
     await addToEnvelope.mutateAsync({
-      categoryId: envelopeTarget.id,
       name: envelopeTarget.name,
       icon: envelopeTarget.icon ?? libItem?.icon,
       planned: Number(envelopeAmount) || 0,
@@ -122,7 +170,7 @@ export function CategoryLibraryPage() {
     setEnvelopeAmount('')
   }
 
-  if (budgetsQuery.isLoading || libraryQuery.isLoading) {
+  if (budgetsLoading || libraryQuery.isLoading) {
     return <ContentLoader label="Loading categories…" />
   }
 
@@ -132,33 +180,100 @@ export function CategoryLibraryPage() {
         <div>
           <h2 className="text-xl font-semibold text-white">Categories</h2>
           <p className="mt-1 max-w-xl text-sm text-slate-500">
-            Build your category library first, then add envelopes to any month — including mid-month. Logging a transaction can also create an envelope automatically.
+            {currentBudget
+              ? `Managing library and envelopes for ${currentBudget.period}. Change month from the header.`
+              : 'Build your category library, then create a budget to add monthly envelopes.'}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {budgets.length > 0 && (
-            <select
-              value={activeBudgetId}
-              onChange={(e) => setSelectedBudgetId(e.target.value)}
-              className="h-9 rounded-lg border border-slate-700 bg-slate-800 px-3 text-sm text-slate-200 focus:border-emerald-500 focus:outline-none"
-            >
-              {budgets.map((b) => (
-                <option key={b.id} value={b.id}>
-                  Envelopes: {b.name}
-                </option>
-              ))}
-            </select>
-          )}
-          <Button onClick={() => setCustomOpen(true)}>
-            <IconPlus className="h-4 w-4" />
-            Custom Category
-          </Button>
-        </div>
+        <Button onClick={() => setCustomOpen(true)}>
+          <IconPlus className="h-4 w-4" />
+          Custom Category
+        </Button>
       </div>
 
-      {/* My categories */}
+      {/* This month's envelopes */}
       <section>
-        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">My Categories</h3>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+            This month&apos;s envelopes
+            {currentBudget ? ` · ${currentBudget.name}` : ''}
+          </h3>
+          {currentBudget && envelopes.length >= 2 && (
+            <Button variant="secondary" size="sm" onClick={() => setMoveFundsOpen(true)}>
+              <IconArrowLeftRight className="h-4 w-4" />
+              Move Funds
+            </Button>
+          )}
+        </div>
+
+        {!currentBudget ? (
+          <Card>
+            <CardContent className="py-8 text-center text-sm text-slate-500">
+              <Link to="/budgets" className="font-medium text-emerald-400 hover:text-emerald-300">
+                Create a monthly budget
+              </Link>{' '}
+              to plan envelopes.
+            </CardContent>
+          </Card>
+        ) : envelopes.length > 0 ? (
+          <Card>
+            <CardContent className="p-0">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-800 text-left text-xs uppercase tracking-wide text-slate-500">
+                    <th className="px-6 py-3 font-medium">Category</th>
+                    <th className="px-6 py-3 font-medium">Planned</th>
+                    <th className="px-6 py-3 font-medium">Spent</th>
+                    <th className="px-6 py-3 font-medium">Available</th>
+                    <th className="px-6 py-3 font-medium">Rollover</th>
+                    <th className="px-6 py-3 text-right font-medium">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {envelopes.map((c) => {
+                    const available = c.planned - c.spent
+                    const libItem = library.find((l) => l.id === c.id)
+                    return (
+                      <tr key={c.id} className="border-b border-slate-800/60 last:border-0">
+                        <td className="px-6 py-3.5">
+                          <div className="flex items-center gap-2 font-medium text-slate-200">
+                            <CategoryIcon name={c.name} icon={libItem?.icon} size="sm" />
+                            {c.name}
+                          </div>
+                        </td>
+                        <td className="px-6 py-3.5 text-slate-400">{formatCurrency(c.planned)}</td>
+                        <td className="px-6 py-3.5 text-slate-400">{formatCurrency(c.spent)}</td>
+                        <td className={`px-6 py-3.5 font-medium ${available < 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+                          {formatCurrency(available)}
+                        </td>
+                        <td className="px-6 py-3.5">
+                          <Badge tone={rolloverTone[c.rolloverType]}>
+                            {c.rolloverType}
+                            {c.rolloverType === 'capped' && c.rolloverCap ? ` · cap ${formatCurrency(c.rolloverCap)}` : ''}
+                          </Badge>
+                        </td>
+                        <td className="px-6 py-3.5 text-right">
+                          <Button variant="ghost" size="sm" onClick={() => openEditEnvelope(c)}>Edit</Button>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardContent className="py-8 text-center text-sm text-slate-500">
+              No envelopes for this month yet. Add categories from your library below.
+            </CardContent>
+          </Card>
+        )}
+      </section>
+
+      {/* My library */}
+      <section>
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">My library</h3>
         {library.length > 0 ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {library.map((cat) => {
@@ -171,9 +286,7 @@ export function CategoryLibraryPage() {
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-medium text-slate-200">{cat.name}</p>
                       {inEnvelope && envelope ? (
-                        <p className="mt-0.5 text-xs text-slate-500">
-                          {formatCurrency(envelope.planned)} planned
-                        </p>
+                        <p className="mt-0.5 text-xs text-slate-500">{formatCurrency(envelope.planned)} planned</p>
                       ) : (
                         <p className="mt-0.5 text-xs text-slate-600">Not in this month</p>
                       )}
@@ -211,21 +324,16 @@ export function CategoryLibraryPage() {
       {libraryOnlyNotice && (
         <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-sm text-emerald-300">
           {libraryOnlyNotice}
-          <button
-            type="button"
-            onClick={() => setLibraryOnlyNotice(null)}
-            className="ml-2 text-emerald-400/70 hover:text-emerald-300"
-          >
+          <button type="button" onClick={() => setLibraryOnlyNotice(null)} className="ml-2 text-emerald-400/70 hover:text-emerald-300">
             Dismiss
           </button>
         </div>
       )}
 
-      {/* Templates */}
       <section>
         <CardHeader className="border-none px-0 pt-0">
-          <CardTitle>Suggested Categories</CardTitle>
-          <span className="text-xs text-slate-500">Adds to library — you choose whether to create an envelope</span>
+          <CardTitle>Suggested categories</CardTitle>
+          <span className="text-xs text-slate-500">Adds to library — envelope is optional</span>
         </CardHeader>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
           {CATEGORY_TEMPLATES.map((t) => {
@@ -254,13 +362,10 @@ export function CategoryLibraryPage() {
         </div>
       </section>
 
-      {/* Custom category modal */}
       {customOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" onClick={() => setCustomOpen(false)}>
           <Card className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-            <CardHeader>
-              <CardTitle>Custom Category</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle>Custom Category</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-slate-300">Name</label>
@@ -288,9 +393,7 @@ export function CategoryLibraryPage() {
               </div>
               {activeBudgetId && (
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-300">
-                    Planned amount this month (optional)
-                  </label>
+                  <label className="mb-1.5 block text-sm font-medium text-slate-300">Planned amount this month (optional)</label>
                   <input
                     value={envelopePlanned}
                     onChange={(e) => setEnvelopePlanned(e.target.value)}
@@ -311,21 +414,16 @@ export function CategoryLibraryPage() {
         </div>
       )}
 
-      {/* Add to envelope modal — optional; skip to keep library-only */}
       {envelopeTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" onClick={() => setEnvelopeTarget(null)}>
           <Card className="w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
-            <CardHeader>
-              <CardTitle>Add to envelope?</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle>Add to envelope?</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center gap-3">
                 <CategoryIcon name={envelopeTarget.name} icon={envelopeTarget.icon} />
                 <p className="text-sm text-slate-400">
                   <span className="font-medium text-slate-200">{envelopeTarget.name}</span> is in your library.
-                  Add it to{' '}
-                  <span className="font-medium text-slate-200">{budgets.find((b) => b.id === activeBudgetId)?.name}</span>{' '}
-                  now, or skip and add later.
+                  Add it to <span className="font-medium text-slate-200">{currentBudget?.name}</span> now, or skip.
                 </p>
               </div>
               <div>
@@ -339,11 +437,120 @@ export function CategoryLibraryPage() {
                 />
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="secondary" onClick={() => setEnvelopeTarget(null)}>
-                  Skip for now
-                </Button>
+                <Button variant="secondary" onClick={() => setEnvelopeTarget(null)}>Skip for now</Button>
                 <Button onClick={submitEnvelopeModal} disabled={addToEnvelope.isPending}>
                   {addToEnvelope.isPending ? 'Adding…' : 'Add envelope'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {editTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" onClick={() => setEditTarget(null)}>
+          <Card className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+            <CardHeader><CardTitle>Edit envelope — {editTarget.name}</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-slate-300">Planned amount</label>
+                <input
+                  value={editPlanned}
+                  onChange={(e) => setEditPlanned(e.target.value)}
+                  type="number"
+                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-slate-300">Rollover type</label>
+                <select
+                  value={editRollover}
+                  onChange={(e) => setEditRollover(e.target.value as RolloverType)}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                >
+                  {rolloverOptions.map((r) => (
+                    <option key={r} value={r}>{r}</option>
+                  ))}
+                </select>
+              </div>
+              {editRollover === 'capped' && (
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-slate-300">Rollover cap</label>
+                  <input
+                    value={editCap}
+                    onChange={(e) => setEditCap(e.target.value)}
+                    type="number"
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                  />
+                </div>
+              )}
+              <div className="flex justify-end gap-2">
+                <Button variant="secondary" onClick={() => setEditTarget(null)}>Cancel</Button>
+                <Button onClick={() => updateCategory.mutate()} disabled={updateCategory.isPending}>
+                  {updateCategory.isPending ? 'Saving…' : 'Save'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {moveFundsOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" onClick={() => setMoveFundsOpen(false)}>
+          <Card className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+            <CardHeader><CardTitle>Move Funds</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-slate-300">From envelope</label>
+                <select
+                  value={fromCategoryId}
+                  onChange={(e) => setFromCategoryId(e.target.value)}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                >
+                  {envelopes.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-slate-300">To envelope</label>
+                <select
+                  value={toCategoryId}
+                  onChange={(e) => setToCategoryId(e.target.value)}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                >
+                  {envelopes.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-slate-300">Amount</label>
+                <input
+                  value={moveAmount}
+                  onChange={(e) => setMoveAmount(e.target.value)}
+                  type="number"
+                  placeholder="0.00"
+                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-slate-300">Note</label>
+                <input
+                  value={moveNote}
+                  onChange={(e) => setMoveNote(e.target.value)}
+                  type="text"
+                  placeholder="Optional"
+                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="secondary" onClick={() => setMoveFundsOpen(false)}>Cancel</Button>
+                <Button
+                  onClick={() => moveFunds.mutate()}
+                  disabled={moveFunds.isPending || !moveAmount || fromCategoryId === toCategoryId}
+                >
+                  {moveFunds.isPending ? 'Moving…' : 'Move Funds'}
                 </Button>
               </div>
             </CardContent>

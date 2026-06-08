@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
-import { useApiClient, budgetsApi, categoriesApi, transactionsApi } from '../../api'
+import { useApiClient, categoriesApi, transactionsApi } from '../../api'
+import { useBudgetPeriod } from '../../contexts/BudgetPeriodContext'
 import { useCurrency } from '../../contexts/CurrencyContext'
+import { budgetForDate } from '../../lib/budgets'
 import { DEFAULT_CURRENCY } from '../../lib/currencies'
 import {
   addMessage,
@@ -176,13 +178,21 @@ export function useAssistant() {
 
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined
 
-  const budgetsQuery = useQuery({ queryKey: ['budgets'], queryFn: () => budgetsApi.list(client) })
-  const budgetId = budgetsQuery.data?.[0]?.id ?? null
+  const queryClient = useQueryClient()
+  const { budgets, currentBudget } = useBudgetPeriod()
+
+  const categoryBudgetId = useMemo(() => {
+    const date = state.pendingTransaction?.date
+    if (date) {
+      return budgetForDate(budgets, date)?.id ?? currentBudget?.id ?? null
+    }
+    return currentBudget?.id ?? null
+  }, [state.pendingTransaction?.date, budgets, currentBudget])
 
   const categoriesQuery = useQuery({
-    queryKey: ['categories', budgetId],
-    queryFn: () => categoriesApi.listForBudget(client, budgetId as string),
-    enabled: !!budgetId,
+    queryKey: ['categories', categoryBudgetId],
+    queryFn: () => categoriesApi.listForBudget(client, categoryBudgetId as string),
+    enabled: !!categoryBudgetId,
   })
   const categories = categoriesQuery.data ?? []
 
@@ -214,18 +224,24 @@ export function useAssistant() {
   )
 
   const resolveCategoryId = useCallback(
-    (suggestion: string | null): number | null => {
+    async (suggestion: string | null, date: string): Promise<number | null> => {
       if (!suggestion) return null
-      const match = categories.find((c) => c.name.toLowerCase() === suggestion.toLowerCase())
+      const targetBudget = budgetForDate(budgets, date) ?? currentBudget
+      if (!targetBudget) return null
+      const targetCategories = await queryClient.fetchQuery({
+        queryKey: ['categories', targetBudget.id],
+        queryFn: () => categoriesApi.listForBudget(client, targetBudget.id),
+      })
+      const match = targetCategories.find((c) => c.name.toLowerCase() === suggestion.toLowerCase())
       return match ? Number(match.id) : null
     },
-    [categories],
+    [budgets, currentBudget, client, queryClient],
   )
 
   const handleParsedPayload = useCallback(
-    (payload: GeminiTransactionPayload, rawInput: string, spokenInput: boolean) => {
+    async (payload: GeminiTransactionPayload, rawInput: string, spokenInput: boolean) => {
       const transaction = toParsedTransaction(payload, currency || DEFAULT_CURRENCY)
-      transaction.category_id = resolveCategoryId(transaction.category_suggestion)
+      transaction.category_id = await resolveCategoryId(transaction.category_suggestion, transaction.date)
 
       const needsClarification = transaction.confidence === 'low' || !!transaction.clarification_needed
 
@@ -417,7 +433,8 @@ export function useAssistant() {
 
   const confirmTransaction = useCallback(
     async (transaction: ParsedTransaction) => {
-      if (!budgetId) {
+      const targetBudget = budgetForDate(budgets, transaction.date) ?? currentBudget
+      if (!targetBudget) {
         dispatch(setError('No budget found to add this transaction to.'))
         return
       }
@@ -429,7 +446,7 @@ export function useAssistant() {
       dispatch(setError(null))
       try {
         await transactionsApi.create(client, {
-          budget_id: budgetId,
+          budget_id: targetBudget.id,
           category_id: transaction.category_id != null ? String(transaction.category_id) : null,
           date: transaction.date,
           description: transaction.description ?? 'Untitled transaction',
@@ -450,7 +467,7 @@ export function useAssistant() {
         dispatch(setLoading(false))
       }
     },
-    [budgetId, client, dispatch, speak],
+    [budgets, currentBudget, client, dispatch, speak],
   )
 
   useEffect(() => {

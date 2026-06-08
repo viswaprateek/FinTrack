@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import {
@@ -23,7 +23,8 @@ import { StatCard } from '../../components/ui/StatCard'
 import { ProgressBar } from '../../components/ui/ProgressBar'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
-import { useApiClient, budgetsApi, categoriesApi, transactionsApi, recurringApi } from '../../api'
+import { useApiClient, categoriesApi, incomeSourcesApi, transactionsApi, recurringApi } from '../../api'
+import { useBudgetPeriod } from '../../contexts/BudgetPeriodContext'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { formatShortDate } from '../../lib/utils'
 import type { Transaction, Category } from '../../types'
@@ -37,10 +38,7 @@ import {
   IconSparkles,
   IconZap,
   IconPlus,
-  IconChevronLeft,
-  IconChevronRight,
 } from '../../components/ui/icons'
-import type { Budget } from '../../types'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -192,102 +190,12 @@ const healthStyles = {
   slate:   { badge: 'bg-slate-500/10 border-slate-500/20 text-slate-400',     dot: 'bg-slate-400'   },
 }
 
-// ─── Budget period selector ───────────────────────────────────────────────────
-
-interface BudgetPeriodSelectorProps {
-  budgets: Budget[]
-  currentId: string
-  onChange: (id: string) => void
-}
-
-function BudgetPeriodSelector({ budgets, currentId, onChange }: BudgetPeriodSelectorProps) {
-  // budgets arrive sorted period_start DESC → [Jun, May, Apr, …]
-  // "older" = higher index in the array; "newer" = lower index
-  const idx = budgets.findIndex((b) => b.id === currentId)
-  const olderBudget = budgets[idx + 1] ?? null
-  const newerBudget = budgets[idx - 1] ?? null
-
-  const btnBase =
-    'flex h-8 w-8 items-center justify-center rounded-lg border border-slate-700 bg-slate-800 ' +
-    'text-slate-400 transition-colors hover:bg-slate-700 hover:text-slate-200 ' +
-    'disabled:cursor-not-allowed disabled:opacity-30'
-
-  return (
-    <div className="flex items-center gap-1">
-      {/* ← older */}
-      <button
-        className={btnBase}
-        disabled={!olderBudget}
-        onClick={() => olderBudget && onChange(olderBudget.id)}
-        title={olderBudget ? `Go to ${olderBudget.period}` : 'No older budgets'}
-      >
-        <IconChevronLeft className="h-4 w-4" />
-      </button>
-
-      {/* period dropdown */}
-      <select
-        value={currentId}
-        onChange={(e) => onChange(e.target.value)}
-        className="h-8 cursor-pointer rounded-lg border border-slate-700 bg-slate-800 px-3 text-sm
-                   font-medium text-slate-200 transition-colors hover:border-slate-600
-                   focus:border-emerald-500 focus:outline-none"
-      >
-        {budgets.map((b) => (
-          <option key={b.id} value={b.id}>
-            {b.period}
-          </option>
-        ))}
-      </select>
-
-      {/* → newer */}
-      <button
-        className={btnBase}
-        disabled={!newerBudget}
-        onClick={() => newerBudget && onChange(newerBudget.id)}
-        title={newerBudget ? `Go to ${newerBudget.period}` : 'No newer budgets'}
-      >
-        <IconChevronRight className="h-4 w-4" />
-      </button>
-
-      {/* budget count hint when multiple exist */}
-      {budgets.length > 1 && (
-        <span className="ml-1 text-xs text-slate-600">
-          {idx + 1} / {budgets.length}
-        </span>
-      )}
-    </div>
-  )
-}
-
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export function DashboardPage() {
   const client = useApiClient()
   const { formatCurrency } = useCurrency()
-
-  const budgetsQuery = useQuery({ queryKey: ['budgets'], queryFn: () => budgetsApi.list(client) })
-  const allBudgets = budgetsQuery.data ?? []
-
-  // Persist the selected budget id across page refreshes.
-  // Falls back to the most-recent budget (index 0) if nothing is stored
-  // or if the stored id no longer exists (e.g. budget was deleted).
-  const [selectedBudgetId, setSelectedBudgetId] = useState<string | null>(
-    () => localStorage.getItem('dashboard_budget_id'),
-  )
-
-  const currentBudget = useMemo(() => {
-    if (!allBudgets.length) return null
-    if (selectedBudgetId) {
-      const found = allBudgets.find((b) => b.id === selectedBudgetId)
-      if (found) return found
-    }
-    return allBudgets[0] // default: most recent
-  }, [allBudgets, selectedBudgetId])
-
-  const selectBudget = useCallback((id: string) => {
-    setSelectedBudgetId(id)
-    localStorage.setItem('dashboard_budget_id', id)
-  }, [])
+  const { currentBudget, isLoading: budgetsLoading } = useBudgetPeriod()
 
   const categoriesQuery = useQuery({
     queryKey: ['categories', currentBudget?.id],
@@ -303,20 +211,48 @@ export function DashboardPage() {
     queryKey: ['recurring-rules', 'upcoming', 7],
     queryFn: () => recurringApi.upcoming(client, 7),
   })
+  const incomeSourcesQuery = useQuery({
+    queryKey: ['income-sources', currentBudget?.id],
+    queryFn: () => incomeSourcesApi.listForBudget(client, currentBudget!.id),
+    enabled: !!currentBudget,
+  })
 
   const categories = categoriesQuery.data ?? []
   const transactions = transactionsQuery.data ?? []
   const upcomingBills = upcomingBillsQuery.data ?? []
 
   const plannedTotal  = categories.reduce((sum, c) => sum + toNum(c.planned), 0)
+  const envelopeSpent = categories.reduce((sum, c) => sum + toNum(c.spent), 0)
+  const uncategorizedSpent = transactions
+    .filter((t) => toNum(t.amount) < 0 && (t.category === 'Uncategorized' || !t.category?.trim()))
+    .reduce((sum, t) => sum + Math.abs(toNum(t.amount)), 0)
+  const spentTotal = envelopeSpent + uncategorizedSpent
   const categoryPieData = buildCategoryPieFromTransactions(transactions)
-  const spentTotal    = categoryPieData.spentTotal
   const remaining     = plannedTotal - spentTotal
   const overspentCategories = categories.filter((c) => toNum(c.spent) > toNum(c.planned))
   const savingsRate   = plannedTotal > 0 ? Math.max(0, Math.round(((plannedTotal - spentTotal) / plannedTotal) * 100)) : 0
   const reimbursableTotal = transactions
     .filter((t) => t.reimbursable === 'pending')
     .reduce((sum, t) => sum + Math.abs(t.amount), 0)
+  const incomeSources = incomeSourcesQuery.data ?? []
+  const expectedIncome = incomeSources.reduce((sum, s) => sum + toNum(s.amount), 0)
+  const actualIncome = transactions
+    .filter((t) => t.amount > 0)
+    .reduce((sum, t) => sum + t.amount, 0)
+
+  const periodProgress = useMemo(() => {
+    if (!currentBudget) return null
+    const start = new Date(`${currentBudget.periodStart}T00:00:00`)
+    const end = new Date(`${currentBudget.periodEnd}T00:00:00`)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const totalDays = Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1
+    const dayNum = Math.min(
+      totalDays,
+      Math.max(1, Math.round((today.getTime() - start.getTime()) / 86_400_000) + 1),
+    )
+    return { dayNum, totalDays, pct: Math.round((dayNum / totalDays) * 100) }
+  }, [currentBudget])
 
   const health         = getBudgetHealth(spentTotal, plannedTotal)
   const velocity       = getSpendingVelocity(transactions, plannedTotal)
@@ -332,7 +268,7 @@ export function DashboardPage() {
   const formatY = (v: number) => (v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(Math.round(v)))
 
   const pageLoading = useInitialLoading([
-    budgetsQuery,
+    { isLoading: budgetsLoading },
     ...(currentBudget ? [categoriesQuery, transactionsQuery] : []),
   ])
 
@@ -357,17 +293,16 @@ export function DashboardPage() {
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-bold text-slate-100">{currentBudget.name}</h1>
-          </div>
-          <div className="mt-2">
-            <BudgetPeriodSelector
-              budgets={allBudgets}
-              currentId={currentBudget.id}
-              onChange={selectBudget}
-            />
-          </div>
+        <div className="min-w-0 flex-1">
+          {periodProgress && (
+            <div className="mt-3 max-w-xs">
+              <div className="mb-1 flex items-center justify-between text-xs text-slate-500">
+                <span>Day {periodProgress.dayNum} of {periodProgress.totalDays}</span>
+                <span>{periodProgress.pct}%</span>
+              </div>
+              <ProgressBar value={periodProgress.dayNum} max={periodProgress.totalDays} />
+            </div>
+          )}
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <div className={`flex items-center gap-2 rounded-xl border px-4 py-2 ${hc.badge}`}>
@@ -385,7 +320,7 @@ export function DashboardPage() {
       </div>
 
       {/* ── Stat cards ─────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
         <StatCard
           label="Total Budget"
           value={formatCurrency(plannedTotal)}
@@ -397,7 +332,13 @@ export function DashboardPage() {
         <StatCard
           label="Total Spent"
           value={formatCurrency(spentTotal)}
-          subLabel={plannedTotal > 0 ? `${Math.round((spentTotal / plannedTotal) * 100)}% of budget` : undefined}
+          subLabel={
+            uncategorizedSpent > 0
+              ? `${formatCurrency(uncategorizedSpent)} uncategorized`
+              : plannedTotal > 0
+                ? `${Math.round((spentTotal / plannedTotal) * 100)}% of budget`
+                : undefined
+          }
           icon={<IconTrendingUp className="h-5 w-5" />}
           iconColor="text-amber-400"
           iconBg="bg-amber-500/10"
@@ -411,6 +352,21 @@ export function DashboardPage() {
           iconColor={remaining >= 0 ? 'text-emerald-400' : 'text-red-400'}
           iconBg={remaining >= 0 ? 'bg-emerald-500/10' : 'bg-red-500/10'}
           tone={remaining >= 0 ? 'success' : 'danger'}
+        />
+        <StatCard
+          label="Income"
+          value={formatCurrency(actualIncome)}
+          subLabel={
+            expectedIncome > 0
+              ? `${formatCurrency(expectedIncome)} expected`
+              : incomeSources.length === 0
+                ? 'No sources set'
+                : undefined
+          }
+          icon={<IconTrendingUp className="h-5 w-5" />}
+          iconColor="text-emerald-400"
+          iconBg="bg-emerald-500/10"
+          tone={expectedIncome > 0 && actualIncome >= expectedIncome ? 'success' : 'neutral'}
         />
         <StatCard
           label="Savings Rate"
@@ -573,7 +529,7 @@ export function DashboardPage() {
         <Card className="lg:col-span-3">
           <CardHeader>
             <CardTitle>Budget vs Actual</CardTitle>
-            <Link to={`/budgets/${currentBudget.id}/categories`}>
+            <Link to="/categories">
               <Button variant="ghost" size="sm">
                 All categories
                 <IconArrowRight className="h-4 w-4" />
@@ -729,7 +685,7 @@ export function DashboardPage() {
             <CardTitle className="text-red-400">
               Over Budget — {overspentCategories.length} Envelope{overspentCategories.length > 1 ? 's' : ''}
             </CardTitle>
-            <Link to={`/budgets/${currentBudget.id}/categories`}>
+            <Link to="/categories">
               <Button variant="ghost" size="sm">
                 Manage
                 <IconArrowRight className="h-4 w-4" />
