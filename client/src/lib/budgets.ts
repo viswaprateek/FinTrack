@@ -35,3 +35,35 @@ export const MONTH_OPTIONS = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
 ] as const
+
+export const MONTH_SHORT = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+] as const
+
+/** Budget whose period matches the calendar month (period_start = YYYY-MM-01). */
+export function budgetForCalendarMonth(budgets: Budget[], year: number, month: number): Budget | null {
+  const { periodStart } = monthlyBudgetPeriod(year, month)
+  return budgets.find((b) => b.periodStart === periodStart) ?? null
+}
+
+export function isCurrentCalendarMonth(year: number, month: number, today = new Date()): boolean {
+  return today.getFullYear() === year && today.getMonth() + 1 === month
+}
+
+/** Nearest prior month (walking backwards) that already has a budget — for envelope copy defaults. */
+export function findPriorBudgetForCopy(budgets: Budget[], year: number, month: number): Budget | null {
+  let y = year
+  let m = month
+  for (let i = 0; i < 24; i++) {
+    if (m === 1) {
+      y -= 1
+      m = 12
+    } else {
+      m -= 1
+    }
+    const match = budgetForCalendarMonth(budgets, y, m)
+    if (match) return match
+  }
+  return null
+}

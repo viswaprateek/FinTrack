@@ -2,14 +2,23 @@ import { Link, Outlet, useLocation } from 'react-router-dom'
 import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react'
 import { Button } from '../components/ui/Button'
 import { Logo } from '../components/ui/Logo'
+import { cn } from '../lib/utils'
 
 export function PublicLayout() {
   const { pathname } = useLocation()
   const isAuthPage = pathname === '/sign-in' || pathname === '/sign-up'
+  const isLanding = pathname === '/'
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-950 text-slate-100">
-      <header className="border-b border-slate-800/80">
+      <header
+        className={cn(
+          'z-40 transition-all duration-300',
+          isLanding
+            ? 'sticky top-0 border-b border-slate-800/40 bg-slate-950/70 backdrop-blur-xl backdrop-saturate-150'
+            : 'border-b border-slate-800/80',
+        )}
+      >
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
           <Link to="/" className="flex items-center gap-2">
             <Logo />

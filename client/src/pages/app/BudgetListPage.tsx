@@ -1,89 +1,72 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { BudgetYearCalendar, monthPeriodLabel } from '../../components/budgets/BudgetYearCalendar'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { ProgressBar } from '../../components/ui/ProgressBar'
 import { useApiClient, budgetsApi } from '../../api'
 import { useBudgetPeriod } from '../../contexts/BudgetPeriodContext'
 import { useCurrency } from '../../contexts/CurrencyContext'
-import { MONTH_OPTIONS, monthlyBudgetPeriod } from '../../lib/budgets'
+import {
+  budgetForCalendarMonth,
+  findPriorBudgetForCopy,
+  isCurrentCalendarMonth,
+  monthlyBudgetPeriod,
+} from '../../lib/budgets'
 import { ContentLoader } from '../../components/ui/Spinner'
-import { IconPlus } from '../../components/ui/icons'
+import { IconChevronLeft, IconChevronRight } from '../../components/ui/icons'
+import { cn } from '../../lib/utils'
 
 export function BudgetListPage() {
   const client = useApiClient()
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const { formatCurrency } = useCurrency()
   const { currentBudget, selectBudget } = useBudgetPeriod()
   const now = new Date()
 
-  const [createOpen, setCreateOpen] = useState(false)
-  const [customPeriod, setCustomPeriod] = useState(false)
-  const [month, setMonth] = useState(now.getMonth() + 1)
-  const [year, setYear] = useState(now.getFullYear())
-  const [name, setName] = useState('')
-  const [periodStart, setPeriodStart] = useState('')
-  const [periodEnd, setPeriodEnd] = useState('')
-  const [copyFromBudgetId, setCopyFromBudgetId] = useState('')
+  const [viewYear, setViewYear] = useState(now.getFullYear())
+  const [selectedMonth, setSelectedMonth] = useState<number | null>(now.getMonth() + 1)
   const [copyEnvelopes, setCopyEnvelopes] = useState(true)
 
   const budgetsQuery = useQuery({ queryKey: ['budgets'], queryFn: () => budgetsApi.list(client) })
   const budgets = budgetsQuery.data ?? []
 
-  const monthlyPreview = useMemo(() => monthlyBudgetPeriod(year, month), [year, month])
+  const selectedBudget = useMemo(() => {
+    if (selectedMonth === null) return null
+    return budgetForCalendarMonth(budgets, viewYear, selectedMonth)
+  }, [budgets, viewYear, selectedMonth])
 
-  const periodDuplicate = useMemo(() => {
-    if (customPeriod) {
-      return !!periodStart && !!periodEnd && budgets.some((b) => b.periodStart === periodStart && b.periodEnd === periodEnd)
-    }
-    return budgets.some(
-      (b) => b.periodStart === monthlyPreview.periodStart && b.periodEnd === monthlyPreview.periodEnd,
-    )
-  }, [budgets, customPeriod, periodStart, periodEnd, monthlyPreview])
+  const selectedPeriod = useMemo(() => {
+    if (selectedMonth === null) return null
+    return monthlyBudgetPeriod(viewYear, selectedMonth)
+  }, [viewYear, selectedMonth])
 
-  const yearOptions = useMemo(() => {
-    const y = now.getFullYear()
-    return [y - 1, y, y + 1]
-  }, [now])
+  const copySourceBudget = useMemo(() => {
+    if (selectedMonth === null) return null
+    return findPriorBudgetForCopy(budgets, viewYear, selectedMonth)
+  }, [budgets, viewYear, selectedMonth])
 
   const createBudget = useMutation({
     mutationFn: () => {
-      const payload = customPeriod
-        ? { name, period_start: periodStart, period_end: periodEnd }
-        : {
-            name: monthlyPreview.name,
-            period_start: monthlyPreview.periodStart,
-            period_end: monthlyPreview.periodEnd,
-          }
+      if (!selectedPeriod) throw new Error('No month selected')
       return budgetsApi.create(client, {
-        ...payload,
-        copy_from_budget_id: copyEnvelopes && copyFromBudgetId ? copyFromBudgetId : null,
+        name: selectedPeriod.name,
+        period_start: selectedPeriod.periodStart,
+        period_end: selectedPeriod.periodEnd,
+        copy_from_budget_id: copyEnvelopes && copySourceBudget ? copySourceBudget.id : null,
       })
     },
     onSuccess: (budget) => {
       queryClient.invalidateQueries({ queryKey: ['budgets'] })
       selectBudget(budget.id)
-      setCreateOpen(false)
     },
   })
 
-  function openCreate() {
-    setCustomPeriod(false)
-    setMonth(now.getMonth() + 1)
-    setYear(now.getFullYear())
-    setName('')
-    setPeriodStart('')
-    setPeriodEnd('')
-    setCopyFromBudgetId(currentBudget?.id ?? budgets[0]?.id ?? '')
-    setCopyEnvelopes(budgets.length > 0)
-    setCreateOpen(true)
-  }
-
-  function submitCreate() {
-    if (customPeriod && (!name || !periodStart || !periodEnd)) return
-    if (periodDuplicate) return
-    createBudget.mutate()
+  function openBudget(id: string) {
+    selectBudget(id)
+    navigate(`/budgets/${id}`)
   }
 
   if (budgetsQuery.isLoading) {
@@ -92,150 +75,124 @@ export function BudgetListPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-white">My Budgets</h2>
-          <p className="mt-1 text-sm text-slate-500">One budget per month — transactions stay within that period.</p>
-        </div>
-        <Button onClick={openCreate}>
-          <IconPlus className="h-4 w-4" />
-          New Monthly Budget
-        </Button>
+      <div>
+        <h2 className="text-xl font-semibold text-white">My Budgets</h2>
+        <p className="mt-1 text-sm text-slate-500">
+          Pick a month on the calendar — create a budget only when you&apos;re ready.
+        </p>
       </div>
 
-      {budgets.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {budgets.map((b) => (
-            <Card key={b.id} className="flex flex-col p-6">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="text-base font-semibold text-white">{b.name}</h3>
-                  <p className="mt-1 text-sm text-slate-500">{b.period}</p>
-                </div>
-              </div>
-
-              <div className="mt-5 flex items-center justify-between text-sm">
-                <span className="text-slate-400">Planned</span>
-                <span className="font-medium text-slate-200">{formatCurrency(b.plannedTotal)}</span>
-              </div>
-              <div className="mt-1.5 flex items-center justify-between text-sm">
-                <span className="text-slate-400">Spent</span>
-                <span className="font-medium text-slate-200">{formatCurrency(b.spentTotal)}</span>
-              </div>
-              <div className="mt-3">
-                <ProgressBar value={b.spentTotal} max={b.plannedTotal} />
-              </div>
-
-              <div className="mt-6 flex items-center gap-2">
-                <Link to={`/budgets/${b.id}`} className="flex-1">
-                  <Button variant="primary" size="sm" className="w-full">
-                    Open
-                  </Button>
-                </Link>
-              </div>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <Card>
-          <CardContent className="py-16 text-center">
-            <p className="text-sm font-medium text-slate-200">No budgets yet</p>
-            <p className="mt-1 text-sm text-slate-500">Create this month&apos;s budget to start tracking.</p>
-            <Button className="mt-4" onClick={openCreate}>
-              <IconPlus className="h-4 w-4" />
-              New Monthly Budget
+      <Card className="overflow-hidden border-slate-800/80 bg-slate-900/40 p-0">
+        {/* Year binder header */}
+        <div className="border-b border-slate-800 bg-gradient-to-r from-slate-900 via-slate-800/80 to-slate-900 px-4 py-5 sm:px-6">
+          <div className="flex items-center justify-between gap-4">
+            <Button
+              variant="secondary"
+              size="sm"
+              aria-label="Previous year"
+              onClick={() => setViewYear((y) => y - 1)}
+              className="shrink-0"
+            >
+              <IconChevronLeft className="h-4 w-4" />
             </Button>
-          </CardContent>
-        </Card>
-      )}
+            <div className="text-center">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-slate-500">Annual planner</p>
+              <h3 className="mt-0.5 font-serif text-3xl font-medium tracking-tight text-white sm:text-4xl">{viewYear}</h3>
+            </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              aria-label="Next year"
+              onClick={() => setViewYear((y) => y + 1)}
+              className="shrink-0"
+            >
+              <IconChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="mt-4 flex justify-center gap-2">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <span
+                key={i}
+                className={cn(
+                  'h-1.5 w-1.5 rounded-full transition-colors',
+                  selectedMonth === i + 1 ? 'bg-emerald-400' : 'bg-slate-600',
+                )}
+              />
+            ))}
+          </div>
+        </div>
 
-      {createOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" onClick={() => setCreateOpen(false)}>
-          <Card className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-            <CardHeader>
-              <CardTitle>New Monthly Budget</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {!customPeriod ? (
-                <>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="mb-1.5 block text-sm font-medium text-slate-300">Month</label>
-                      <select
-                        value={month}
-                        onChange={(e) => setMonth(Number(e.target.value))}
-                        className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
-                      >
-                        {MONTH_OPTIONS.map((label, i) => (
-                          <option key={label} value={i + 1}>{label}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="mb-1.5 block text-sm font-medium text-slate-300">Year</label>
-                      <select
-                        value={year}
-                        onChange={(e) => setYear(Number(e.target.value))}
-                        className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
-                      >
-                        {yearOptions.map((y) => (
-                          <option key={y} value={y}>{y}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="rounded-xl border border-slate-800 bg-slate-800/40 px-4 py-3 text-sm">
-                    <p className="font-medium text-slate-200">{monthlyPreview.name}</p>
-                    <p className="mt-1 text-slate-500">
-                      {monthlyPreview.periodStart} → {monthlyPreview.periodEnd}
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <>
+        <div className="bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-800/20 via-slate-950/50 to-slate-950 p-4 sm:p-6">
+          <BudgetYearCalendar
+            year={viewYear}
+            budgets={budgets}
+            selectedMonth={selectedMonth}
+            onSelectMonth={setSelectedMonth}
+            formatCurrency={formatCurrency}
+          />
+        </div>
+
+        <div className="flex flex-wrap gap-x-6 gap-y-2 border-t border-slate-800 bg-slate-950/50 px-4 py-3 text-[11px] text-slate-500 sm:px-6">
+          <span className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50" />
+            Today
+          </span>
+          <span className="flex items-center gap-2">
+            <span className="h-3 w-6 rounded bg-gradient-to-r from-emerald-600/80 to-teal-500/60" />
+            Month header
+          </span>
+          <span className="flex items-center gap-2">
+            <span className="h-3 w-3 rounded border border-dashed border-slate-600" />
+            No budget yet
+          </span>
+        </div>
+      </Card>
+
+      {selectedMonth !== null && selectedPeriod && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{monthPeriodLabel(viewYear, selectedMonth)}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {selectedBudget ? (
+              <>
+                <p className="text-sm text-slate-400">
+                  {selectedPeriod.periodStart} → {selectedPeriod.periodEnd}
+                </p>
+                <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <label className="mb-1.5 block text-sm font-medium text-slate-300">Name</label>
-                    <input
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      type="text"
-                      placeholder="e.g. Q2 Project"
-                      className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
-                    />
+                    <p className="text-slate-500">Planned</p>
+                    <p className="mt-0.5 font-medium text-slate-200">{formatCurrency(selectedBudget.plannedTotal)}</p>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="mb-1.5 block text-sm font-medium text-slate-300">Period start</label>
-                      <input
-                        value={periodStart}
-                        onChange={(e) => setPeriodStart(e.target.value)}
-                        type="date"
-                        className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="mb-1.5 block text-sm font-medium text-slate-300">Period end</label>
-                      <input
-                        value={periodEnd}
-                        onChange={(e) => setPeriodEnd(e.target.value)}
-                        type="date"
-                        className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
-                      />
-                    </div>
+                  <div>
+                    <p className="text-slate-500">Spent</p>
+                    <p className="mt-0.5 font-medium text-slate-200">{formatCurrency(selectedBudget.spentTotal)}</p>
                   </div>
-                </>
-              )}
+                </div>
+                <ProgressBar value={selectedBudget.spentTotal} max={selectedBudget.plannedTotal || 1} />
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <Button onClick={() => openBudget(selectedBudget.id)}>Open budget</Button>
+                  {currentBudget?.id !== selectedBudget.id && (
+                    <Button variant="secondary" size="sm" onClick={() => selectBudget(selectedBudget.id)}>
+                      Set as active month
+                    </Button>
+                  )}
+                  {currentBudget?.id === selectedBudget.id && (
+                    <span className="text-xs text-emerald-400">Active in app header</span>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-slate-400">No budget for this month yet.</p>
+                <div className="rounded-xl border border-slate-800 bg-slate-800/30 px-4 py-3 text-sm">
+                  <p className="font-medium text-slate-200">{selectedPeriod.name}</p>
+                  <p className="mt-1 text-slate-500">
+                    {selectedPeriod.periodStart} → {selectedPeriod.periodEnd}
+                  </p>
+                </div>
 
-              <button
-                type="button"
-                onClick={() => setCustomPeriod((v) => !v)}
-                className="text-xs font-medium text-emerald-400 hover:text-emerald-300"
-              >
-                {customPeriod ? '← Use monthly budget' : 'Use custom period instead'}
-              </button>
-
-              {budgets.length > 0 && (
-                <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-800/30 p-4">
+                {copySourceBudget && (
                   <label className="flex cursor-pointer items-center gap-3">
                     <input
                       type="checkbox"
@@ -243,36 +200,27 @@ export function BudgetListPage() {
                       onChange={(e) => setCopyEnvelopes(e.target.checked)}
                       className="h-4 w-4 rounded border-slate-600 bg-slate-800 text-emerald-500 focus:ring-emerald-500"
                     />
-                    <span className="text-sm text-slate-300">Copy envelopes from previous budget</span>
+                    <span className="text-sm text-slate-300">
+                      Copy category envelopes from {copySourceBudget.name}
+                    </span>
                   </label>
-                  {copyEnvelopes && (
-                    <select
-                      value={copyFromBudgetId}
-                      onChange={(e) => setCopyFromBudgetId(e.target.value)}
-                      className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
-                    >
-                      {budgets.map((b) => (
-                        <option key={b.id} value={b.id}>{b.name} · {b.period}</option>
-                      ))}
-                    </select>
-                  )}
-                </div>
-              )}
-              {periodDuplicate && (
-                <p className="text-sm text-amber-400">A budget already exists for this period.</p>
-              )}
-              {createBudget.isError && (
-                <p className="text-sm text-red-400">Failed to create budget. It may already exist for this month.</p>
-              )}
-              <div className="flex items-center justify-end gap-2 pt-1">
-                <Button variant="secondary" onClick={() => setCreateOpen(false)}>Cancel</Button>
-                <Button onClick={submitCreate} disabled={createBudget.isPending || periodDuplicate}>
-                  {createBudget.isPending ? 'Creating…' : 'Create Budget'}
+                )}
+
+                {createBudget.isError && (
+                  <p className="text-sm text-red-400">Could not create budget. It may already exist for this month.</p>
+                )}
+
+                <Button
+                  onClick={() => createBudget.mutate()}
+                  disabled={createBudget.isPending}
+                  className={cn(isCurrentCalendarMonth(viewYear, selectedMonth) && 'ring-2 ring-emerald-400/30')}
+                >
+                  {createBudget.isPending ? 'Creating…' : 'Create budget'}
                 </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
       )}
     </div>
   )
