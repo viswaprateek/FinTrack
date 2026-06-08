@@ -6,10 +6,12 @@ import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt import PyJWKClient
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.database import get_db
+from app.integrations.clerk import fetch_clerk_user, primary_email_from_clerk_user
 from app.models.user import User
 
 bearer_scheme = HTTPBearer(auto_error=False)
@@ -43,6 +45,80 @@ def _decode_clerk_token(token: str) -> dict:
         ) from exc
 
 
+def _email_from_claim(value: object) -> str | None:
+    if isinstance(value, str):
+        return value or None
+    if isinstance(value, dict):
+        email = value.get("email_address")
+        return email if isinstance(email, str) and email else None
+    return None
+
+
+def _profile_fields_from_claims(claims: dict) -> dict[str, str | None]:
+    """Read profile fields from Clerk session JWT claims (supports common claim names)."""
+    fields: dict[str, str | None] = {}
+
+    for key in ("email", "primaryEmail", "primary_email"):
+        if email := _email_from_claim(claims.get(key)):
+            fields["email"] = email
+            break
+
+    for key in ("first_name", "firstName", "given_name"):
+        if key in claims:
+            fields["first_name"] = claims[key]
+            break
+
+    for key in ("last_name", "lastName", "family_name"):
+        if key in claims:
+            fields["last_name"] = claims[key]
+            break
+
+    return fields
+
+
+def _apply_profile_fields(user: User, fields: dict[str, str | None]) -> bool:
+    changed = False
+
+    if email := fields.get("email"):
+        if user.email != email:
+            user.email = email
+            changed = True
+
+    if "first_name" in fields:
+        first_name = fields["first_name"]
+        if user.first_name != first_name:
+            user.first_name = first_name
+            changed = True
+
+    if "last_name" in fields:
+        last_name = fields["last_name"]
+        if user.last_name != last_name:
+            user.last_name = last_name
+            changed = True
+
+    return changed
+
+
+def _sync_profile_from_claims(user: User, claims: dict) -> bool:
+    return _apply_profile_fields(user, _profile_fields_from_claims(claims))
+
+
+def _sync_profile_from_clerk_api(user: User, clerk_user_id: str) -> bool:
+    clerk_user = fetch_clerk_user(clerk_user_id)
+    if clerk_user is None:
+        return False
+
+    fields: dict[str, str | None] = {}
+    if email := primary_email_from_clerk_user(clerk_user):
+        fields["email"] = email
+    if "first_name" in clerk_user:
+        fields["first_name"] = clerk_user["first_name"]
+    if "last_name" in clerk_user:
+        fields["last_name"] = clerk_user["last_name"]
+
+    return _apply_profile_fields(user, fields)
+
+
 def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
     db: Session = Depends(get_db),
@@ -60,17 +136,23 @@ def get_current_user(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token is missing a `sub` claim.")
 
     user = db.query(User).filter(User.clerk_user_id == clerk_user_id).first()
-    if user is None:
-        # First time we've seen this Clerk user — provision a local record. Default Clerk
-        # session tokens only carry `sub`; configure custom session claims (email, first_name,
-        # last_name) in the Clerk dashboard so they land here on first login.
-        user = User(
-            clerk_user_id=clerk_user_id,
-            email=claims.get("email", ""),
-            first_name=claims.get("first_name"),
-            last_name=claims.get("last_name"),
-        )
+    is_new = user is None
+    if is_new:
+        user = User(clerk_user_id=clerk_user_id, email="")
         db.add(user)
+        try:
+            db.flush()
+        except IntegrityError:
+            # Parallel requests on first login can race to create the same user row.
+            db.rollback()
+            user = db.query(User).filter(User.clerk_user_id == clerk_user_id).one()
+            is_new = False
+
+    profile_changed = _sync_profile_from_claims(user, claims)
+    if settings.CLERK_SECRET_KEY:
+        profile_changed = _sync_profile_from_clerk_api(user, clerk_user_id) or profile_changed
+
+    if is_new or profile_changed:
         db.commit()
         db.refresh(user)
 

@@ -50,6 +50,13 @@ async def lifespan(app: FastAPI):
     _apply_schema_patches()
     check_database_connection()
     print("Database tables verified and connection OK")
+    secret = settings.CLERK_SECRET_KEY or ""
+    if secret.startswith("CLERK_SECRET_KEY="):
+        print("WARNING: CLERK_SECRET_KEY is malformed (duplicate prefix). Use: CLERK_SECRET_KEY=sk_test_...")
+    elif secret:
+        print("Clerk Backend API profile sync enabled")
+    else:
+        print("WARNING: CLERK_SECRET_KEY is empty — email/name will not sync from Clerk")
     yield
 
 

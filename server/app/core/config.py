@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     # https://<your-instance>.clerk.accounts.dev/.well-known/jwks.json
     CLERK_JWKS_URL: str
     CLERK_ISSUER: str | None = None
+    # Backend API secret key — used to backfill profile fields when session JWT claims are empty.
+    CLERK_SECRET_KEY: str | None = None
 
     CORS_ORIGINS: list[str] = [
         "http://localhost:5173",
