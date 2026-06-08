@@ -29,9 +29,9 @@ export function Topbar() {
   const showPeriodSelector = !HIDE_PERIOD_SELECTOR.has(pathname) && budgets.length > 0 && currentBudget
 
   return (
-    <header className="relative z-50 flex items-center justify-between gap-4 border-b border-slate-800 bg-slate-950/60 px-6 py-4 backdrop-blur-sm lg:px-8">
-      <div className="flex min-w-0 flex-wrap items-center gap-3">
-        <h1 className="text-lg font-semibold text-white">{pageTitle(pathname)}</h1>
+    <header className="sticky top-0 z-50 flex items-center justify-between gap-3 border-b border-slate-800 bg-slate-950/80 px-4 py-3 backdrop-blur-md sm:gap-4 sm:px-6 sm:py-4 lg:px-8">
+      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 sm:gap-3">
+        <h1 className="truncate text-base font-semibold text-white sm:text-lg">{pageTitle(pathname)}</h1>
         {showPeriodSelector && (
           <BudgetPeriodSelector
             budgets={budgets}

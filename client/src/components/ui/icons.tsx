@@ -180,6 +180,20 @@ export const IconSearch = (props: IconProps) => (
   </svg>
 )
 
+export const IconX = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <path d="M18 6 6 18M6 6l12 12" />
+  </svg>
+)
+
+export const IconMore = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
+    <circle cx="19" cy="12" r="1" fill="currentColor" stroke="none" />
+    <circle cx="5" cy="12" r="1" fill="currentColor" stroke="none" />
+  </svg>
+)
+
 export const IconLogo = (props: IconProps) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" {...props}>
     <rect x="3" y="13" width="3.5" height="8" rx="1" fill="currentColor" />

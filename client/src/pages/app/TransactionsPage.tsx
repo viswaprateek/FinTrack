@@ -13,6 +13,8 @@ import { useCurrency } from '../../contexts/CurrencyContext'
 import { budgetForDate, clampDateToBudget, isDateInBudget } from '../../lib/budgets'
 import { formatShortDate } from '../../lib/utils'
 import { IconPlus, IconSearch, IconSplit } from '../../components/ui/icons'
+import { TransactionListItem } from '../../components/transactions/TransactionListItem'
+import { useIsMobile } from '../../hooks/useMediaQuery'
 import type { Budget, ReimbursementStatus, Transaction } from '../../types'
 
 function isMismatchedTransaction(transaction: Transaction, budgets: Budget[]): boolean {
@@ -36,6 +38,8 @@ export function TransactionsPage() {
   const queryClient = useQueryClient()
   const { formatCurrency } = useCurrency()
 
+  const isMobile = useIsMobile()
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('All categories')
   const [typeFilter, setTypeFilter] = useState<'All types' | 'Income' | 'Expense'>('All types')
@@ -356,57 +360,72 @@ export function TransactionsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-xl font-semibold text-white">Transactions</h2>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-lg font-semibold text-white sm:text-xl">Transactions</h2>
           <p className="mt-1 text-sm text-slate-500">Expenses and income for the selected month.</p>
         </div>
-        <Button onClick={openAdd}>
+        <Button onClick={openAdd} size="sm" className="shrink-0">
           <IconPlus className="h-4 w-4" />
-          Add Transaction
+          <span className="hidden sm:inline">Add Transaction</span>
+          <span className="sm:hidden">Add</span>
         </Button>
       </div>
 
       {/* Filter bar */}
       <Card className="p-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative flex-1 min-w-[220px]">
-            <IconSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              type="text"
-              placeholder="Search by description"
-              className="w-full rounded-xl border border-slate-700 bg-slate-800 py-2.5 pl-10 pr-3 text-sm text-slate-200 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none"
-            />
+        <div className="space-y-3">
+          <div className="flex gap-2">
+            <div className="relative min-w-0 flex-1">
+              <IconSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                type="text"
+                placeholder="Search by description"
+                className="w-full rounded-xl border border-slate-700 bg-slate-800 py-2.5 pl-10 pr-3 text-sm text-slate-200 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none"
+              />
+            </div>
+            {isMobile && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setFiltersOpen((v) => !v)}
+                className="shrink-0"
+              >
+                Filters
+              </Button>
+            )}
           </div>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
-          >
-            {categoryOptions.map((c) => (
-              <option key={c}>{c}</option>
-            ))}
-          </select>
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value as typeof typeFilter)}
-            className="rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
-          >
-            <option>All types</option>
-            <option>Income</option>
-            <option>Expense</option>
-          </select>
-          <select
-            value={reimbursableFilter}
-            onChange={(e) => setReimbursableFilter(e.target.value as typeof reimbursableFilter)}
-            className="rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
-          >
-            <option>Reimbursable: any</option>
-            <option>Pending</option>
-            <option>Received</option>
-          </select>
+          <div className={`flex flex-wrap items-center gap-3 ${isMobile && !filtersOpen ? 'hidden' : ''}`}>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none sm:w-auto"
+            >
+              {categoryOptions.map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value as typeof typeFilter)}
+              className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none sm:w-auto"
+            >
+              <option>All types</option>
+              <option>Income</option>
+              <option>Expense</option>
+            </select>
+            <select
+              value={reimbursableFilter}
+              onChange={(e) => setReimbursableFilter(e.target.value as typeof reimbursableFilter)}
+              className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none sm:w-auto"
+            >
+              <option>Reimbursable: any</option>
+              <option>Pending</option>
+              <option>Received</option>
+            </select>
+          </div>
         </div>
       </Card>
 
@@ -428,7 +447,35 @@ export function TransactionsPage() {
       )}
 
       {filtered.length > 0 ? (
-        <Card>
+        <>
+          <div className="space-y-3 lg:hidden">
+            {filtered.map((t) => {
+              const txBudget = budgetForDate(budgets, t.date)
+              const mismatched = isMismatchedTransaction(t, budgets)
+              return (
+                <TransactionListItem
+                  key={t.id}
+                  transaction={t}
+                  formatCurrency={formatCurrency}
+                  budgetLabel={txBudget?.period}
+                  mismatched={mismatched}
+                  onEdit={() => openEdit(t)}
+                  onDelete={() => setDeleteTarget(t)}
+                  onFix={
+                    mismatched
+                      ? () => {
+                          const target = budgetForDate(budgets, t.date)
+                          if (target) fixMismatched.mutate([t])
+                        }
+                      : undefined
+                  }
+                  fixPending={fixMismatched.isPending}
+                />
+              )
+            })}
+          </div>
+
+          <Card className="hidden lg:block">
           <CardContent className="p-0">
             <table className="w-full text-sm">
               <thead>
@@ -505,6 +552,7 @@ export function TransactionsPage() {
             </table>
           </CardContent>
         </Card>
+        </>
       ) : (
         <EmptyState title="No transactions found" description="Try adjusting your filters, or add your first transaction." />
       )}

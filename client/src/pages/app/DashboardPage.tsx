@@ -27,6 +27,7 @@ import { useApiClient, categoriesApi, incomeSourcesApi, transactionsApi, recurri
 import { useBudgetPeriod } from '../../contexts/BudgetPeriodContext'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { formatShortDate } from '../../lib/utils'
+import { TransactionListItem } from '../../components/transactions/TransactionListItem'
 import type { Transaction, Category } from '../../types'
 import {
   IconWallet,
@@ -292,10 +293,10 @@ export function DashboardPage() {
     <div className="space-y-6">
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
           {periodProgress && (
-            <div className="mt-3 max-w-xs">
+            <div className="max-w-xs">
               <div className="mb-1 flex items-center justify-between text-xs text-slate-500">
                 <span>Day {periodProgress.dayNum} of {periodProgress.totalDays}</span>
                 <span>{periodProgress.pct}%</span>
@@ -304,88 +305,96 @@ export function DashboardPage() {
             </div>
           )}
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <div className={`flex items-center gap-2 rounded-xl border px-4 py-2 ${hc.badge}`}>
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <div className={`flex items-center gap-2 rounded-xl border px-3 py-2 sm:px-4 ${hc.badge}`}>
             <span className={`h-2 w-2 rounded-full ${hc.dot}`} />
             <span className="text-sm font-medium">{health.label}</span>
-            <span className="text-xs text-slate-500">{health.score}% remaining</span>
+            <span className="hidden text-xs text-slate-500 sm:inline">{health.score}% remaining</span>
           </div>
           <Link to="/transactions">
             <Button size="sm">
               <IconPlus className="h-4 w-4" />
-              Add Transaction
+              <span className="hidden sm:inline">Add Transaction</span>
+              <span className="sm:hidden">Add</span>
             </Button>
           </Link>
         </div>
       </div>
 
-      {/* ── Stat cards ─────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-        <StatCard
-          label="Total Budget"
-          value={formatCurrency(plannedTotal)}
-          subLabel="This period"
-          icon={<IconWallet className="h-5 w-5" />}
-          iconColor="text-blue-400"
-          iconBg="bg-blue-500/10"
-        />
-        <StatCard
-          label="Total Spent"
-          value={formatCurrency(spentTotal)}
-          subLabel={
-            uncategorizedSpent > 0
-              ? `${formatCurrency(uncategorizedSpent)} uncategorized`
-              : plannedTotal > 0
-                ? `${Math.round((spentTotal / plannedTotal) * 100)}% of budget`
-                : undefined
-          }
-          icon={<IconTrendingUp className="h-5 w-5" />}
-          iconColor="text-amber-400"
-          iconBg="bg-amber-500/10"
-          tone={spentTotal > plannedTotal ? 'danger' : 'warning'}
-        />
-        <StatCard
-          label="Remaining"
-          value={formatCurrency(Math.abs(remaining))}
-          subLabel={remaining < 0 ? 'Overspent' : 'Available'}
-          icon={<IconShield className="h-5 w-5" />}
-          iconColor={remaining >= 0 ? 'text-emerald-400' : 'text-red-400'}
-          iconBg={remaining >= 0 ? 'bg-emerald-500/10' : 'bg-red-500/10'}
-          tone={remaining >= 0 ? 'success' : 'danger'}
-        />
-        <StatCard
-          label="Income"
-          value={formatCurrency(actualIncome)}
-          subLabel={
-            expectedIncome > 0
-              ? `${formatCurrency(expectedIncome)} expected`
-              : incomeSources.length === 0
-                ? 'No sources set'
-                : undefined
-          }
-          icon={<IconTrendingUp className="h-5 w-5" />}
-          iconColor="text-emerald-400"
-          iconBg="bg-emerald-500/10"
-          tone={expectedIncome > 0 && actualIncome >= expectedIncome ? 'success' : 'neutral'}
-        />
-        <StatCard
-          label="Savings Rate"
-          value={`${savingsRate}%`}
-          subLabel={savingsRate >= 20 ? 'Great job!' : savingsRate >= 10 ? 'Keep going' : 'Under target'}
-          icon={<IconSparkles className="h-5 w-5" />}
-          iconColor="text-purple-400"
-          iconBg="bg-purple-500/10"
-          tone={savingsRate >= 20 ? 'success' : savingsRate >= 0 ? 'neutral' : 'danger'}
-        />
-        <StatCard
-          label="Over Budget"
-          value={String(overspentCategories.length)}
-          subLabel={overspentCategories.length === 0 ? 'All envelopes ok' : `Envelope${overspentCategories.length > 1 ? 's' : ''} over`}
-          icon={<IconAlertTriangle className="h-5 w-5" />}
-          iconColor={overspentCategories.length > 0 ? 'text-red-400' : 'text-slate-400'}
-          iconBg={overspentCategories.length > 0 ? 'bg-red-500/10' : 'bg-slate-800'}
-          tone={overspentCategories.length > 0 ? 'danger' : 'neutral'}
-        />
+      {/* ── Stat cards — horizontal scroll on mobile ─────────────────────────── */}
+      <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 snap-x snap-mandatory lg:mx-0 lg:grid lg:grid-cols-3 lg:gap-4 lg:overflow-visible lg:px-0 xl:grid-cols-6">
+        {[
+          {
+            label: 'Total Budget',
+            value: formatCurrency(plannedTotal),
+            subLabel: 'This period',
+            icon: <IconWallet className="h-5 w-5" />,
+            iconColor: 'text-blue-400',
+            iconBg: 'bg-blue-500/10',
+          },
+          {
+            label: 'Total Spent',
+            value: formatCurrency(spentTotal),
+            subLabel:
+              uncategorizedSpent > 0
+                ? `${formatCurrency(uncategorizedSpent)} uncategorized`
+                : plannedTotal > 0
+                  ? `${Math.round((spentTotal / plannedTotal) * 100)}% of budget`
+                  : undefined,
+            icon: <IconTrendingUp className="h-5 w-5" />,
+            iconColor: 'text-amber-400',
+            iconBg: 'bg-amber-500/10',
+            tone: spentTotal > plannedTotal ? ('danger' as const) : ('warning' as const),
+          },
+          {
+            label: 'Remaining',
+            value: formatCurrency(Math.abs(remaining)),
+            subLabel: remaining < 0 ? 'Overspent' : 'Available',
+            icon: <IconShield className="h-5 w-5" />,
+            iconColor: remaining >= 0 ? 'text-emerald-400' : 'text-red-400',
+            iconBg: remaining >= 0 ? 'bg-emerald-500/10' : 'bg-red-500/10',
+            tone: remaining >= 0 ? ('success' as const) : ('danger' as const),
+          },
+          {
+            label: 'Income',
+            value: formatCurrency(actualIncome),
+            subLabel:
+              expectedIncome > 0
+                ? `${formatCurrency(expectedIncome)} expected`
+                : incomeSources.length === 0
+                  ? 'No sources set'
+                  : undefined,
+            icon: <IconTrendingUp className="h-5 w-5" />,
+            iconColor: 'text-emerald-400',
+            iconBg: 'bg-emerald-500/10',
+            tone: expectedIncome > 0 && actualIncome >= expectedIncome ? ('success' as const) : ('neutral' as const),
+          },
+          {
+            label: 'Savings Rate',
+            value: `${savingsRate}%`,
+            subLabel: savingsRate >= 20 ? 'Great job!' : savingsRate >= 10 ? 'Keep going' : 'Under target',
+            icon: <IconSparkles className="h-5 w-5" />,
+            iconColor: 'text-purple-400',
+            iconBg: 'bg-purple-500/10',
+            tone: savingsRate >= 20 ? ('success' as const) : savingsRate >= 0 ? ('neutral' as const) : ('danger' as const),
+          },
+          {
+            label: 'Over Budget',
+            value: String(overspentCategories.length),
+            subLabel:
+              overspentCategories.length === 0
+                ? 'All envelopes ok'
+                : `Envelope${overspentCategories.length > 1 ? 's' : ''} over`,
+            icon: <IconAlertTriangle className="h-5 w-5" />,
+            iconColor: overspentCategories.length > 0 ? 'text-red-400' : 'text-slate-400',
+            iconBg: overspentCategories.length > 0 ? 'bg-red-500/10' : 'bg-slate-800',
+            tone: overspentCategories.length > 0 ? ('danger' as const) : ('neutral' as const),
+          },
+        ].map((stat) => (
+          <div key={stat.label} className="min-w-[9.5rem] shrink-0 snap-start sm:min-w-[10.5rem] lg:min-w-0">
+            <StatCard compact {...stat} />
+          </div>
+        ))}
       </div>
 
       {/* ── Charts row ─────────────────────────────────────────────────────── */}
@@ -724,7 +733,24 @@ export function DashboardPage() {
           </Link>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
+          {/* Mobile card list */}
+          <div className="space-y-3 p-4 lg:hidden">
+            {transactions.slice(0, 7).map((t) => (
+              <TransactionListItem
+                key={t.id}
+                transaction={t}
+                formatCurrency={formatCurrency}
+              />
+            ))}
+            {transactions.length === 0 && (
+              <p className="py-8 text-center text-sm text-slate-500">
+                No transactions yet — add your first one above.
+              </p>
+            )}
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden overflow-x-auto lg:block">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-800 text-left text-xs uppercase tracking-wide text-slate-500">
