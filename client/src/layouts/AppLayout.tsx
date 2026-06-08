@@ -14,7 +14,7 @@ export function AppLayout() {
         <QueryLoadingBar />
         <div className="flex min-h-screen bg-background text-foreground">
           <Sidebar />
-          <div className="flex min-h-screen flex-1 flex-col">
+          <div className="flex min-h-screen flex-1 flex-col lg:pl-64">
             <Topbar />
             <main className="flex-1 px-4 py-5 pb-28 sm:px-6 sm:py-6 lg:px-8 lg:py-8 lg:pb-8">
               <Outlet />
