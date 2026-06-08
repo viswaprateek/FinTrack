@@ -5,6 +5,7 @@ import { CurrencyConverter } from '../currency/CurrencyConverter'
 const titles: Record<string, string> = {
   '/dashboard': 'Dashboard',
   '/budgets': 'Budgets',
+  '/categories': 'Categories',
   '/transactions': 'Transactions',
   '/recurring': 'Recurring Bills',
   '/reports': 'Reports & Forecasts',

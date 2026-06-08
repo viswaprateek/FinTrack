@@ -9,11 +9,13 @@ import {
   IconRepeat,
   IconBarChart,
   IconSettings,
+  IconTags,
 } from '../ui/icons'
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: IconLayoutDashboard },
   { to: '/budgets', label: 'Budgets', icon: IconWallet },
+  { to: '/categories', label: 'Categories', icon: IconTags },
   { to: '/transactions', label: 'Transactions', icon: IconReceipt },
   { to: '/recurring', label: 'Recurring Bills', icon: IconRepeat },
   { to: '/reports', label: 'Reports', icon: IconBarChart },

@@ -30,6 +30,12 @@ def _apply_schema_patches() -> None:
                 )
             )
 
+    if "categories" in inspector.get_table_names():
+        category_columns = {column["name"] for column in inspector.get_columns("categories")}
+        if "icon" not in category_columns:
+            with engine.begin() as conn:
+                conn.execute(text("ALTER TABLE categories ADD COLUMN icon VARCHAR(50) NULL"))
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

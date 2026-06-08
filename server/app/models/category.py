@@ -18,6 +18,7 @@ class Category(Base, TimestampMixin):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
+    icon: Mapped[str | None] = mapped_column(String(50), nullable=True)
     type: Mapped[str] = mapped_column(CategoryType, default="expense", server_default="expense")
     is_uncategorized: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0")
     is_archived: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0")

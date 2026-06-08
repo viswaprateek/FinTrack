@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
@@ -8,6 +9,7 @@ import { ContentLoader } from '../../components/ui/Spinner'
 import { useApiClient, budgetsApi, categoriesApi, transactionsApi } from '../../api'
 import type { TransactionSplitInput } from '../../api/endpoints/transactions'
 import { useCurrency } from '../../contexts/CurrencyContext'
+import { budgetForDate, clampDateToBudget, isDateInBudget } from '../../lib/budgets'
 import { formatShortDate } from '../../lib/utils'
 import { IconPlus, IconSearch, IconSplit } from '../../components/ui/icons'
 import type { ReimbursementStatus } from '../../types'
@@ -45,17 +47,34 @@ export function TransactionsPage() {
   const [formNotes, setFormNotes] = useState('')
   const [formReimbursable, setFormReimbursable] = useState<'pending' | 'received'>('pending')
   const [splitLines, setSplitLines] = useState<SplitLine[]>([{ categoryId: '', amount: '' }])
+  const [newCategoryOpen, setNewCategoryOpen] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState('')
 
   const budgetsQuery = useQuery({ queryKey: ['budgets'], queryFn: () => budgetsApi.list(client) })
   const budgets = budgetsQuery.data ?? []
   const activeFormBudgetId = formBudgetId || budgets[0]?.id || ''
+
+  const libraryQuery = useQuery({
+    queryKey: ['category-library'],
+    queryFn: () => categoriesApi.listAll(client),
+    enabled: addOpen,
+  })
+  const allCategories = libraryQuery.data ?? []
 
   const formCategoriesQuery = useQuery({
     queryKey: ['categories', activeFormBudgetId],
     queryFn: () => categoriesApi.listForBudget(client, activeFormBudgetId),
     enabled: addOpen && !!activeFormBudgetId,
   })
-  const formCategories = formCategoriesQuery.data ?? []
+  const envelopeIds = useMemo(
+    () => new Set((formCategoriesQuery.data ?? []).map((c) => c.id)),
+    [formCategoriesQuery.data],
+  )
+
+  const activeBudget = useMemo(
+    () => budgets.find((b) => b.id === activeFormBudgetId) ?? null,
+    [budgets, activeFormBudgetId],
+  )
 
   const transactionsQuery = useQuery({ queryKey: ['transactions'], queryFn: () => transactionsApi.list(client) })
   const transactions = transactionsQuery.data ?? []
@@ -92,12 +111,50 @@ export function TransactionsPage() {
     setReimbursableOn(false)
     setFormReimbursable('pending')
     setSplitLines([{ categoryId: '', amount: '' }])
+    setNewCategoryOpen(false)
+    setNewCategoryName('')
   }
 
   function openAdd() {
     resetForm()
+    const today = new Date().toISOString().substring(0, 10)
+    const match = budgetForDate(budgets, today) ?? budgets[0] ?? null
+    if (match) {
+      setFormBudgetId(match.id)
+      setFormDate(clampDateToBudget(today, match))
+    } else {
+      setFormDate(today)
+    }
     setAddOpen(true)
   }
+
+  function handleBudgetChange(budgetId: string) {
+    const budget = budgets.find((b) => b.id === budgetId)
+    setFormBudgetId(budgetId)
+    setFormCategoryId('')
+    if (budget && formDate) {
+      setFormDate(clampDateToBudget(formDate, budget))
+    }
+  }
+
+  useEffect(() => {
+    if (!formDate || budgets.length === 0 || !addOpen) return
+    const match = budgetForDate(budgets, formDate)
+    if (match && match.id !== activeFormBudgetId) {
+      setFormBudgetId(match.id)
+      setFormCategoryId('')
+    }
+  }, [formDate, budgets, activeFormBudgetId, addOpen])
+
+  const createCategory = useMutation({
+    mutationFn: (name: string) => categoriesApi.createLibrary(client, { name }),
+    onSuccess: (item) => {
+      queryClient.invalidateQueries({ queryKey: ['category-library'] })
+      setFormCategoryId(item.id)
+      setNewCategoryOpen(false)
+      setNewCategoryName('')
+    },
+  })
 
   const createTransaction = useMutation({
     mutationFn: () => {
@@ -122,6 +179,7 @@ export function TransactionsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
       queryClient.invalidateQueries({ queryKey: ['categories'] })
+      queryClient.invalidateQueries({ queryKey: ['category-library'] })
       queryClient.invalidateQueries({ queryKey: ['budgets'] })
       setAddOpen(false)
       resetForm()
@@ -136,8 +194,16 @@ export function TransactionsPage() {
     setSplitLines((lines) => lines.map((l, i) => (i === index ? { ...l, ...patch } : l)))
   }
 
+  const dateInBudget = activeBudget && formDate ? isDateInBudget(formDate, activeBudget) : false
+
   const canSubmit =
-    !!activeFormBudgetId && !!formDate && !!formAmount && !!formDescription && (!splitOn || splitLines.some((s) => s.categoryId && s.amount))
+    !!activeFormBudgetId &&
+    !!activeBudget &&
+    dateInBudget &&
+    !!formDate &&
+    !!formAmount &&
+    !!formDescription &&
+    (!splitOn || splitLines.some((s) => s.categoryId && s.amount))
 
   if (budgetsQuery.isLoading || transactionsQuery.isLoading) {
     return <ContentLoader label="Loading transactions…" />
@@ -257,19 +323,24 @@ export function TransactionsPage() {
             <CardContent className="space-y-4 pt-6">
               <h3 className="text-base font-semibold text-white">Add Transaction</h3>
 
-              {budgets.length > 1 && (
+              {budgets.length === 0 ? (
+                <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-amber-300">
+                  No budget for today.{' '}
+                  <Link to="/budgets" className="font-medium underline hover:text-amber-200">
+                    Create a monthly budget
+                  </Link>{' '}
+                  first.
+                </div>
+              ) : (
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-300">Budget</label>
+                  <label className="mb-1.5 block text-sm font-medium text-slate-300">Monthly budget</label>
                   <select
                     value={activeFormBudgetId}
-                    onChange={(e) => {
-                      setFormBudgetId(e.target.value)
-                      setFormCategoryId('')
-                    }}
+                    onChange={(e) => handleBudgetChange(e.target.value)}
                     className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
                   >
                     {budgets.map((b) => (
-                      <option key={b.id} value={b.id}>{b.name}</option>
+                      <option key={b.id} value={b.id}>{b.name} · {b.period}</option>
                     ))}
                   </select>
                 </div>
@@ -282,8 +353,19 @@ export function TransactionsPage() {
                     value={formDate}
                     onChange={(e) => setFormDate(e.target.value)}
                     type="date"
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                    min={activeBudget?.periodStart}
+                    max={activeBudget?.periodEnd}
+                    disabled={!activeBudget}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none disabled:opacity-50"
                   />
+                  {activeBudget && (
+                    <p className="mt-1 text-xs text-slate-500">
+                      Within {activeBudget.period}
+                    </p>
+                  )}
+                  {activeBudget && formDate && !dateInBudget && (
+                    <p className="mt-1 text-xs text-red-400">Date must fall inside this budget&apos;s period.</p>
+                  )}
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-slate-300">Amount (negative for expense)</label>
@@ -310,17 +392,55 @@ export function TransactionsPage() {
 
               {!splitOn && (
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-300">Category</label>
-                  <select
-                    value={formCategoryId}
-                    onChange={(e) => setFormCategoryId(e.target.value)}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
-                  >
-                    <option value="">Uncategorized</option>
-                    {formCategories.map((c) => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                  </select>
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <label className="text-sm font-medium text-slate-300">Category</label>
+                    <button
+                      type="button"
+                      onClick={() => setNewCategoryOpen((v) => !v)}
+                      className="text-xs font-medium text-emerald-400 hover:text-emerald-300"
+                    >
+                      + New category
+                    </button>
+                  </div>
+                  {newCategoryOpen ? (
+                    <div className="flex gap-2">
+                      <input
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        placeholder="Category name"
+                        className="flex-1 rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                      />
+                      <Button
+                        size="sm"
+                        onClick={() => createCategory.mutate(newCategoryName.trim())}
+                        disabled={!newCategoryName.trim() || createCategory.isPending}
+                      >
+                        Add
+                      </Button>
+                    </div>
+                  ) : (
+                    <select
+                      value={formCategoryId}
+                      onChange={(e) => setFormCategoryId(e.target.value)}
+                      className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                    >
+                      <option value="">Uncategorized</option>
+                      {allCategories.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                          {!envelopeIds.has(c.id) ? ' (adds envelope)' : ''}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  {allCategories.length === 0 && !libraryQuery.isLoading && (
+                    <p className="mt-2 text-xs text-slate-500">
+                      No categories yet.{' '}
+                      <Link to="/categories" className="text-emerald-400 hover:text-emerald-300">
+                        Browse suggestions
+                      </Link>
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -343,8 +463,11 @@ export function TransactionsPage() {
                         className="flex-1 rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-2 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
                       >
                         <option value="">Select category</option>
-                        {formCategories.map((c) => (
-                          <option key={c.id} value={c.id}>{c.name}</option>
+                        {allCategories.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.name}
+                            {!envelopeIds.has(c.id) ? ' (adds envelope)' : ''}
+                          </option>
                         ))}
                       </select>
                       <input

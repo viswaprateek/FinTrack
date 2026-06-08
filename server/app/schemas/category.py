@@ -6,11 +6,23 @@ from pydantic import BaseModel
 RolloverType = Literal["reset", "rollover", "capped"]
 
 
+class CategoryLibraryCreate(BaseModel):
+    name: str
+    icon: str | None = None
+
+
+class CategoryLibraryItem(BaseModel):
+    id: str
+    name: str
+    icon: str | None = None
+
+
 class CategoryCreate(BaseModel):
     name: str
     planned_amount: Decimal = Decimal("0.00")
     rollover_type: RolloverType = "reset"
     rollover_cap: Decimal | None = None
+    icon: str | None = None
 
 
 class CategoryUpdate(BaseModel):

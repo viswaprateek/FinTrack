@@ -6,6 +6,7 @@ export interface BudgetCreateInput {
   period_start: string
   period_end: string
   currency?: string
+  copy_from_budget_id?: string | null
 }
 
 export interface BudgetUpdateInput {

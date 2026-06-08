@@ -81,19 +81,27 @@ function buildSpendingTrend(
     }))
 }
 
-function buildCategoryPie(categories: Category[], spentTotal: number) {
-  return categories
-    .filter((c) => toNum(c.spent) > 0)
-    .sort((a, b) => toNum(b.spent) - toNum(a.spent))
-    .slice(0, 8)
-    .map((c) => {
-      const spent = toNum(c.spent)
-      return {
-        name: c.name,
-        value: Math.round(spent * 100) / 100,
-        pct: spentTotal > 0 ? Math.round((spent / spentTotal) * 100) : 0,
-      }
+/** Group all budget transactions by category — includes uncategorized and categories without envelopes. */
+function buildCategoryPieFromTransactions(transactions: Transaction[]) {
+  const byCategory = new Map<string, number>()
+  transactions
+    .filter((t) => toNum(t.amount) < 0)
+    .forEach((t) => {
+      const name = t.category?.trim() || 'Uncategorized'
+      byCategory.set(name, (byCategory.get(name) || 0) + Math.abs(toNum(t.amount)))
     })
+
+  const spentTotal = [...byCategory.values()].reduce((sum, v) => sum + v, 0)
+  const slices = [...byCategory.entries()]
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 8)
+    .map(([name, value]) => ({
+      name,
+      value: Math.round(value * 100) / 100,
+      pct: spentTotal > 0 ? Math.round((value / spentTotal) * 100) : 0,
+    }))
+
+  return { slices, spentTotal }
 }
 
 function buildBudgetVsActual(categories: Category[]) {
@@ -301,7 +309,8 @@ export function DashboardPage() {
   const upcomingBills = upcomingBillsQuery.data ?? []
 
   const plannedTotal  = categories.reduce((sum, c) => sum + toNum(c.planned), 0)
-  const spentTotal    = categories.reduce((sum, c) => sum + toNum(c.spent), 0)
+  const categoryPieData = buildCategoryPieFromTransactions(transactions)
+  const spentTotal    = categoryPieData.spentTotal
   const remaining     = plannedTotal - spentTotal
   const overspentCategories = categories.filter((c) => toNum(c.spent) > toNum(c.planned))
   const savingsRate   = plannedTotal > 0 ? Math.max(0, Math.round(((plannedTotal - spentTotal) / plannedTotal) * 100)) : 0
@@ -316,7 +325,7 @@ export function DashboardPage() {
     currentBudget?.periodStart ?? '',
     currentBudget?.periodEnd ?? '',
   )
-  const categoryPie    = buildCategoryPie(categories, spentTotal)
+  const categoryPie    = categoryPieData.slices
   const budgetVsActual = buildBudgetVsActual(categories)
   const hc             = healthStyles[health.color]
 

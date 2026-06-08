@@ -19,6 +19,12 @@ export interface Category {
   rolloverCap?: number
 }
 
+export interface CategoryLibraryItem {
+  id: string
+  name: string
+  icon?: string | null
+}
+
 export type ReimbursementStatus = 'none' | 'pending' | 'received'
 
 export interface Transaction {

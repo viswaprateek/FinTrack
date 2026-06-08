@@ -1,3 +1,4 @@
+import datetime as dt
 from decimal import Decimal
 
 from sqlalchemy import select
@@ -7,7 +8,7 @@ from app.core.constants import UNCATEGORIZED
 from app.core.exceptions import BadRequestError, NotFoundError
 from app.core.utils import parse_id
 from app.models.audit_log import AuditLog
-from app.models.budget import Budget
+from app.models.budget import Budget as BudgetModel
 from app.models.category import Category
 from app.models.transaction import Transaction, TransactionSplit
 from app.models.user import User
@@ -21,6 +22,13 @@ class TransactionService:
         self.db = db
         self.budgets = BudgetService(db)
         self.categories = CategoryService(db)
+
+    def _assert_date_in_budget(self, budget: BudgetModel, tx_date: dt.date) -> None:
+        if tx_date < budget.period_start or tx_date > budget.period_end:
+            raise BadRequestError(
+                f"Transaction date must be within the budget period "
+                f"({budget.period_start.isoformat()} to {budget.period_end.isoformat()})"
+            )
 
     def _signed_amount(self, transaction: Transaction) -> Decimal:
         return -transaction.amount if transaction.type == "expense" else transaction.amount
@@ -61,8 +69,8 @@ class TransactionService:
     ) -> list[TransactionResponse]:
         stmt = (
             select(Transaction)
-            .join(Budget, Transaction.budget_id == Budget.id)
-            .where(Budget.user_id == user.id)
+            .join(BudgetModel, Transaction.budget_id == BudgetModel.id)
+            .where(BudgetModel.user_id == user.id)
             .options(selectinload(Transaction.category), selectinload(Transaction.splits))
             .order_by(Transaction.date.desc(), Transaction.id.desc())
         )
@@ -82,6 +90,7 @@ class TransactionService:
 
     def create_transaction(self, user: User, payload: TransactionCreate) -> TransactionResponse:
         budget = self.budgets.get_owned_budget(user, payload.budget_id)
+        self._assert_date_in_budget(budget, payload.date)
         category = (
             self.categories.get_owned_category(user, payload.category_id)
             if payload.category_id
@@ -91,6 +100,12 @@ class TransactionService:
         splits = payload.splits or []
         if splits and sum(s.amount for s in splits) != payload.amount:
             raise BadRequestError("Split amounts must sum to the transaction amount")
+
+        if payload.category_id:
+            self.categories.ensure_envelope_plan(user, payload.budget_id, payload.category_id)
+        for split in splits:
+            if split.category_id:
+                self.categories.ensure_envelope_plan(user, payload.budget_id, split.category_id)
 
         transaction = Transaction(
             budget_id=budget.id,
@@ -154,6 +169,12 @@ class TransactionService:
 
         for field, value in data.items():
             setattr(transaction, field, value)
+
+        self._assert_date_in_budget(transaction.budget, transaction.date)
+        if transaction.category_id:
+            self.categories.ensure_envelope_plan(
+                user, str(transaction.budget_id), str(transaction.category_id)
+            )
 
         self.db.commit()
         return self._to_response(self._get_owned_transaction(user, transaction_id))

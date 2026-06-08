@@ -61,8 +61,18 @@ class BudgetService:
         return self._to_response(budget)
 
     def create_budget(self, user: User, payload: BudgetCreate) -> BudgetResponse:
-        budget = Budget(user_id=user.id, **payload.model_dump())
+        data = payload.model_dump(exclude={"copy_from_budget_id"})
+        budget = Budget(user_id=user.id, **data)
         self.db.add(budget)
+        self.db.flush()
+
+        if payload.copy_from_budget_id:
+            from app.services.category_service import CategoryService
+
+            CategoryService(self.db).copy_envelopes_to_budget(
+                user, payload.copy_from_budget_id, budget.id
+            )
+
         self.db.commit()
         self.db.refresh(budget)
         return self._to_response(budget)

@@ -1,11 +1,17 @@
 import type { AxiosInstance } from 'axios'
-import type { Category, RolloverType } from '../../types'
+import type { Category, CategoryLibraryItem, RolloverType } from '../../types'
+
+export interface CategoryLibraryCreateInput {
+  name: string
+  icon?: string | null
+}
 
 export interface CategoryCreateInput {
   name: string
   planned_amount?: number
   rollover_type?: RolloverType
   rollover_cap?: number | null
+  icon?: string | null
 }
 
 export interface CategoryUpdateInput {
@@ -23,6 +29,10 @@ export interface MoveFundsInput {
 }
 
 export const categoriesApi = {
+  listAll: (client: AxiosInstance) =>
+    client.get<CategoryLibraryItem[]>('/api/categories').then((res) => res.data),
+  createLibrary: (client: AxiosInstance, payload: CategoryLibraryCreateInput) =>
+    client.post<CategoryLibraryItem>('/api/categories', payload).then((res) => res.data),
   listForBudget: (client: AxiosInstance, budgetId: string) =>
     client.get<Category[]>(`/api/budgets/${budgetId}/categories`).then((res) => res.data),
   create: (client: AxiosInstance, budgetId: string, payload: CategoryCreateInput) =>
