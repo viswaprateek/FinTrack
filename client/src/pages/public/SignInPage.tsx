@@ -1,4 +1,5 @@
 import { SignIn } from '@clerk/clerk-react'
+import { POST_AUTH_LANDING_PATH } from '../../components/auth/ClerkAuthSetup'
 
 export function SignInPage() {
   return (
@@ -7,7 +8,7 @@ export function SignInPage() {
         routing="path"
         path="/sign-in"
         signUpUrl="/sign-up"
-        forceRedirectUrl="/dashboard"
+        forceRedirectUrl={POST_AUTH_LANDING_PATH}
         appearance={{
           elements: {
             rootBox: 'mx-auto',

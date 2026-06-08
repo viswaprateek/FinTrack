@@ -9,7 +9,7 @@ import './index.css'
 import { router } from './app/router'
 import { store } from './app/store'
 import { ThemeProvider } from './contexts/ThemeContext'
-import { ClerkAuthSetup } from './components/auth/ClerkAuthSetup'
+import { ClerkAuthSetup, POST_AUTH_LANDING_PATH } from './components/auth/ClerkAuthSetup'
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
@@ -27,10 +27,10 @@ createRoot(document.getElementById('root')!).render(
         publishableKey={PUBLISHABLE_KEY}
         signInUrl={import.meta.env.VITE_CLERK_SIGN_IN_URL ?? '/sign-in'}
         signUpUrl={import.meta.env.VITE_CLERK_SIGN_UP_URL ?? '/sign-up'}
-        signInForceRedirectUrl={import.meta.env.VITE_CLERK_SIGN_IN_FORCE_REDIRECT_URL ?? '/dashboard'}
-        signUpForceRedirectUrl={import.meta.env.VITE_CLERK_SIGN_UP_FORCE_REDIRECT_URL ?? '/dashboard'}
-        signInFallbackRedirectUrl={import.meta.env.VITE_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL ?? '/dashboard'}
-        signUpFallbackRedirectUrl={import.meta.env.VITE_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL ?? '/dashboard'}
+        signInForceRedirectUrl={import.meta.env.VITE_CLERK_SIGN_IN_FORCE_REDIRECT_URL ?? POST_AUTH_LANDING_PATH}
+        signUpForceRedirectUrl={import.meta.env.VITE_CLERK_SIGN_UP_FORCE_REDIRECT_URL ?? POST_AUTH_LANDING_PATH}
+        signInFallbackRedirectUrl={import.meta.env.VITE_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL ?? POST_AUTH_LANDING_PATH}
+        signUpFallbackRedirectUrl={import.meta.env.VITE_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL ?? POST_AUTH_LANDING_PATH}
         allowedRedirectOrigins={clerkRedirectOrigins}
       >
         <ClerkAuthSetup />
