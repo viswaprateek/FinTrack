@@ -10,6 +10,7 @@ import {
   IconBarChart,
   IconSettings,
   IconTags,
+  IconTarget,
 } from '../ui/icons'
 
 const navItems = [
@@ -17,6 +18,7 @@ const navItems = [
   { to: '/budgets', label: 'Budgets', icon: IconWallet },
   { to: '/categories', label: 'Categories', icon: IconTags },
   { to: '/transactions', label: 'Transactions', icon: IconReceipt },
+  { to: '/goals', label: 'Goals', icon: IconTarget },
   { to: '/recurring', label: 'Recurring Bills', icon: IconRepeat },
   { to: '/reports', label: 'Reports', icon: IconBarChart },
   { to: '/settings', label: 'Settings', icon: IconSettings },

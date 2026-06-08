@@ -16,6 +16,7 @@ import { TransactionsPage } from '../pages/app/TransactionsPage'
 import { RecurringPage } from '../pages/app/RecurringPage'
 import { ReportsPage } from '../pages/app/ReportsPage'
 import { SettingsPage } from '../pages/app/SettingsPage'
+import { GoalsPage } from '../pages/app/GoalsPage'
 
 export const router = createBrowserRouter([
   {
@@ -40,6 +41,7 @@ export const router = createBrowserRouter([
           { path: '/transactions', element: <TransactionsPage /> },
           { path: '/recurring', element: <RecurringPage /> },
           { path: '/reports', element: <ReportsPage /> },
+          { path: '/goals', element: <GoalsPage /> },
           { path: '/settings', element: <SettingsPage /> },
         ],
       },

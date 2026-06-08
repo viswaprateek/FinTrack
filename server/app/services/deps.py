@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.services.budget_service import BudgetService
 from app.services.category_service import CategoryService
+from app.services.goal_service import GoalService
 from app.services.income_source_service import IncomeSourceService
 from app.services.recurring_service import RecurringService
 from app.services.transaction_service import TransactionService
@@ -28,6 +29,10 @@ def get_transaction_service(db: Session = Depends(get_db)) -> TransactionService
 
 def get_recurring_service(db: Session = Depends(get_db)) -> RecurringService:
     return RecurringService(db)
+
+
+def get_goal_service(db: Session = Depends(get_db)) -> GoalService:
+    return GoalService(db)
 
 
 def get_user_service(db: Session = Depends(get_db)) -> UserService:

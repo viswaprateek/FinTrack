@@ -45,6 +45,14 @@ export const IconRepeat = (props: IconProps) => (
   </svg>
 )
 
+export const IconTarget = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <circle cx="12" cy="12" r="9" />
+    <circle cx="12" cy="12" r="5" />
+    <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
+  </svg>
+)
+
 export const IconBarChart = (props: IconProps) => (
   <svg {...base} {...props}>
     <path d="M3 3v18h18" />

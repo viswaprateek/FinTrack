@@ -17,7 +17,7 @@ const items = [
   { to: '/categories', label: 'Categories', icon: IconTags },
 ]
 
-const moreRoutes = ['/reports', '/recurring', '/settings']
+const moreRoutes = ['/goals', '/reports', '/recurring', '/settings']
 
 export function MobileNav() {
   const [moreOpen, setMoreOpen] = useState(false)

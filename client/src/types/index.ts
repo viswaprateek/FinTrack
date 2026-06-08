@@ -71,3 +71,25 @@ export interface IncomeSource {
   schedule: IncomeSchedule
   notes?: string | null
 }
+
+export interface Goal {
+  id: string
+  name: string
+  icon?: string | null
+  targetAmount: number
+  currentAmount: number
+  targetDate?: string | null
+  notes?: string | null
+  percentComplete: number
+  remainingAmount: number
+  isComplete: boolean
+  isArchived: boolean
+}
+
+export interface GoalContribution {
+  id: string
+  goalId: string
+  amount: number
+  note?: string | null
+  contributedAt: string
+}
