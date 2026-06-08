@@ -110,7 +110,7 @@ export function Hero() {
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           >
             <motion.span
-              className="inline-flex items-center gap-2 rounded-full border border-slate-700/80 bg-slate-900/60 px-4 py-1.5 text-sm text-slate-300 backdrop-blur-sm"
+              className="inline-flex items-center gap-2 rounded-full border border-border-muted/80 bg-surface px-4 py-1.5 text-sm text-subtle backdrop-blur-sm"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
@@ -119,13 +119,13 @@ export function Hero() {
               Personal Finance • Envelope Budgeting
             </motion.span>
 
-            <h1 className="mt-6 text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+            <h1 className="mt-6 text-4xl font-bold tracking-tight text-heading sm:text-5xl lg:text-6xl">
               Budget smarter,
               <br />
               <GlitchText words={accentWords} />
             </h1>
 
-            <p className="mx-auto mt-6 max-w-xl text-lg text-slate-400 lg:mx-0">
+            <p className="mx-auto mt-6 max-w-xl text-lg text-muted-fg lg:mx-0">
               FinTrack helps you plan budgets, track spending, manage recurring bills, and forecast your
               cashflow — all in one clean, modern workspace.
             </p>
@@ -174,7 +174,7 @@ export function Hero() {
             >
               <Card className="p-6 text-center">
                 <p className={`text-3xl font-bold ${s.tone}`}>{s.value}</p>
-                <p className="mt-2 text-sm text-slate-400">{s.label}</p>
+                <p className="mt-2 text-sm text-muted-fg">{s.label}</p>
               </Card>
             </motion.div>
           ))}

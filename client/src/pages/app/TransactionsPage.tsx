@@ -362,8 +362,8 @@ export function TransactionsPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="text-lg font-semibold text-white sm:text-xl">Transactions</h2>
-          <p className="mt-1 text-sm text-slate-500">Expenses and income for the selected month.</p>
+          <h2 className="text-lg font-semibold text-heading sm:text-xl">Transactions</h2>
+          <p className="mt-1 text-sm text-muted">Expenses and income for the selected month.</p>
         </div>
         <Button onClick={openAdd} size="sm" className="shrink-0">
           <IconPlus className="h-4 w-4" />
@@ -377,13 +377,13 @@ export function TransactionsPage() {
         <div className="space-y-3">
           <div className="flex gap-2">
             <div className="relative min-w-0 flex-1">
-              <IconSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+              <IconSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 type="text"
                 placeholder="Search by description"
-                className="w-full rounded-xl border border-slate-700 bg-slate-800 py-2.5 pl-10 pr-3 text-sm text-slate-200 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none"
+                className="w-full rounded-xl border border-border-muted bg-input py-2.5 pl-10 pr-3 text-sm text-foreground placeholder:text-muted focus:border-emerald-400 focus:outline-none"
               />
             </div>
             {isMobile && (
@@ -401,7 +401,7 @@ export function TransactionsPage() {
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none sm:w-auto"
+              className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none sm:w-auto"
             >
               {categoryOptions.map((c) => (
                 <option key={c}>{c}</option>
@@ -410,7 +410,7 @@ export function TransactionsPage() {
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value as typeof typeFilter)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none sm:w-auto"
+              className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none sm:w-auto"
             >
               <option>All types</option>
               <option>Income</option>
@@ -419,7 +419,7 @@ export function TransactionsPage() {
             <select
               value={reimbursableFilter}
               onChange={(e) => setReimbursableFilter(e.target.value as typeof reimbursableFilter)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none sm:w-auto"
+              className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none sm:w-auto"
             >
               <option>Reimbursable: any</option>
               <option>Pending</option>
@@ -479,7 +479,7 @@ export function TransactionsPage() {
           <CardContent className="p-0">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-800 text-left text-xs uppercase tracking-wide text-slate-500">
+                <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted">
                   <th className="px-6 py-3 font-medium">Date</th>
                   <th className="px-6 py-3 font-medium">Budget</th>
                   <th className="px-6 py-3 font-medium">Description</th>
@@ -495,33 +495,33 @@ export function TransactionsPage() {
                   const txBudget = budgetForDate(budgets, t.date)
                   const mismatched = isMismatchedTransaction(t, budgets)
                   return (
-                  <tr key={t.id} className="border-b border-slate-800/60 last:border-0">
-                    <td className="px-6 py-3.5 text-slate-400">{formatShortDate(t.date)}</td>
-                    <td className={`px-6 py-3.5 text-xs ${mismatched ? 'text-amber-400' : 'text-slate-500'}`}>
+                  <tr key={t.id} className="border-b border-border/60 last:border-0">
+                    <td className="px-6 py-3.5 text-muted-fg">{formatShortDate(t.date)}</td>
+                    <td className={`px-6 py-3.5 text-xs ${mismatched ? 'text-amber-400' : 'text-muted'}`}>
                       {txBudget?.period ?? '—'}
                       {mismatched && <span className="ml-1" title="Date falls outside this budget period">⚠</span>}
                     </td>
                     <td className="px-6 py-3.5">
-                      <div className="flex items-center gap-2 font-medium text-slate-200">
+                      <div className="flex items-center gap-2 font-medium text-foreground">
                         {t.description}
                         {t.isSplit && <IconSplit className="h-3.5 w-3.5 text-sky-400" />}
                       </div>
-                      {t.notes && <p className="mt-0.5 text-xs text-slate-500">{t.notes}</p>}
+                      {t.notes && <p className="mt-0.5 text-xs text-muted">{t.notes}</p>}
                     </td>
                     <td className="px-6 py-3.5">
                       <Badge>{t.category}</Badge>
                     </td>
-                    <td className="px-6 py-3.5 text-slate-400">{t.account}</td>
+                    <td className="px-6 py-3.5 text-muted-fg">{t.account}</td>
                     <td className="px-6 py-3.5">
                       {t.reimbursable !== 'none' ? (
                         <Badge tone={reimbursementTone[t.reimbursable]}>
                           {t.reimbursable === 'pending' ? 'Pending' : 'Received'}
                         </Badge>
                       ) : (
-                        <span className="text-slate-600">—</span>
+                        <span className="text-muted">—</span>
                       )}
                     </td>
-                    <td className={`px-6 py-3.5 text-right font-semibold ${t.amount >= 0 ? 'text-emerald-400' : 'text-slate-200'}`}>
+                    <td className={`px-6 py-3.5 text-right font-semibold ${t.amount >= 0 ? 'text-emerald-400' : 'text-foreground'}`}>
                       {t.amount >= 0 ? '+' : ''}
                       {formatCurrency(t.amount)}
                     </td>
@@ -561,9 +561,9 @@ export function TransactionsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" onClick={() => setDeleteTarget(null)}>
           <Card className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
             <CardContent className="space-y-4 pt-6">
-              <h3 className="text-base font-semibold text-white">Delete transaction?</h3>
-              <p className="text-sm text-slate-400">
-                Remove <span className="font-medium text-slate-200">{deleteTarget.description}</span>
+              <h3 className="text-base font-semibold text-heading">Delete transaction?</h3>
+              <p className="text-sm text-muted-fg">
+                Remove <span className="font-medium text-foreground">{deleteTarget.description}</span>
                 {' '}({formatShortDate(deleteTarget.date)}) — this cannot be undone.
               </p>
               <div className="flex items-center justify-end gap-2 pt-1">
@@ -584,7 +584,7 @@ export function TransactionsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" onClick={closeEdit}>
           <Card className="w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
             <CardContent className="space-y-4 pt-6">
-              <h3 className="text-base font-semibold text-white">Edit Transaction</h3>
+              <h3 className="text-base font-semibold text-heading">Edit Transaction</h3>
 
               {editTarget.isSplit && (
                 <p className="rounded-xl border border-sky-500/30 bg-sky-500/5 px-4 py-3 text-sm text-sky-200">
@@ -593,11 +593,11 @@ export function TransactionsPage() {
               )}
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">Monthly budget</label>
+                <label className="mb-1.5 block text-sm font-medium text-subtle">Monthly budget</label>
                 <select
                   value={activeEditBudgetId}
                   onChange={(e) => handleEditBudgetChange(e.target.value)}
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                 >
                   {budgets.map((b) => (
                     <option key={b.id} value={b.id}>{b.name} · {b.period}</option>
@@ -607,47 +607,47 @@ export function TransactionsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-300">Date</label>
+                  <label className="mb-1.5 block text-sm font-medium text-subtle">Date</label>
                   <input
                     value={editDate}
                     onChange={(e) => setEditDate(e.target.value)}
                     type="date"
                     min={editBudget?.periodStart}
                     max={editBudget?.periodEnd}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                   />
                   {editBudget && editDate && !editDateInBudget && (
                     <p className="mt-1 text-xs text-red-400">Date must fall inside this budget&apos;s period.</p>
                   )}
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-300">Amount (negative for expense)</label>
+                  <label className="mb-1.5 block text-sm font-medium text-subtle">Amount (negative for expense)</label>
                   <input
                     value={editAmount}
                     onChange={(e) => setEditAmount(e.target.value)}
                     type="number"
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">Description</label>
+                <label className="mb-1.5 block text-sm font-medium text-subtle">Description</label>
                 <input
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
                   type="text"
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                 />
               </div>
 
               {!editTarget.isSplit && (
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-300">Category</label>
+                  <label className="mb-1.5 block text-sm font-medium text-subtle">Category</label>
                   <select
                     value={editCategoryId}
                     onChange={(e) => setEditCategoryId(e.target.value)}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                   >
                     <option value="">Uncategorized</option>
                     {allCategories.map((c) => (
@@ -660,12 +660,12 @@ export function TransactionsPage() {
                 </div>
               )}
 
-              <div className="flex items-center justify-between rounded-xl bg-slate-800/40 px-4 py-3">
-                <span className="text-sm font-medium text-slate-300">Reimbursable</span>
+              <div className="flex items-center justify-between rounded-xl bg-input/40 px-4 py-3">
+                <span className="text-sm font-medium text-subtle">Reimbursable</span>
                 <button
                   type="button"
                   onClick={() => setEditReimbursableOn((v) => !v)}
-                  className={`relative h-6 w-11 rounded-full transition-colors ${editReimbursableOn ? 'bg-emerald-500' : 'bg-slate-700'}`}
+                  className={`relative h-6 w-11 rounded-full transition-colors ${editReimbursableOn ? 'bg-emerald-500' : 'bg-border-muted'}`}
                 >
                   <span className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-transform ${editReimbursableOn ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
@@ -674,7 +674,7 @@ export function TransactionsPage() {
                 <select
                   value={editReimbursable}
                   onChange={(e) => setEditReimbursable(e.target.value as 'pending' | 'received')}
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                 >
                   <option value="pending">Pending</option>
                   <option value="received">Received</option>
@@ -682,12 +682,12 @@ export function TransactionsPage() {
               )}
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">Notes</label>
+                <label className="mb-1.5 block text-sm font-medium text-subtle">Notes</label>
                 <textarea
                   value={editNotes}
                   onChange={(e) => setEditNotes(e.target.value)}
                   rows={2}
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                 />
               </div>
 
@@ -711,7 +711,7 @@ export function TransactionsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" onClick={() => setAddOpen(false)}>
           <Card className="w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
             <CardContent className="space-y-4 pt-6">
-              <h3 className="text-base font-semibold text-white">Add Transaction</h3>
+              <h3 className="text-base font-semibold text-heading">Add Transaction</h3>
 
               {budgets.length === 0 ? (
                 <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-amber-300">
@@ -723,11 +723,11 @@ export function TransactionsPage() {
                 </div>
               ) : (
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-300">Monthly budget</label>
+                  <label className="mb-1.5 block text-sm font-medium text-subtle">Monthly budget</label>
                   <select
                     value={activeFormBudgetId}
                     onChange={(e) => handleBudgetChange(e.target.value)}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                   >
                     {budgets.map((b) => (
                       <option key={b.id} value={b.id}>{b.name} · {b.period}</option>
@@ -738,7 +738,7 @@ export function TransactionsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-300">Date</label>
+                  <label className="mb-1.5 block text-sm font-medium text-subtle">Date</label>
                   <input
                     value={formDate}
                     onChange={(e) => setFormDate(e.target.value)}
@@ -746,10 +746,10 @@ export function TransactionsPage() {
                     min={activeBudget?.periodStart}
                     max={activeBudget?.periodEnd}
                     disabled={!activeBudget}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none disabled:opacity-50"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none disabled:opacity-50"
                   />
                   {activeBudget && (
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-muted">
                       Within {activeBudget.period}
                     </p>
                   )}
@@ -758,32 +758,32 @@ export function TransactionsPage() {
                   )}
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-300">Amount (negative for expense)</label>
+                  <label className="mb-1.5 block text-sm font-medium text-subtle">Amount (negative for expense)</label>
                   <input
                     value={formAmount}
                     onChange={(e) => setFormAmount(e.target.value)}
                     type="number"
                     placeholder="-0.00"
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-emerald-400 focus:outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">Description</label>
+                <label className="mb-1.5 block text-sm font-medium text-subtle">Description</label>
                 <input
                   value={formDescription}
                   onChange={(e) => setFormDescription(e.target.value)}
                   type="text"
                   placeholder="e.g. Whole Foods Market"
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-emerald-400 focus:outline-none"
                 />
               </div>
 
               {!splitOn && (
                 <div>
                   <div className="mb-1.5 flex items-center justify-between">
-                    <label className="text-sm font-medium text-slate-300">Category</label>
+                    <label className="text-sm font-medium text-subtle">Category</label>
                     <button
                       type="button"
                       onClick={() => setNewCategoryOpen((v) => !v)}
@@ -798,7 +798,7 @@ export function TransactionsPage() {
                         value={newCategoryName}
                         onChange={(e) => setNewCategoryName(e.target.value)}
                         placeholder="Category name"
-                        className="flex-1 rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                        className="flex-1 rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                       />
                       <Button
                         size="sm"
@@ -812,7 +812,7 @@ export function TransactionsPage() {
                     <select
                       value={formCategoryId}
                       onChange={(e) => setFormCategoryId(e.target.value)}
-                      className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                      className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                     >
                       <option value="">Uncategorized</option>
                       {allCategories.map((c) => (
@@ -824,7 +824,7 @@ export function TransactionsPage() {
                     </select>
                   )}
                   {allCategories.length === 0 && !libraryQuery.isLoading && (
-                    <p className="mt-2 text-xs text-slate-500">
+                    <p className="mt-2 text-xs text-muted">
                       No categories yet.{' '}
                       <Link to="/categories" className="text-emerald-400 hover:text-emerald-300">
                         Browse suggestions
@@ -834,23 +834,23 @@ export function TransactionsPage() {
                 </div>
               )}
 
-              <div className="flex items-center justify-between rounded-xl bg-slate-800/40 px-4 py-3">
-                <span className="text-sm font-medium text-slate-300">Split transaction</span>
+              <div className="flex items-center justify-between rounded-xl bg-input/40 px-4 py-3">
+                <span className="text-sm font-medium text-subtle">Split transaction</span>
                 <button
                   onClick={() => setSplitOn((v) => !v)}
-                  className={`relative h-6 w-11 rounded-full transition-colors ${splitOn ? 'bg-emerald-500' : 'bg-slate-700'}`}
+                  className={`relative h-6 w-11 rounded-full transition-colors ${splitOn ? 'bg-emerald-500' : 'bg-border-muted'}`}
                 >
                   <span className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-transform ${splitOn ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
               </div>
               {splitOn && (
-                <div className="space-y-2 rounded-xl border border-slate-800 p-3">
+                <div className="space-y-2 rounded-xl border border-border p-3">
                   {splitLines.map((line, i) => (
                     <div key={i} className="flex gap-2">
                       <select
                         value={line.categoryId}
                         onChange={(e) => updateSplitLine(i, { categoryId: e.target.value })}
-                        className="flex-1 rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-2 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                        className="flex-1 rounded-lg border border-border-muted bg-input px-2.5 py-2 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                       >
                         <option value="">Select category</option>
                         {allCategories.map((c) => (
@@ -865,7 +865,7 @@ export function TransactionsPage() {
                         onChange={(e) => updateSplitLine(i, { amount: e.target.value })}
                         type="number"
                         placeholder="Amount"
-                        className="w-28 rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none"
+                        className="w-28 rounded-lg border border-border-muted bg-input px-2.5 py-2 text-sm text-foreground placeholder:text-muted focus:border-emerald-400 focus:outline-none"
                       />
                     </div>
                   ))}
@@ -873,11 +873,11 @@ export function TransactionsPage() {
                 </div>
               )}
 
-              <div className="flex items-center justify-between rounded-xl bg-slate-800/40 px-4 py-3">
-                <span className="text-sm font-medium text-slate-300">Reimbursable</span>
+              <div className="flex items-center justify-between rounded-xl bg-input/40 px-4 py-3">
+                <span className="text-sm font-medium text-subtle">Reimbursable</span>
                 <button
                   onClick={() => setReimbursableOn((v) => !v)}
-                  className={`relative h-6 w-11 rounded-full transition-colors ${reimbursableOn ? 'bg-emerald-500' : 'bg-slate-700'}`}
+                  className={`relative h-6 w-11 rounded-full transition-colors ${reimbursableOn ? 'bg-emerald-500' : 'bg-border-muted'}`}
                 >
                   <span className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-transform ${reimbursableOn ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
@@ -886,7 +886,7 @@ export function TransactionsPage() {
                 <select
                   value={formReimbursable}
                   onChange={(e) => setFormReimbursable(e.target.value as 'pending' | 'received')}
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                 >
                   <option value="pending">Pending</option>
                   <option value="received">Received</option>
@@ -894,13 +894,13 @@ export function TransactionsPage() {
               )}
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">Notes</label>
+                <label className="mb-1.5 block text-sm font-medium text-subtle">Notes</label>
                 <textarea
                   value={formNotes}
                   onChange={(e) => setFormNotes(e.target.value)}
                   rows={2}
                   placeholder="Optional notes"
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-emerald-400 focus:outline-none"
                 />
               </div>
 

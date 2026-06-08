@@ -24,13 +24,13 @@ export function MobileMoreSheet({ open, onClose }: MobileMoreSheetProps) {
         aria-label="Close menu"
         onClick={onClose}
       />
-      <div className="absolute inset-x-0 bottom-0 rounded-t-3xl border-t border-slate-700 bg-slate-900 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 shadow-2xl">
+      <div className="absolute inset-x-0 bottom-0 rounded-t-3xl border-t border-border-muted bg-surface-solid px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 shadow-2xl">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-base font-semibold text-white">More</h2>
+          <h2 className="text-base font-semibold text-heading">More</h2>
           <button
             type="button"
             onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white"
+            className="flex h-9 w-9 items-center justify-center rounded-xl text-muted-fg hover:bg-input hover:text-heading"
             aria-label="Close"
           >
             <IconX className="h-5 w-5" />
@@ -45,16 +45,16 @@ export function MobileMoreSheet({ open, onClose }: MobileMoreSheetProps) {
               className={({ isActive }) =>
                 cn(
                   'flex items-center gap-4 rounded-2xl px-4 py-3.5 transition-colors',
-                  isActive ? 'bg-emerald-500/10 text-emerald-400' : 'text-slate-200 hover:bg-slate-800/80',
+                  isActive ? 'bg-emerald-500/10 text-emerald-400' : 'text-foreground hover:bg-input/80',
                 )
               }
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800 text-slate-300">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-input text-subtle">
                 <Icon className="h-5 w-5" />
               </div>
               <div>
                 <p className="text-sm font-medium">{label}</p>
-                <p className="text-xs text-slate-500">{description}</p>
+                <p className="text-xs text-muted">{description}</p>
               </div>
             </NavLink>
           ))}

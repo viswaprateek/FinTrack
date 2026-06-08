@@ -11,7 +11,7 @@ export function SignUpPage() {
         appearance={{
           elements: {
             rootBox: 'mx-auto',
-            card: 'bg-slate-900 border border-slate-800 shadow-xl shadow-black/30',
+            card: 'bg-surface-solid border border-border shadow-xl shadow-black/30',
           },
         }}
       />

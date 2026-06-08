@@ -137,7 +137,7 @@ function getSpendingVelocity(transactions: Transaction[], plannedTotal: number) 
 
 // ─── Custom Tooltips ──────────────────────────────────────────────────────────
 
-const tooltipBox = 'rounded-xl border border-slate-700 bg-slate-800/95 px-3 py-2.5 shadow-xl backdrop-blur'
+const tooltipBox = 'rounded-xl border border-border-muted bg-input/95 px-3 py-2.5 shadow-xl backdrop-blur'
 
 function SpendingTooltip({ active, payload, label, formatCurrency }: {
   active?: boolean; payload?: Array<{ value: number }>; label?: string; formatCurrency: (v: number) => string
@@ -145,7 +145,7 @@ function SpendingTooltip({ active, payload, label, formatCurrency }: {
   if (!active || !payload?.length) return null
   return (
     <div className={tooltipBox}>
-      <p className="text-xs font-medium text-slate-400">{label}</p>
+      <p className="text-xs font-medium text-muted-fg">{label}</p>
       <p className="mt-0.5 text-sm font-semibold text-emerald-400">{formatCurrency(payload[0].value)}</p>
     </div>
   )
@@ -157,12 +157,12 @@ function BarTooltip({ active, payload, label, formatCurrency }: {
   if (!active || !payload?.length) return null
   return (
     <div className={tooltipBox}>
-      <p className="mb-1.5 text-xs font-medium text-slate-300">{label}</p>
+      <p className="mb-1.5 text-xs font-medium text-subtle">{label}</p>
       {payload.map((p) => (
         <div key={p.name} className="flex items-center gap-2 text-xs">
           <span className="h-2 w-2 rounded-full" style={{ background: p.color }} />
-          <span className="text-slate-400">{p.name}:</span>
-          <span className="font-semibold text-slate-200">{formatCurrency(p.value)}</span>
+          <span className="text-muted-fg">{p.name}:</span>
+          <span className="font-semibold text-foreground">{formatCurrency(p.value)}</span>
         </div>
       ))}
     </div>
@@ -175,9 +175,9 @@ function PieTooltip({ active, payload, formatCurrency }: {
   if (!active || !payload?.length) return null
   return (
     <div className={tooltipBox}>
-      <p className="text-xs font-medium text-slate-300">{payload[0].name}</p>
+      <p className="text-xs font-medium text-subtle">{payload[0].name}</p>
       <p className="mt-0.5 text-sm font-semibold text-emerald-400">{formatCurrency(payload[0].value)}</p>
-      <p className="text-xs text-slate-500">{payload[0].payload.pct}% of spending</p>
+      <p className="text-xs text-muted">{payload[0].payload.pct}% of spending</p>
     </div>
   )
 }
@@ -188,7 +188,7 @@ const healthStyles = {
   emerald: { badge: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400', dot: 'bg-emerald-400' },
   amber:   { badge: 'bg-amber-500/10 border-amber-500/20 text-amber-400',     dot: 'bg-amber-400'   },
   red:     { badge: 'bg-red-500/10 border-red-500/20 text-red-400',           dot: 'bg-red-400'     },
-  slate:   { badge: 'bg-slate-500/10 border-slate-500/20 text-slate-400',     dot: 'bg-slate-400'   },
+  slate:   { badge: 'bg-slate-500/10 border-slate-500/20 text-muted-fg',     dot: 'bg-slate-400'   },
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -279,8 +279,8 @@ export function DashboardPage() {
     return (
       <Card>
         <CardContent className="py-16 text-center">
-          <p className="text-sm font-medium text-slate-200">No budgets yet</p>
-          <p className="mt-1 text-sm text-slate-500">Create your first budget to see your dashboard.</p>
+          <p className="text-sm font-medium text-foreground">No budgets yet</p>
+          <p className="mt-1 text-sm text-muted">Create your first budget to see your dashboard.</p>
           <Link to="/budgets">
             <Button className="mt-4">Go to Budgets</Button>
           </Link>
@@ -297,7 +297,7 @@ export function DashboardPage() {
         <div className="min-w-0 flex-1">
           {periodProgress && (
             <div className="max-w-xs">
-              <div className="mb-1 flex items-center justify-between text-xs text-slate-500">
+              <div className="mb-1 flex items-center justify-between text-xs text-muted">
                 <span>Day {periodProgress.dayNum} of {periodProgress.totalDays}</span>
                 <span>{periodProgress.pct}%</span>
               </div>
@@ -309,7 +309,7 @@ export function DashboardPage() {
           <div className={`flex items-center gap-2 rounded-xl border px-3 py-2 sm:px-4 ${hc.badge}`}>
             <span className={`h-2 w-2 rounded-full ${hc.dot}`} />
             <span className="text-sm font-medium">{health.label}</span>
-            <span className="hidden text-xs text-slate-500 sm:inline">{health.score}% remaining</span>
+            <span className="hidden text-xs text-muted sm:inline">{health.score}% remaining</span>
           </div>
           <Link to="/transactions">
             <Button size="sm">
@@ -386,8 +386,8 @@ export function DashboardPage() {
                 ? 'All envelopes ok'
                 : `Envelope${overspentCategories.length > 1 ? 's' : ''} over`,
             icon: <IconAlertTriangle className="h-5 w-5" />,
-            iconColor: overspentCategories.length > 0 ? 'text-red-400' : 'text-slate-400',
-            iconBg: overspentCategories.length > 0 ? 'bg-red-500/10' : 'bg-slate-800',
+            iconColor: overspentCategories.length > 0 ? 'text-red-400' : 'text-muted-fg',
+            iconBg: overspentCategories.length > 0 ? 'bg-red-500/10' : 'bg-input',
             tone: overspentCategories.length > 0 ? ('danger' as const) : ('neutral' as const),
           },
         ].map((stat) => (
@@ -404,7 +404,7 @@ export function DashboardPage() {
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Spending Trend</CardTitle>
-            <span className="text-xs text-slate-500">
+            <span className="text-xs text-muted">
               Daily spending · {currentBudget.period}
             </span>
           </CardHeader>
@@ -455,7 +455,7 @@ export function DashboardPage() {
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex h-[220px] flex-col items-center justify-center gap-2 text-slate-500">
+              <div className="flex h-[220px] flex-col items-center justify-center gap-2 text-muted">
                 <IconTrendingUp className="h-8 w-8 opacity-30" />
                 <p className="text-sm">Add transactions to see your spending trend</p>
               </div>
@@ -467,7 +467,7 @@ export function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle>By Category</CardTitle>
-            <span className="text-xs text-slate-500">Spending split</span>
+            <span className="text-xs text-muted">Spending split</span>
           </CardHeader>
           <CardContent>
             {categoryPie.length > 0 ? (
@@ -502,8 +502,8 @@ export function DashboardPage() {
                   </ResponsiveContainer>
                   {/* Center label */}
                   <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                    <p className="text-[10px] font-medium uppercase tracking-wide text-slate-500">Spent</p>
-                    <p className="text-base font-bold text-slate-100">{formatCurrency(spentTotal)}</p>
+                    <p className="text-[10px] font-medium uppercase tracking-wide text-muted">Spent</p>
+                    <p className="text-base font-bold text-foreground">{formatCurrency(spentTotal)}</p>
                   </div>
                 </div>
                 <div className="mt-3 space-y-2">
@@ -511,18 +511,18 @@ export function DashboardPage() {
                     <div key={d.name} className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2 min-w-0">
                         <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: CHART_COLORS[i % CHART_COLORS.length] }} />
-                        <span className="truncate text-slate-400">{d.name}</span>
+                        <span className="truncate text-muted-fg">{d.name}</span>
                       </div>
-                      <span className="ml-2 shrink-0 font-medium text-slate-300">{d.pct}%</span>
+                      <span className="ml-2 shrink-0 font-medium text-subtle">{d.pct}%</span>
                     </div>
                   ))}
                   {categoryPie.length > 4 && (
-                    <p className="text-xs text-slate-600">+{categoryPie.length - 4} more categories</p>
+                    <p className="text-xs text-muted">+{categoryPie.length - 4} more categories</p>
                   )}
                 </div>
               </>
             ) : (
-              <div className="flex h-[220px] flex-col items-center justify-center gap-2 text-slate-500">
+              <div className="flex h-[220px] flex-col items-center justify-center gap-2 text-muted">
                 <IconWallet className="h-8 w-8 opacity-30" />
                 <p className="text-sm">No spending data yet</p>
               </div>
@@ -568,7 +568,7 @@ export function DashboardPage() {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex h-[240px] flex-col items-center justify-center gap-2 text-slate-500">
+              <div className="flex h-[240px] flex-col items-center justify-center gap-2 text-muted">
                 <p className="text-sm">No category data yet</p>
               </div>
             )}
@@ -597,20 +597,20 @@ export function DashboardPage() {
                       className={`flex items-center justify-between rounded-xl px-3.5 py-3 ${
                         isUrgent
                           ? 'border border-red-500/15 bg-red-500/5'
-                          : 'bg-slate-800/40'
+                          : 'bg-input/40'
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <div
                           className={`flex h-8 w-8 items-center justify-center rounded-lg ${
-                            isUrgent ? 'bg-red-500/10 text-red-400' : 'bg-slate-800 text-slate-400'
+                            isUrgent ? 'bg-red-500/10 text-red-400' : 'bg-input text-muted-fg'
                           }`}
                         >
                           <IconClock className="h-4 w-4" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-slate-200">{bill.name}</p>
-                          <p className={`text-xs ${isUrgent ? 'text-red-400' : 'text-slate-500'}`}>
+                          <p className="text-sm font-medium text-foreground">{bill.name}</p>
+                          <p className={`text-xs ${isUrgent ? 'text-red-400' : 'text-muted'}`}>
                             {daysUntil <= 0
                               ? 'Due today'
                               : daysUntil === 1
@@ -619,14 +619,14 @@ export function DashboardPage() {
                           </p>
                         </div>
                       </div>
-                      <span className={`text-sm font-semibold ${isUrgent ? 'text-red-300' : 'text-slate-200'}`}>
+                      <span className={`text-sm font-semibold ${isUrgent ? 'text-red-300' : 'text-foreground'}`}>
                         {formatCurrency(bill.amount)}
                       </span>
                     </div>
                   )
                 })
               ) : (
-                <p className="py-4 text-center text-sm text-slate-500">Nothing due in the next 7 days.</p>
+                <p className="py-4 text-center text-sm text-muted">Nothing due in the next 7 days.</p>
               )}
             </CardContent>
           </Card>
@@ -646,10 +646,10 @@ export function DashboardPage() {
             )}
 
             {velocity && (
-              <div className="flex items-center justify-between rounded-xl border border-slate-700/60 bg-slate-800/40 px-4 py-3">
+              <div className="flex items-center justify-between rounded-xl border border-border-muted/60 bg-input/40 px-4 py-3">
                 <div>
-                  <p className="text-xs font-medium text-slate-400">Daily Spend Rate</p>
-                  <p className="mt-0.5 text-lg font-bold text-slate-200">{formatCurrency(velocity.dailyRate)}/day</p>
+                  <p className="text-xs font-medium text-muted-fg">Daily Spend Rate</p>
+                  <p className="mt-0.5 text-lg font-bold text-foreground">{formatCurrency(velocity.dailyRate)}/day</p>
                   <p className={`text-xs ${velocity.onTrack ? 'text-emerald-400' : 'text-amber-400'}`}>
                     Projected: {formatCurrency(velocity.projectedMonthly)}/mo
                   </p>
@@ -671,7 +671,7 @@ export function DashboardPage() {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-amber-300">Cashflow risk</p>
-                  <p className="mt-0.5 text-xs text-slate-400">
+                  <p className="mt-0.5 text-xs text-muted-fg">
                     {formatCurrency(Math.abs(remaining))} over plan
                   </p>
                   <Link
@@ -707,7 +707,7 @@ export function DashboardPage() {
               return (
                 <div key={c.id}>
                   <div className="mb-1.5 flex items-center justify-between text-sm">
-                    <span className="font-medium text-slate-200">{c.name}</span>
+                    <span className="font-medium text-foreground">{c.name}</span>
                     <span className="text-red-400">
                       {formatCurrency(c.spent)} / {formatCurrency(c.planned)}
                       <span className="ml-2 text-xs text-red-500">({formatCurrency(overspentAmt)} over)</span>
@@ -743,7 +743,7 @@ export function DashboardPage() {
               />
             ))}
             {transactions.length === 0 && (
-              <p className="py-8 text-center text-sm text-slate-500">
+              <p className="py-8 text-center text-sm text-muted">
                 No transactions yet — add your first one above.
               </p>
             )}
@@ -753,7 +753,7 @@ export function DashboardPage() {
           <div className="hidden overflow-x-auto lg:block">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-800 text-left text-xs uppercase tracking-wide text-slate-500">
+                <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted">
                   <th className="px-6 py-3 font-medium">Date</th>
                   <th className="px-6 py-3 font-medium">Description</th>
                   <th className="px-6 py-3 font-medium">Category</th>
@@ -765,13 +765,13 @@ export function DashboardPage() {
                 {transactions.slice(0, 7).map((t, i) => (
                   <tr
                     key={t.id}
-                    className={`border-b border-slate-800/60 last:border-0 transition-colors hover:bg-slate-800/30 ${
-                      i % 2 !== 0 ? 'bg-slate-900/20' : ''
+                    className={`border-b border-border/60 last:border-0 transition-colors hover:bg-surface-muted/30 ${
+                      i % 2 !== 0 ? 'bg-surface-solid/20' : ''
                     }`}
                   >
-                    <td className="px-6 py-3.5 text-slate-400">{formatShortDate(t.date)}</td>
+                    <td className="px-6 py-3.5 text-muted-fg">{formatShortDate(t.date)}</td>
                     <td className="px-6 py-3.5">
-                      <span className="font-medium text-slate-200">{t.description}</span>
+                      <span className="font-medium text-foreground">{t.description}</span>
                       {t.reimbursable === 'pending' && (
                         <span className="ml-2 inline-flex items-center rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-medium text-blue-400">
                           Reimb.
@@ -786,10 +786,10 @@ export function DashboardPage() {
                     <td className="px-6 py-3.5">
                       <Badge>{t.category}</Badge>
                     </td>
-                    <td className="px-6 py-3.5 text-xs text-slate-500">{t.account}</td>
+                    <td className="px-6 py-3.5 text-xs text-muted">{t.account}</td>
                     <td
                       className={`px-6 py-3.5 text-right font-semibold tabular-nums ${
-                        t.amount >= 0 ? 'text-emerald-400' : 'text-slate-200'
+                        t.amount >= 0 ? 'text-emerald-400' : 'text-foreground'
                       }`}
                     >
                       {t.amount >= 0 ? '+' : ''}
@@ -799,7 +799,7 @@ export function DashboardPage() {
                 ))}
                 {transactions.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-sm text-slate-500">
+                    <td colSpan={5} className="px-6 py-12 text-center text-sm text-muted">
                       No transactions yet — add your first one above.
                     </td>
                   </tr>

@@ -140,8 +140,8 @@ export function RecurringPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold text-white">Recurring Bills</h2>
-          <p className="mt-1 text-sm text-slate-500">Automate bills and subscriptions so nothing slips through.</p>
+          <h2 className="text-xl font-semibold text-heading">Recurring Bills</h2>
+          <p className="mt-1 text-sm text-muted">Automate bills and subscriptions so nothing slips through.</p>
         </div>
         <Button onClick={openAdd}>
           <IconPlus className="h-4 w-4" />
@@ -155,20 +155,20 @@ export function RecurringPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           {upcomingBills.map((bill) => (
-            <div key={bill.id} className="flex items-center justify-between rounded-xl bg-slate-800/40 px-4 py-3.5">
+            <div key={bill.id} className="flex items-center justify-between rounded-xl bg-input/40 px-4 py-3.5">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-800 text-slate-400">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-input text-muted-fg">
                   <IconClock className="h-4 w-4" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-200">{bill.name}</p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-sm font-medium text-foreground">{bill.name}</p>
+                  <p className="text-xs text-muted">
                     Due {formatShortDate(bill.dueDate)} · {bill.category}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-sm font-semibold text-slate-200">{formatCurrency(bill.amount)}</span>
+                <span className="text-sm font-semibold text-foreground">{formatCurrency(bill.amount)}</span>
                 <Button
                   variant="secondary"
                   size="sm"
@@ -180,7 +180,7 @@ export function RecurringPage() {
               </div>
             </div>
           ))}
-          {upcomingBills.length === 0 && <p className="text-sm text-slate-500">Nothing due in the next 30 days.</p>}
+          {upcomingBills.length === 0 && <p className="text-sm text-muted">Nothing due in the next 30 days.</p>}
         </CardContent>
       </Card>
 
@@ -191,7 +191,7 @@ export function RecurringPage() {
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-800 text-left text-xs uppercase tracking-wide text-slate-500">
+              <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted">
                 <th className="px-6 py-3 font-medium">Name</th>
                 <th className="px-6 py-3 font-medium">Amount</th>
                 <th className="px-6 py-3 font-medium">Frequency</th>
@@ -203,11 +203,11 @@ export function RecurringPage() {
             </thead>
             <tbody>
               {rules.map((r) => (
-                <tr key={r.id} className="border-b border-slate-800/60 last:border-0">
-                  <td className="px-6 py-3.5 font-medium text-slate-200">{r.name}</td>
-                  <td className="px-6 py-3.5 text-slate-400">{formatCurrency(r.amount)}</td>
-                  <td className="px-6 py-3.5 text-slate-400">{frequencyLabel[r.frequency]}</td>
-                  <td className="px-6 py-3.5 text-slate-400">{formatShortDate(r.nextDue)}</td>
+                <tr key={r.id} className="border-b border-border/60 last:border-0">
+                  <td className="px-6 py-3.5 font-medium text-foreground">{r.name}</td>
+                  <td className="px-6 py-3.5 text-muted-fg">{formatCurrency(r.amount)}</td>
+                  <td className="px-6 py-3.5 text-muted-fg">{frequencyLabel[r.frequency]}</td>
+                  <td className="px-6 py-3.5 text-muted-fg">{formatShortDate(r.nextDue)}</td>
                   <td className="px-6 py-3.5">
                     <Badge>{r.category}</Badge>
                   </td>
@@ -221,7 +221,7 @@ export function RecurringPage() {
               ))}
             </tbody>
           </table>
-          {rules.length === 0 && <p className="px-6 py-8 text-sm text-slate-500">No recurring rules yet.</p>}
+          {rules.length === 0 && <p className="px-6 py-8 text-sm text-muted">No recurring rules yet.</p>}
         </CardContent>
       </Card>
 
@@ -229,36 +229,36 @@ export function RecurringPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" onClick={() => setAddOpen(false)}>
           <Card className="w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
             <CardContent className="space-y-4 pt-6">
-              <h3 className="text-base font-semibold text-white">Add Recurring Rule</h3>
+              <h3 className="text-base font-semibold text-heading">Add Recurring Rule</h3>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">Name</label>
+                <label className="mb-1.5 block text-sm font-medium text-subtle">Name</label>
                 <input
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
                   type="text"
                   placeholder="e.g. Rent"
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-emerald-400 focus:outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-300">Amount</label>
+                  <label className="mb-1.5 block text-sm font-medium text-subtle">Amount</label>
                   <input
                     value={formAmount}
                     onChange={(e) => setFormAmount(e.target.value)}
                     type="number"
                     placeholder="0.00"
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-emerald-400 focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-300">Category</label>
+                  <label className="mb-1.5 block text-sm font-medium text-subtle">Category</label>
                   <select
                     value={formCategoryId}
                     onChange={(e) => setFormCategoryId(e.target.value)}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                   >
                     <option value="">Uncategorized</option>
                     {categories.map((c) => (
@@ -269,11 +269,11 @@ export function RecurringPage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">Frequency</label>
+                <label className="mb-1.5 block text-sm font-medium text-subtle">Frequency</label>
                 <select
                   value={formFrequency}
                   onChange={(e) => setFormFrequency(e.target.value as RecurringFrequency)}
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                 >
                   {frequencyOptions.map((f) => (
                     <option key={f} value={f}>{frequencyLabel[f]}</option>
@@ -282,12 +282,12 @@ export function RecurringPage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">Next due date</label>
+                <label className="mb-1.5 block text-sm font-medium text-subtle">Next due date</label>
                 <input
                   value={formNextDue}
                   onChange={(e) => setFormNextDue(e.target.value)}
                   type="date"
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                 />
               </div>
 
@@ -308,34 +308,34 @@ export function RecurringPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" onClick={() => setEditTarget(null)}>
           <Card className="w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
             <CardContent className="space-y-4 pt-6">
-              <h3 className="text-base font-semibold text-white">Edit Recurring Rule</h3>
+              <h3 className="text-base font-semibold text-heading">Edit Recurring Rule</h3>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">Name</label>
+                <label className="mb-1.5 block text-sm font-medium text-subtle">Name</label>
                 <input
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                   type="text"
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-300">Amount</label>
+                  <label className="mb-1.5 block text-sm font-medium text-subtle">Amount</label>
                   <input
                     value={editAmount}
                     onChange={(e) => setEditAmount(e.target.value)}
                     type="number"
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-300">Status</label>
+                  <label className="mb-1.5 block text-sm font-medium text-subtle">Status</label>
                   <select
                     value={editStatus}
                     onChange={(e) => setEditStatus(e.target.value as RecurringStatus)}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                   >
                     <option value="active">Active</option>
                     <option value="paused">Paused</option>
@@ -345,11 +345,11 @@ export function RecurringPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-300">Frequency</label>
+                  <label className="mb-1.5 block text-sm font-medium text-subtle">Frequency</label>
                   <select
                     value={editFrequency}
                     onChange={(e) => setEditFrequency(e.target.value as RecurringFrequency)}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                   >
                     {frequencyOptions.map((f) => (
                       <option key={f} value={f}>{frequencyLabel[f]}</option>
@@ -357,12 +357,12 @@ export function RecurringPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-300">Next due date</label>
+                  <label className="mb-1.5 block text-sm font-medium text-subtle">Next due date</label>
                   <input
                     value={editNextDue}
                     onChange={(e) => setEditNextDue(e.target.value)}
                     type="date"
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                   />
                 </div>
               </div>

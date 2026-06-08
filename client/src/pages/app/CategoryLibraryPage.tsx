@@ -178,8 +178,8 @@ export function CategoryLibraryPage() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-white">Categories</h2>
-          <p className="mt-1 max-w-xl text-sm text-slate-500">
+          <h2 className="text-xl font-semibold text-heading">Categories</h2>
+          <p className="mt-1 max-w-xl text-sm text-muted">
             {currentBudget
               ? `Managing library and envelopes for ${currentBudget.period}. Change month from the header.`
               : 'Build your category library, then create a budget to add monthly envelopes.'}
@@ -194,7 +194,7 @@ export function CategoryLibraryPage() {
       {/* This month's envelopes */}
       <section>
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted">
             This month&apos;s envelopes
             {currentBudget ? ` · ${currentBudget.name}` : ''}
           </h3>
@@ -208,7 +208,7 @@ export function CategoryLibraryPage() {
 
         {!currentBudget ? (
           <Card>
-            <CardContent className="py-8 text-center text-sm text-slate-500">
+            <CardContent className="py-8 text-center text-sm text-muted">
               <Link to="/budgets" className="font-medium text-emerald-400 hover:text-emerald-300">
                 Create a monthly budget
               </Link>{' '}
@@ -220,7 +220,7 @@ export function CategoryLibraryPage() {
             <CardContent className="p-0">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-slate-800 text-left text-xs uppercase tracking-wide text-slate-500">
+                  <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted">
                     <th className="px-6 py-3 font-medium">Category</th>
                     <th className="px-6 py-3 font-medium">Planned</th>
                     <th className="px-6 py-3 font-medium">Spent</th>
@@ -234,15 +234,15 @@ export function CategoryLibraryPage() {
                     const available = c.planned - c.spent
                     const libItem = library.find((l) => l.id === c.id)
                     return (
-                      <tr key={c.id} className="border-b border-slate-800/60 last:border-0">
+                      <tr key={c.id} className="border-b border-border/60 last:border-0">
                         <td className="px-6 py-3.5">
-                          <div className="flex items-center gap-2 font-medium text-slate-200">
+                          <div className="flex items-center gap-2 font-medium text-foreground">
                             <CategoryIcon name={c.name} icon={libItem?.icon} size="sm" />
                             {c.name}
                           </div>
                         </td>
-                        <td className="px-6 py-3.5 text-slate-400">{formatCurrency(c.planned)}</td>
-                        <td className="px-6 py-3.5 text-slate-400">{formatCurrency(c.spent)}</td>
+                        <td className="px-6 py-3.5 text-muted-fg">{formatCurrency(c.planned)}</td>
+                        <td className="px-6 py-3.5 text-muted-fg">{formatCurrency(c.spent)}</td>
                         <td className={`px-6 py-3.5 font-medium ${available < 0 ? 'text-red-400' : 'text-emerald-400'}`}>
                           {formatCurrency(available)}
                         </td>
@@ -264,7 +264,7 @@ export function CategoryLibraryPage() {
           </Card>
         ) : (
           <Card>
-            <CardContent className="py-8 text-center text-sm text-slate-500">
+            <CardContent className="py-8 text-center text-sm text-muted">
               No envelopes for this month yet. Add categories from your library below.
             </CardContent>
           </Card>
@@ -273,7 +273,7 @@ export function CategoryLibraryPage() {
 
       {/* My library */}
       <section>
-        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">My library</h3>
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">My library</h3>
         {library.length > 0 ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {library.map((cat) => {
@@ -284,11 +284,11 @@ export function CategoryLibraryPage() {
                   <div className="flex items-start gap-3">
                     <CategoryIcon name={cat.name} icon={cat.icon} />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium text-slate-200">{cat.name}</p>
+                      <p className="truncate font-medium text-foreground">{cat.name}</p>
                       {inEnvelope && envelope ? (
-                        <p className="mt-0.5 text-xs text-slate-500">{formatCurrency(envelope.planned)} planned</p>
+                        <p className="mt-0.5 text-xs text-muted">{formatCurrency(envelope.planned)} planned</p>
                       ) : (
-                        <p className="mt-0.5 text-xs text-slate-600">Not in this month</p>
+                        <p className="mt-0.5 text-xs text-muted">Not in this month</p>
                       )}
                     </div>
                   </div>
@@ -305,7 +305,7 @@ export function CategoryLibraryPage() {
                         Add to envelope
                       </Button>
                     ) : (
-                      <span className="text-xs text-slate-600">Create a budget first</span>
+                      <span className="text-xs text-muted">Create a budget first</span>
                     )}
                   </div>
                 </Card>
@@ -314,7 +314,7 @@ export function CategoryLibraryPage() {
           </div>
         ) : (
           <Card>
-            <CardContent className="py-10 text-center text-sm text-slate-500">
+            <CardContent className="py-10 text-center text-sm text-muted">
               No categories yet. Pick from suggestions below or create your own.
             </CardContent>
           </Card>
@@ -333,7 +333,7 @@ export function CategoryLibraryPage() {
       <section>
         <CardHeader className="border-none px-0 pt-0">
           <CardTitle>Suggested categories</CardTitle>
-          <span className="text-xs text-slate-500">Adds to library — envelope is optional</span>
+          <span className="text-xs text-muted">Adds to library — envelope is optional</span>
         </CardHeader>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
           {CATEGORY_TEMPLATES.map((t) => {
@@ -347,14 +347,14 @@ export function CategoryLibraryPage() {
                 type="button"
                 onClick={() => addTemplateToLibrary(t)}
                 disabled={addToLibrary.isPending || inEnvelope}
-                className="flex flex-col items-center gap-2 rounded-2xl border border-slate-800 bg-slate-900/40 p-4 text-center transition-colors hover:border-slate-700 hover:bg-slate-800/60 disabled:cursor-default disabled:opacity-60"
+                className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-surface-solid/40 p-4 text-center transition-colors hover:border-border-muted hover:bg-hover/60 disabled:cursor-default disabled:opacity-60"
               >
                 <CategoryIcon name={t.name} icon={t.icon} size="lg" />
-                <span className="text-sm font-medium text-slate-200">{t.name}</span>
+                <span className="text-sm font-medium text-foreground">{t.name}</span>
                 {inEnvelope ? (
                   <span className="text-[10px] font-medium uppercase tracking-wide text-emerald-400">In envelope</span>
                 ) : inLibrary ? (
-                  <span className="text-[10px] font-medium uppercase tracking-wide text-slate-500">In library</span>
+                  <span className="text-[10px] font-medium uppercase tracking-wide text-muted">In library</span>
                 ) : null}
               </button>
             )
@@ -368,16 +368,16 @@ export function CategoryLibraryPage() {
             <CardHeader><CardTitle>Custom Category</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">Name</label>
+                <label className="mb-1.5 block text-sm font-medium text-subtle">Name</label>
                 <input
                   value={customName}
                   onChange={(e) => setCustomName(e.target.value)}
                   placeholder="e.g. Gym"
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                 />
               </div>
               <div>
-                <label className="mb-2 block text-sm font-medium text-slate-300">Icon</label>
+                <label className="mb-2 block text-sm font-medium text-subtle">Icon</label>
                 <div className="flex flex-wrap gap-2">
                   {CATEGORY_TEMPLATES.slice(0, 8).map((t) => (
                     <button
@@ -393,13 +393,13 @@ export function CategoryLibraryPage() {
               </div>
               {activeBudgetId && (
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-300">Planned amount this month (optional)</label>
+                  <label className="mb-1.5 block text-sm font-medium text-subtle">Planned amount this month (optional)</label>
                   <input
                     value={envelopePlanned}
                     onChange={(e) => setEnvelopePlanned(e.target.value)}
                     type="number"
                     placeholder="0"
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                   />
                 </div>
               )}
@@ -421,19 +421,19 @@ export function CategoryLibraryPage() {
             <CardContent className="space-y-4">
               <div className="flex items-center gap-3">
                 <CategoryIcon name={envelopeTarget.name} icon={envelopeTarget.icon} />
-                <p className="text-sm text-slate-400">
-                  <span className="font-medium text-slate-200">{envelopeTarget.name}</span> is in your library.
-                  Add it to <span className="font-medium text-slate-200">{currentBudget?.name}</span> now, or skip.
+                <p className="text-sm text-muted-fg">
+                  <span className="font-medium text-foreground">{envelopeTarget.name}</span> is in your library.
+                  Add it to <span className="font-medium text-foreground">{currentBudget?.name}</span> now, or skip.
                 </p>
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">Planned amount this month</label>
+                <label className="mb-1.5 block text-sm font-medium text-subtle">Planned amount this month</label>
                 <input
                   value={envelopeAmount}
                   onChange={(e) => setEnvelopeAmount(e.target.value)}
                   type="number"
                   placeholder="0"
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                 />
               </div>
               <div className="flex justify-end gap-2">
@@ -453,20 +453,20 @@ export function CategoryLibraryPage() {
             <CardHeader><CardTitle>Edit envelope — {editTarget.name}</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">Planned amount</label>
+                <label className="mb-1.5 block text-sm font-medium text-subtle">Planned amount</label>
                 <input
                   value={editPlanned}
                   onChange={(e) => setEditPlanned(e.target.value)}
                   type="number"
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">Rollover type</label>
+                <label className="mb-1.5 block text-sm font-medium text-subtle">Rollover type</label>
                 <select
                   value={editRollover}
                   onChange={(e) => setEditRollover(e.target.value as RolloverType)}
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                 >
                   {rolloverOptions.map((r) => (
                     <option key={r} value={r}>{r}</option>
@@ -475,12 +475,12 @@ export function CategoryLibraryPage() {
               </div>
               {editRollover === 'capped' && (
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-300">Rollover cap</label>
+                  <label className="mb-1.5 block text-sm font-medium text-subtle">Rollover cap</label>
                   <input
                     value={editCap}
                     onChange={(e) => setEditCap(e.target.value)}
                     type="number"
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                   />
                 </div>
               )}
@@ -501,11 +501,11 @@ export function CategoryLibraryPage() {
             <CardHeader><CardTitle>Move Funds</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">From envelope</label>
+                <label className="mb-1.5 block text-sm font-medium text-subtle">From envelope</label>
                 <select
                   value={fromCategoryId}
                   onChange={(e) => setFromCategoryId(e.target.value)}
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                 >
                   {envelopes.map((c) => (
                     <option key={c.id} value={c.id}>{c.name}</option>
@@ -513,11 +513,11 @@ export function CategoryLibraryPage() {
                 </select>
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">To envelope</label>
+                <label className="mb-1.5 block text-sm font-medium text-subtle">To envelope</label>
                 <select
                   value={toCategoryId}
                   onChange={(e) => setToCategoryId(e.target.value)}
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                 >
                   {envelopes.map((c) => (
                     <option key={c.id} value={c.id}>{c.name}</option>
@@ -525,23 +525,23 @@ export function CategoryLibraryPage() {
                 </select>
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">Amount</label>
+                <label className="mb-1.5 block text-sm font-medium text-subtle">Amount</label>
                 <input
                   value={moveAmount}
                   onChange={(e) => setMoveAmount(e.target.value)}
                   type="number"
                   placeholder="0.00"
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">Note</label>
+                <label className="mb-1.5 block text-sm font-medium text-subtle">Note</label>
                 <input
                   value={moveNote}
                   onChange={(e) => setMoveNote(e.target.value)}
                   type="text"
                   placeholder="Optional"
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                 />
               </div>
               <div className="flex justify-end gap-2">

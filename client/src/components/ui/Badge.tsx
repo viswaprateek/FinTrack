@@ -4,7 +4,7 @@ import { cn } from '../../lib/utils'
 type Tone = 'neutral' | 'success' | 'warning' | 'danger' | 'info'
 
 const toneStyles: Record<Tone, string> = {
-  neutral: 'bg-slate-800 text-slate-300 border-slate-700',
+  neutral: 'bg-input text-subtle border-border-muted',
   success: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
   warning: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
   danger: 'bg-red-500/10 text-red-400 border-red-500/30',

@@ -26,8 +26,8 @@ export function TransactionConfirmCard({
   const selectedCategoryId = transaction.category_id != null ? String(transaction.category_id) : ''
 
   return (
-    <div className="mt-2 rounded-xl border border-slate-700 bg-slate-900 p-4 text-sm text-slate-100">
-      <div className="mb-3 flex items-center gap-2 font-semibold text-slate-100">
+    <div className="mt-2 rounded-xl border border-border-muted bg-surface-solid p-4 text-sm text-foreground">
+      <div className="mb-3 flex items-center gap-2 font-semibold text-foreground">
         <span aria-hidden>🧾</span>
         <span>Transaction Detected</span>
       </div>
@@ -42,7 +42,7 @@ export function TransactionConfirmCard({
         <Field label="Type">
           {isEditing ? (
             <select
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-2 py-1 text-slate-100"
+              className="w-full rounded-lg border border-border-muted bg-input px-2 py-1 text-foreground"
               value={transaction.type}
               onChange={(e) => onChange({ type: e.target.value as ParsedTransaction['type'] })}
             >
@@ -59,7 +59,7 @@ export function TransactionConfirmCard({
           {isEditing ? (
             <input
               type="number"
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-2 py-1 text-slate-100"
+              className="w-full rounded-lg border border-border-muted bg-input px-2 py-1 text-foreground"
               value={transaction.amount ?? ''}
               onChange={(e) => onChange({ amount: e.target.value === '' ? null : Number(e.target.value) })}
             />
@@ -72,7 +72,7 @@ export function TransactionConfirmCard({
           {isEditing ? (
             <input
               type="date"
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-2 py-1 text-slate-100"
+              className="w-full rounded-lg border border-border-muted bg-input px-2 py-1 text-foreground"
               value={transaction.date}
               onChange={(e) => onChange({ date: e.target.value })}
             />
@@ -85,7 +85,7 @@ export function TransactionConfirmCard({
           {isEditing ? (
             <input
               type="text"
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-2 py-1 text-slate-100"
+              className="w-full rounded-lg border border-border-muted bg-input px-2 py-1 text-foreground"
               value={transaction.description ?? ''}
               onChange={(e) => onChange({ description: e.target.value })}
             />
@@ -96,7 +96,7 @@ export function TransactionConfirmCard({
 
         <Field label="Category">
           <select
-            className="w-full rounded-lg border border-slate-700 bg-slate-800 px-2 py-1 text-slate-100"
+            className="w-full rounded-lg border border-border-muted bg-input px-2 py-1 text-foreground"
             value={selectedCategoryId}
             onChange={(e) => onChange({ category_id: e.target.value ? Number(e.target.value) : null })}
           >
@@ -113,7 +113,7 @@ export function TransactionConfirmCard({
           {isEditing ? (
             <input
               type="text"
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-2 py-1 text-slate-100"
+              className="w-full rounded-lg border border-border-muted bg-input px-2 py-1 text-foreground"
               value={transaction.account ?? ''}
               onChange={(e) => onChange({ account: e.target.value })}
             />
@@ -127,7 +127,7 @@ export function TransactionConfirmCard({
             type="button"
             onClick={() => onChange({ is_reimbursable: !transaction.is_reimbursable })}
             className={`relative h-6 w-11 rounded-full transition-colors ${
-              transaction.is_reimbursable ? 'bg-emerald-500' : 'bg-slate-700'
+              transaction.is_reimbursable ? 'bg-emerald-500' : 'bg-border-muted'
             }`}
             aria-pressed={transaction.is_reimbursable}
           >
@@ -143,7 +143,7 @@ export function TransactionConfirmCard({
           <input
             type="text"
             placeholder="Add a note..."
-            className="w-full rounded-lg border border-slate-700 bg-slate-800 px-2 py-1 text-slate-100 placeholder:text-slate-500"
+            className="w-full rounded-lg border border-border-muted bg-input px-2 py-1 text-foreground placeholder:text-muted"
             value={transaction.notes ?? ''}
             onChange={(e) => onChange({ notes: e.target.value })}
           />
@@ -165,7 +165,7 @@ export function TransactionConfirmCard({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="grid grid-cols-[110px_1fr] items-center gap-2">
-      <span className="text-xs text-slate-400">{label}</span>
+      <span className="text-xs text-muted-fg">{label}</span>
       <div>{children}</div>
     </div>
   )

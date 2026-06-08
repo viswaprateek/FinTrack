@@ -84,16 +84,16 @@ function MonthCalendarTile({
         'group relative flex flex-col overflow-hidden rounded-2xl border text-left shadow-md shadow-black/25 transition-all duration-200',
         'hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/35',
         hasBudget
-          ? 'border-slate-700/80 bg-gradient-to-b from-slate-800/90 to-slate-900'
-          : 'border-slate-700/50 border-dashed bg-slate-900/50',
-        isSelected && 'border-emerald-400/80 ring-2 ring-emerald-400/40 ring-offset-2 ring-offset-slate-950',
+          ? 'border-border-muted/80 bg-gradient-to-b from-input/90 to-surface-solid'
+          : 'border-border-muted/50 border-dashed bg-surface-solid/50',
+        isSelected && 'border-emerald-400/80 ring-2 ring-emerald-400/40 ring-offset-2 ring-offset-background',
         isCurrent && !isSelected && 'ring-1 ring-emerald-400/50',
       )}
     >
       {/* Binding holes */}
       <div className="absolute left-0 right-0 top-2.5 z-10 flex justify-center gap-6 opacity-40">
-        <span className="h-1.5 w-1.5 rounded-full bg-slate-950/80 ring-1 ring-white/10" />
-        <span className="h-1.5 w-1.5 rounded-full bg-slate-950/80 ring-1 ring-white/10" />
+        <span className="h-1.5 w-1.5 rounded-full bg-background/80 ring-1 ring-white/10" />
+        <span className="h-1.5 w-1.5 rounded-full bg-background/80 ring-1 ring-white/10" />
       </div>
 
       {/* Month header — tear-off calendar strip */}
@@ -106,13 +106,13 @@ function MonthCalendarTile({
         <div className="absolute inset-x-0 bottom-0 h-px bg-white/10" />
         <div className="flex items-end justify-between gap-2">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/70">{year}</p>
-            <p className="text-lg font-bold leading-tight tracking-tight text-white">{MONTH_OPTIONS[month - 1]}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-heading/70">{year}</p>
+            <p className="text-lg font-bold leading-tight tracking-tight text-heading">{MONTH_OPTIONS[month - 1]}</p>
           </div>
-          <p className="text-3xl font-light leading-none text-white/25">{String(month).padStart(2, '0')}</p>
+          <p className="text-3xl font-light leading-none text-heading/25">{String(month).padStart(2, '0')}</p>
         </div>
         {isCurrent && (
-          <span className="absolute right-2 top-2 rounded-md bg-white/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white backdrop-blur-sm">
+          <span className="absolute right-2 top-2 rounded-md bg-white/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-heading backdrop-blur-sm">
             This month
           </span>
         )}
@@ -124,7 +124,7 @@ function MonthCalendarTile({
           {WEEKDAY_LABELS.map((label, i) => (
             <span
               key={`${label}-${i}`}
-              className="text-center text-[8px] font-semibold uppercase text-slate-500"
+              className="text-center text-[8px] font-semibold uppercase text-muted"
             >
               {label}
             </span>
@@ -144,8 +144,8 @@ function MonthCalendarTile({
                   today
                     ? 'bg-emerald-500 font-bold text-slate-950 shadow-sm shadow-emerald-500/40'
                     : hasBudget
-                      ? 'text-slate-400'
-                      : 'text-slate-600',
+                      ? 'text-muted-fg'
+                      : 'text-muted',
                 )}
               >
                 {day}
@@ -159,18 +159,18 @@ function MonthCalendarTile({
       <div
         className={cn(
           'mt-auto border-t px-3 py-2.5',
-          hasBudget ? 'border-slate-700/60 bg-slate-950/40' : 'border-slate-800/60 bg-slate-950/20',
+          hasBudget ? 'border-border-muted/60 bg-background/40' : 'border-border/60 bg-background/20',
         )}
       >
         {hasBudget ? (
           <div className="space-y-1.5">
             <div className="flex items-center justify-between gap-2 text-[10px]">
-              <span className="text-slate-500">Spent</span>
-              <span className={cn('font-semibold tabular-nums', overBudget ? 'text-red-400' : 'text-slate-200')}>
+              <span className="text-muted">Spent</span>
+              <span className={cn('font-semibold tabular-nums', overBudget ? 'text-red-400' : 'text-foreground')}>
                 {formatCurrency(budget.spentTotal)}
               </span>
             </div>
-            <div className="h-1 overflow-hidden rounded-full bg-slate-800">
+            <div className="h-1 overflow-hidden rounded-full bg-input">
               <div
                 className={cn(
                   'h-full rounded-full transition-all',
@@ -179,16 +179,16 @@ function MonthCalendarTile({
                 style={{ width: `${Math.min(100, spentPct)}%` }}
               />
             </div>
-            <p className="text-[9px] text-slate-500">
+            <p className="text-[9px] text-muted">
               {spentPct}% of {formatCurrency(budget.plannedTotal)} planned
             </p>
           </div>
         ) : (
           <div className="flex items-center justify-center gap-1.5 py-0.5">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full border border-dashed border-slate-600 text-slate-500 transition-colors group-hover:border-emerald-500/50 group-hover:text-emerald-400">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full border border-dashed border-border-muted text-muted transition-colors group-hover:border-emerald-500/50 group-hover:text-emerald-400">
               +
             </span>
-            <span className="text-[10px] font-medium text-slate-500 group-hover:text-slate-400">Create budget</span>
+            <span className="text-[10px] font-medium text-muted group-hover:text-muted-fg">Create budget</span>
           </div>
         )}
       </div>

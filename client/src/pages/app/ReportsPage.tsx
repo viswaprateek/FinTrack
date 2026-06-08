@@ -59,11 +59,11 @@ export function ReportsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-white">Reports & Forecasts</h2>
-        <p className="mt-1 text-sm text-slate-500">Understand where your money is going — and where it's headed.</p>
+        <h2 className="text-xl font-semibold text-heading">Reports & Forecasts</h2>
+        <p className="mt-1 text-sm text-muted">Understand where your money is going — and where it's headed.</p>
       </div>
 
-      <div className="flex flex-wrap gap-1 border-b border-slate-800">
+      <div className="flex flex-wrap gap-1 border-b border-border">
         {tabs.map((t) => (
           <button
             key={t}
@@ -72,7 +72,7 @@ export function ReportsPage() {
               'border-b-2 px-4 py-2.5 text-sm font-medium transition-colors',
               tab === t
                 ? 'border-emerald-400 text-emerald-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200',
+                : 'border-transparent text-muted-fg hover:text-foreground',
             )}
           >
             {t}
@@ -88,7 +88,7 @@ export function ReportsPage() {
           <CardContent className="p-0">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-800 text-left text-xs uppercase tracking-wide text-slate-500">
+                <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted">
                   <th className="px-6 py-3 font-medium">Category</th>
                   <th className="px-6 py-3 text-right font-medium">Planned</th>
                   <th className="px-6 py-3 text-right font-medium">Actual</th>
@@ -99,10 +99,10 @@ export function ReportsPage() {
                 {categories.map((c) => {
                   const variance = c.planned - c.spent
                   return (
-                    <tr key={c.id} className="border-b border-slate-800/60 last:border-0">
-                      <td className="px-6 py-3.5 font-medium text-slate-200">{c.name}</td>
-                      <td className="px-6 py-3.5 text-right text-slate-400">{formatCurrency(c.planned)}</td>
-                      <td className="px-6 py-3.5 text-right text-slate-400">{formatCurrency(c.spent)}</td>
+                    <tr key={c.id} className="border-b border-border/60 last:border-0">
+                      <td className="px-6 py-3.5 font-medium text-foreground">{c.name}</td>
+                      <td className="px-6 py-3.5 text-right text-muted-fg">{formatCurrency(c.planned)}</td>
+                      <td className="px-6 py-3.5 text-right text-muted-fg">{formatCurrency(c.spent)}</td>
                       <td className={cn('px-6 py-3.5 text-right font-semibold', variance < 0 ? 'text-red-400' : 'text-emerald-400')}>
                         {variance >= 0 ? '+' : ''}
                         {formatCurrency(variance)}
@@ -112,7 +112,7 @@ export function ReportsPage() {
                 })}
               </tbody>
             </table>
-            {categories.length === 0 && <p className="px-6 py-8 text-sm text-slate-500">No categories to report on yet.</p>}
+            {categories.length === 0 && <p className="px-6 py-8 text-sm text-muted">No categories to report on yet.</p>}
           </CardContent>
         </Card>
       )}
@@ -120,7 +120,7 @@ export function ReportsPage() {
       {tab === 'Reimbursements' && (
         <div className="space-y-4">
           <Card className="p-5">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Total pending reimbursement</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted">Total pending reimbursement</p>
             <p className="mt-2 text-2xl font-bold text-amber-400">{formatCurrency(totalPending)}</p>
           </Card>
 
@@ -130,7 +130,7 @@ export function ReportsPage() {
               <select
                 value={reimbursableFilter}
                 onChange={(e) => setReimbursableFilter(e.target.value as typeof reimbursableFilter)}
-                className="rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                className="rounded-xl border border-border-muted bg-input px-3 py-2 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
               >
                 <option>All</option>
                 <option>Pending</option>
@@ -140,7 +140,7 @@ export function ReportsPage() {
             <CardContent className="p-0">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-slate-800 text-left text-xs uppercase tracking-wide text-slate-500">
+                  <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted">
                     <th className="px-6 py-3 font-medium">Date</th>
                     <th className="px-6 py-3 font-medium">Description</th>
                     <th className="px-6 py-3 font-medium">Status</th>
@@ -149,20 +149,20 @@ export function ReportsPage() {
                 </thead>
                 <tbody>
                   {filteredReimbursable.map((t) => (
-                    <tr key={t.id} className="border-b border-slate-800/60 last:border-0">
-                      <td className="px-6 py-3.5 text-slate-400">{formatShortDate(t.date)}</td>
-                      <td className="px-6 py-3.5 font-medium text-slate-200">{t.description}</td>
+                    <tr key={t.id} className="border-b border-border/60 last:border-0">
+                      <td className="px-6 py-3.5 text-muted-fg">{formatShortDate(t.date)}</td>
+                      <td className="px-6 py-3.5 font-medium text-foreground">{t.description}</td>
                       <td className="px-6 py-3.5">
                         <Badge tone={t.reimbursable === 'pending' ? 'warning' : 'success'}>
                           {t.reimbursable === 'pending' ? 'Pending' : 'Received'}
                         </Badge>
                       </td>
-                      <td className="px-6 py-3.5 text-right font-semibold text-slate-200">{formatCurrency(Math.abs(t.amount))}</td>
+                      <td className="px-6 py-3.5 text-right font-semibold text-foreground">{formatCurrency(Math.abs(t.amount))}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              {filteredReimbursable.length === 0 && <p className="px-6 py-8 text-sm text-slate-500">No reimbursable transactions found.</p>}
+              {filteredReimbursable.length === 0 && <p className="px-6 py-8 text-sm text-muted">No reimbursable transactions found.</p>}
             </CardContent>
           </Card>
         </div>

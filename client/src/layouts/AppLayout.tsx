@@ -12,7 +12,7 @@ export function AppLayout() {
     <CurrencyProvider>
       <BudgetPeriodProvider>
         <QueryLoadingBar />
-        <div className="flex min-h-screen bg-slate-950 text-slate-100">
+        <div className="flex min-h-screen bg-background text-foreground">
           <Sidebar />
           <div className="flex min-h-screen flex-1 flex-col">
             <Topbar />

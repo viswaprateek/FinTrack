@@ -34,7 +34,7 @@ export function LandingPage() {
       <HowItWorks />
 
       {/* Features */}
-      <section className="border-t border-slate-800/80 bg-slate-900/30">
+      <section className="border-t border-border/80 bg-surface-solid/30">
         <div className="mx-auto max-w-6xl px-6 py-20">
           <motion.div
             className="mx-auto max-w-2xl text-center"
@@ -43,8 +43,8 @@ export function LandingPage() {
             viewport={{ once: true, margin: '-60px' }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-3xl font-bold tracking-tight text-white">Everything you need to stay on target</h2>
-            <p className="mt-4 text-slate-400">
+            <h2 className="text-3xl font-bold tracking-tight text-heading">Everything you need to stay on target</h2>
+            <p className="mt-4 text-muted-fg">
               Built around the way real people budget — by category, by month, and with an eye on what's coming next.
             </p>
           </motion.div>
@@ -61,8 +61,8 @@ export function LandingPage() {
           viewport={{ once: true, margin: '-60px' }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="text-3xl font-bold tracking-tight text-white">Ready to take control of your money?</h2>
-          <p className="mt-4 text-slate-400">Create your free account and set up your first budget in minutes.</p>
+          <h2 className="text-3xl font-bold tracking-tight text-heading">Ready to take control of your money?</h2>
+          <p className="mt-4 text-muted-fg">Create your free account and set up your first budget in minutes.</p>
           <div className="mt-8">
             <Link to="/sign-up">
               <Button size="md" className="px-6">

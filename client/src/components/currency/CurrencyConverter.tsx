@@ -25,7 +25,7 @@ function defaultToCurrency(homeCurrency: string): string {
 }
 
 const selectClassName =
-  'w-full rounded-xl border border-slate-700 bg-slate-800/80 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400/70 focus:outline-none focus:ring-2 focus:ring-emerald-400/20'
+  'w-full rounded-xl border border-border-muted bg-input/80 px-3 py-2.5 text-sm text-foreground focus:border-emerald-400/70 focus:outline-none focus:ring-2 focus:ring-emerald-400/20'
 
 export function CurrencyConverter() {
   const { currency: homeCurrency } = useCurrency()
@@ -106,7 +106,7 @@ export function CurrencyConverter() {
         aria-label={open ? 'Close currency converter' : 'Open currency converter'}
         className={cn(
           'flex items-center justify-center p-1 transition-colors',
-          open ? 'text-emerald-400' : 'text-slate-400 hover:text-emerald-400',
+          open ? 'text-emerald-400' : 'text-muted-fg hover:text-emerald-400',
         )}
       >
         <IconCalculator className="h-5 w-5" />
@@ -117,16 +117,16 @@ export function CurrencyConverter() {
           id={panelId}
           role="dialog"
           aria-label="Currency converter"
-          className="absolute right-0 top-full z-[60] mt-2 w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-slate-700/80 bg-slate-900 shadow-2xl shadow-black/40"
+          className="absolute right-0 top-full z-[60] mt-2 w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-border-muted/80 bg-surface-solid shadow-2xl shadow-black/40"
         >
-          <div className="border-b border-slate-800/80 bg-gradient-to-r from-emerald-500/10 via-transparent to-sky-500/10 px-4 py-3">
-            <p className="text-sm font-semibold text-white">Currency converter</p>
-            <p className="mt-0.5 text-xs text-slate-500">Quick reference — rates are approximate</p>
+          <div className="border-b border-border/80 bg-gradient-to-r from-emerald-500/10 via-transparent to-sky-500/10 px-4 py-3">
+            <p className="text-sm font-semibold text-heading">Currency converter</p>
+            <p className="mt-0.5 text-xs text-muted">Quick reference — rates are approximate</p>
           </div>
 
           <div className="space-y-3 p-4">
             <div>
-              <label htmlFor={`${panelId}-amount`} className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500">
+              <label htmlFor={`${panelId}-amount`} className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted">
                 Amount
               </label>
               <input
@@ -137,14 +137,14 @@ export function CurrencyConverter() {
                 inputMode="decimal"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-slate-800/80 px-3 py-2.5 text-lg font-semibold tabular-nums text-white focus:border-emerald-400/70 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
+                className="w-full rounded-xl border border-border-muted bg-input/80 px-3 py-2.5 text-lg font-semibold tabular-nums text-heading focus:border-emerald-400/70 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
                 placeholder="0"
               />
             </div>
 
             <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
               <div>
-                <label htmlFor={`${panelId}-from`} className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500">
+                <label htmlFor={`${panelId}-from`} className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted">
                   From
                 </label>
                 <select
@@ -165,13 +165,13 @@ export function CurrencyConverter() {
                 type="button"
                 onClick={swapCurrencies}
                 aria-label="Swap currencies"
-                className="mb-0.5 flex h-10 w-10 items-center justify-center rounded-xl border border-slate-700 bg-slate-800/60 text-slate-400 transition-colors hover:border-emerald-400/40 hover:text-emerald-400"
+                className="mb-0.5 flex h-10 w-10 items-center justify-center rounded-xl border border-border-muted bg-hover/60 text-muted-fg transition-colors hover:border-emerald-400/40 hover:text-emerald-400"
               >
                 <IconArrowLeftRight className="h-4 w-4" />
               </button>
 
               <div>
-                <label htmlFor={`${panelId}-to`} className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500">
+                <label htmlFor={`${panelId}-to`} className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted">
                   To
                 </label>
                 <select
@@ -191,30 +191,30 @@ export function CurrencyConverter() {
 
             <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-3 py-3">
               {rateQuery.isLoading ? (
-                <p className="text-sm text-slate-400">Fetching rate…</p>
+                <p className="text-sm text-muted-fg">Fetching rate…</p>
               ) : rateQuery.isError ? (
                 <p className="text-sm text-red-400">Could not load rate. Try another pair.</p>
               ) : convertedAmount != null ? (
                 <>
                   <p className="text-xs font-medium uppercase tracking-wide text-emerald-400/80">Result</p>
-                  <p className="mt-1 text-2xl font-bold tabular-nums text-white">
+                  <p className="mt-1 text-2xl font-bold tabular-nums text-heading">
                     {formatCurrencyAmount(convertedAmount, toCurrency)}
                   </p>
                   {hasValidAmount && fromCurrency !== toCurrency && (
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-muted">
                       {formatCurrencyAmount(parsedAmount, fromCurrency)} → {formatCurrencyAmount(convertedAmount, toCurrency)}
                     </p>
                   )}
                 </>
               ) : (
-                <p className="text-sm text-slate-400">Enter a valid amount to convert.</p>
+                <p className="text-sm text-muted-fg">Enter a valid amount to convert.</p>
               )}
             </div>
           </div>
 
-          <div className="border-t border-slate-800/80 px-4 py-2.5">
+          <div className="border-t border-border/80 px-4 py-2.5">
             {rateLabel && rateQuery.data && (
-              <p className="text-[11px] text-slate-500">
+              <p className="text-[11px] text-muted">
                 {rateLabel}
                 {rateQuery.data.date
                   ? ` · ${rateSourceLabel(rateQuery.data.source)} rate as of ${rateQuery.data.date}`

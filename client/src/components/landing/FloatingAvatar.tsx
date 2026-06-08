@@ -19,7 +19,7 @@ export function FloatingAvatar({ src, className, delay, index, springX, springY 
       src={src}
       alt=""
       className={cn(
-        'absolute rounded-full border-2 border-slate-700/60 object-cover shadow-lg shadow-black/30 animate-float-slow',
+        'absolute rounded-full border-2 border-border-muted/60 object-cover shadow-lg shadow-black/30 animate-float-slow',
         className,
       )}
       style={{ x, y, animationDelay: `${delay}s` }}

@@ -15,12 +15,12 @@ export function BudgetPeriodSelector({ budgets, currentId, onChange, compact }: 
   const newerBudget = budgets[idx - 1] ?? null
 
   const btnBase =
-    'flex h-8 w-8 items-center justify-center rounded-lg border border-slate-700 bg-slate-800 ' +
-    'text-slate-400 transition-colors hover:bg-slate-700 hover:text-slate-200 ' +
+    'flex h-8 w-8 items-center justify-center rounded-lg border border-border-muted bg-input ' +
+    'text-muted-fg transition-colors hover:bg-border-muted hover:text-foreground ' +
     'disabled:cursor-not-allowed disabled:opacity-30'
 
   if (budgets.length === 0) {
-    return <span className="text-sm text-slate-500">No budgets yet</span>
+    return <span className="text-sm text-muted">No budgets yet</span>
   }
 
   return (
@@ -38,8 +38,8 @@ export function BudgetPeriodSelector({ budgets, currentId, onChange, compact }: 
       <select
         value={currentId}
         onChange={(e) => onChange(e.target.value)}
-        className="h-8 max-w-[10rem] cursor-pointer truncate rounded-lg border border-slate-700 bg-slate-800 px-3 text-sm
-                   font-medium text-slate-200 transition-colors hover:border-slate-600
+        className="h-8 max-w-[10rem] cursor-pointer truncate rounded-lg border border-border-muted bg-input px-3 text-sm
+                   font-medium text-foreground transition-colors hover:border-border-muted
                    focus:border-emerald-500 focus:outline-none sm:max-w-none"
       >
         {budgets.map((b) => (
@@ -60,7 +60,7 @@ export function BudgetPeriodSelector({ budgets, currentId, onChange, compact }: 
       </button>
 
       {!compact && budgets.length > 1 && (
-        <span className="ml-1 text-xs text-slate-600">
+        <span className="ml-1 text-xs text-muted">
           {idx + 1} / {budgets.length}
         </span>
       )}

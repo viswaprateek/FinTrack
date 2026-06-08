@@ -17,7 +17,7 @@ const sizeClasses = {
 export function CategoryIcon({ name, icon, size = 'md', className }: CategoryIconProps) {
   const template = getCategoryTemplate(icon, name)
   const emoji = template?.emoji ?? name.charAt(0).toUpperCase()
-  const color = template?.color ?? 'bg-slate-800 text-slate-300'
+  const color = template?.color ?? 'bg-input text-subtle'
 
   return (
     <span

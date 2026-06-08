@@ -1,5 +1,57 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --app-background: #f8fafc;
+  --app-foreground: #0f172a;
+  --app-heading: #0f172a;
+  --app-muted: #64748b;
+  --app-muted-fg: #475569;
+  --app-subtle: #334155;
+  --app-border: #e2e8f0;
+  --app-border-muted: #cbd5e1;
+  --app-surface: rgb(255 255 255 / 0.8);
+  --app-surface-solid: #ffffff;
+  --app-surface-muted: rgb(241 245 249 / 0.8);
+  --app-input: #ffffff;
+  --app-hover: #f1f5f9;
+  color-scheme: light;
+}
+
+.dark {
+  --app-background: #020617;
+  --app-foreground: #f1f5f9;
+  --app-heading: #ffffff;
+  --app-muted: #64748b;
+  --app-muted-fg: #94a3b8;
+  --app-subtle: #cbd5e1;
+  --app-border: #1e293b;
+  --app-border-muted: #334155;
+  --app-surface: rgb(15 23 42 / 0.6);
+  --app-surface-solid: #0f172a;
+  --app-surface-muted: rgb(30 41 59 / 0.5);
+  --app-input: #1e293b;
+  --app-hover: #1e293b;
+  color-scheme: dark;
+}
+
+@theme {
+  --color-background: var(--app-background);
+  --color-foreground: var(--app-foreground);
+  --color-heading: var(--app-heading);
+  --color-muted: var(--app-muted);
+  --color-muted-fg: var(--app-muted-fg);
+  --color-subtle: var(--app-subtle);
+  --color-border: var(--app-border);
+  --color-border-muted: var(--app-border-muted);
+  --color-surface: var(--app-surface);
+  --color-surface-solid: var(--app-surface-solid);
+  --color-surface-muted: var(--app-surface-muted);
+  --color-input: var(--app-input);
+  --color-hover: var(--app-hover);
+}
+
 @keyframes float-slow {
   0%, 100% {
     transform: translateY(0) rotate(0deg);

@@ -76,15 +76,15 @@ export function BudgetListPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-white">My Budgets</h2>
-        <p className="mt-1 text-sm text-slate-500">
+        <h2 className="text-xl font-semibold text-heading">My Budgets</h2>
+        <p className="mt-1 text-sm text-muted">
           Pick a month on the calendar — create a budget only when you&apos;re ready.
         </p>
       </div>
 
-      <Card className="overflow-hidden border-slate-800/80 bg-slate-900/40 p-0">
+      <Card className="overflow-hidden border-border/80 bg-surface-solid/40 p-0">
         {/* Year binder header */}
-        <div className="border-b border-slate-800 bg-gradient-to-r from-slate-900 via-slate-800/80 to-slate-900 px-4 py-5 sm:px-6">
+        <div className="border-b border-border bg-gradient-to-r from-surface-solid via-input/80 to-surface-solid px-4 py-5 sm:px-6">
           <div className="flex items-center justify-between gap-4">
             <Button
               variant="secondary"
@@ -96,8 +96,8 @@ export function BudgetListPage() {
               <IconChevronLeft className="h-4 w-4" />
             </Button>
             <div className="text-center">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-slate-500">Annual planner</p>
-              <h3 className="mt-0.5 font-serif text-3xl font-medium tracking-tight text-white sm:text-4xl">{viewYear}</h3>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-muted">Annual planner</p>
+              <h3 className="mt-0.5 font-serif text-3xl font-medium tracking-tight text-heading sm:text-4xl">{viewYear}</h3>
             </div>
             <Button
               variant="secondary"
@@ -115,14 +115,14 @@ export function BudgetListPage() {
                 key={i}
                 className={cn(
                   'h-1.5 w-1.5 rounded-full transition-colors',
-                  selectedMonth === i + 1 ? 'bg-emerald-400' : 'bg-slate-600',
+                  selectedMonth === i + 1 ? 'bg-emerald-400' : 'bg-border-muted',
                 )}
               />
             ))}
           </div>
         </div>
 
-        <div className="bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-800/20 via-slate-950/50 to-slate-950 p-4 sm:p-6">
+        <div className="bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-input/20 via-background/50 to-background p-4 sm:p-6">
           <BudgetYearCalendar
             year={viewYear}
             budgets={budgets}
@@ -132,7 +132,7 @@ export function BudgetListPage() {
           />
         </div>
 
-        <div className="flex flex-wrap gap-x-6 gap-y-2 border-t border-slate-800 bg-slate-950/50 px-4 py-3 text-[11px] text-slate-500 sm:px-6">
+        <div className="flex flex-wrap gap-x-6 gap-y-2 border-t border-border bg-background/50 px-4 py-3 text-[11px] text-muted sm:px-6">
           <span className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50" />
             Today
@@ -142,7 +142,7 @@ export function BudgetListPage() {
             Month header
           </span>
           <span className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded border border-dashed border-slate-600" />
+            <span className="h-3 w-3 rounded border border-dashed border-border-muted" />
             No budget yet
           </span>
         </div>
@@ -156,17 +156,17 @@ export function BudgetListPage() {
           <CardContent className="space-y-4">
             {selectedBudget ? (
               <>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-muted-fg">
                   {selectedPeriod.periodStart} → {selectedPeriod.periodEnd}
                 </p>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-slate-500">Planned</p>
-                    <p className="mt-0.5 font-medium text-slate-200">{formatCurrency(selectedBudget.plannedTotal)}</p>
+                    <p className="text-muted">Planned</p>
+                    <p className="mt-0.5 font-medium text-foreground">{formatCurrency(selectedBudget.plannedTotal)}</p>
                   </div>
                   <div>
-                    <p className="text-slate-500">Spent</p>
-                    <p className="mt-0.5 font-medium text-slate-200">{formatCurrency(selectedBudget.spentTotal)}</p>
+                    <p className="text-muted">Spent</p>
+                    <p className="mt-0.5 font-medium text-foreground">{formatCurrency(selectedBudget.spentTotal)}</p>
                   </div>
                 </div>
                 <ProgressBar value={selectedBudget.spentTotal} max={selectedBudget.plannedTotal || 1} />
@@ -184,10 +184,10 @@ export function BudgetListPage() {
               </>
             ) : (
               <>
-                <p className="text-sm text-slate-400">No budget for this month yet.</p>
-                <div className="rounded-xl border border-slate-800 bg-slate-800/30 px-4 py-3 text-sm">
-                  <p className="font-medium text-slate-200">{selectedPeriod.name}</p>
-                  <p className="mt-1 text-slate-500">
+                <p className="text-sm text-muted-fg">No budget for this month yet.</p>
+                <div className="rounded-xl border border-border bg-surface-muted/30 px-4 py-3 text-sm">
+                  <p className="font-medium text-foreground">{selectedPeriod.name}</p>
+                  <p className="mt-1 text-muted">
                     {selectedPeriod.periodStart} → {selectedPeriod.periodEnd}
                   </p>
                 </div>
@@ -198,9 +198,9 @@ export function BudgetListPage() {
                       type="checkbox"
                       checked={copyEnvelopes}
                       onChange={(e) => setCopyEnvelopes(e.target.checked)}
-                      className="h-4 w-4 rounded border-slate-600 bg-slate-800 text-emerald-500 focus:ring-emerald-500"
+                      className="h-4 w-4 rounded border-border-muted bg-input text-emerald-500 focus:ring-emerald-500"
                     />
-                    <span className="text-sm text-slate-300">
+                    <span className="text-sm text-subtle">
                       Copy category envelopes from {copySourceBudget.name}
                     </span>
                   </label>

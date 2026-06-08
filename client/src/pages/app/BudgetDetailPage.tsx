@@ -82,7 +82,7 @@ export function BudgetDetailPage() {
     return (
       <Card>
         <CardContent className="py-16 text-center">
-          <p className="text-sm font-medium text-slate-200">Budget not found</p>
+          <p className="text-sm font-medium text-foreground">Budget not found</p>
           <Link to="/budgets">
             <Button className="mt-4" variant="secondary">Back to budgets</Button>
           </Link>
@@ -102,8 +102,8 @@ export function BudgetDetailPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-white">{budget.name}</h2>
-          <p className="mt-1 text-sm text-slate-500">{budget.period}</p>
+          <h2 className="text-xl font-semibold text-heading">{budget.name}</h2>
+          <p className="mt-1 text-sm text-muted">{budget.period}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="secondary" size="sm" onClick={openEdit}>Edit</Button>
@@ -111,7 +111,7 @@ export function BudgetDetailPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-slate-800">
+      <div className="flex gap-1 border-b border-border">
         {tabs.map((t) => (
           <button
             key={t}
@@ -120,7 +120,7 @@ export function BudgetDetailPage() {
               'border-b-2 px-4 py-2.5 text-sm font-medium transition-colors',
               tab === t
                 ? 'border-emerald-400 text-emerald-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200',
+                : 'border-transparent text-muted-fg hover:text-foreground',
             )}
           >
             {t}
@@ -132,8 +132,8 @@ export function BudgetDetailPage() {
         <div className="space-y-6">
           <Card className="p-6">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-400">Planned vs Actual</span>
-              <span className="font-medium text-slate-200">
+              <span className="text-muted-fg">Planned vs Actual</span>
+              <span className="font-medium text-foreground">
                 {formatCurrency(budget.spentTotal)} of {formatCurrency(budget.plannedTotal)} spent
                 <span className={cn('ml-2', remaining >= 0 ? 'text-emerald-400' : 'text-red-400')}>
                   ({remaining >= 0 ? `${formatCurrency(remaining)} left` : `${formatCurrency(Math.abs(remaining))} over`})
@@ -153,13 +153,13 @@ export function BudgetDetailPage() {
               {categories.map((c) => (
                 <div key={c.id}>
                   <div className="mb-2 flex items-center justify-between text-sm">
-                    <span className="font-medium text-slate-200">{c.name}</span>
-                    <span className="text-slate-400">{formatCurrency(c.spent)} / {formatCurrency(c.planned)}</span>
+                    <span className="font-medium text-foreground">{c.name}</span>
+                    <span className="text-muted-fg">{formatCurrency(c.spent)} / {formatCurrency(c.planned)}</span>
                   </div>
                   <ProgressBar value={c.spent} max={c.planned} />
                 </div>
               ))}
-              {categories.length === 0 && <p className="text-sm text-slate-500">No categories yet for this budget.</p>}
+              {categories.length === 0 && <p className="text-sm text-muted">No categories yet for this budget.</p>}
             </CardContent>
           </Card>
         </div>
@@ -176,15 +176,15 @@ export function BudgetDetailPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             {incomeSources.map((s) => (
-              <div key={s.id} className="flex items-center justify-between rounded-xl bg-slate-800/40 px-4 py-3.5">
+              <div key={s.id} className="flex items-center justify-between rounded-xl bg-input/40 px-4 py-3.5">
                 <div>
-                  <p className="text-sm font-medium text-slate-200">{s.name}</p>
-                  <p className="text-xs text-slate-500">{s.schedule}</p>
+                  <p className="text-sm font-medium text-foreground">{s.name}</p>
+                  <p className="text-xs text-muted">{s.schedule}</p>
                 </div>
                 <span className="text-sm font-semibold text-emerald-400">{formatCurrency(s.amount)}</span>
               </div>
             ))}
-            {incomeSources.length === 0 && <p className="text-sm text-slate-500">No income sources yet.</p>}
+            {incomeSources.length === 0 && <p className="text-sm text-muted">No income sources yet.</p>}
           </CardContent>
         </Card>
       )}
@@ -192,7 +192,7 @@ export function BudgetDetailPage() {
       {tab === 'Categories' && (
         <Card>
           <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
-            <p className="text-sm text-slate-400">Manage envelopes and rollover rules for this budget.</p>
+            <p className="text-sm text-muted-fg">Manage envelopes and rollover rules for this budget.</p>
             <Link to={`/budgets/${budget.id}/categories`}>
               <Button>
                 Open Categories
@@ -206,7 +206,7 @@ export function BudgetDetailPage() {
       {tab === 'Transactions' && (
         <Card>
           <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
-            <p className="text-sm text-slate-400">View transactions filtered to this budget's period.</p>
+            <p className="text-sm text-muted-fg">View transactions filtered to this budget's period.</p>
             <Link to="/transactions">
               <Button>
                 Open Transactions
@@ -225,12 +225,12 @@ export function BudgetDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">Name</label>
+                <label className="mb-1.5 block text-sm font-medium text-subtle">Name</label>
                 <input
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                   type="text"
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                 />
               </div>
               <div className="flex items-center justify-end gap-2 pt-1">
@@ -252,32 +252,32 @@ export function BudgetDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">Name</label>
+                <label className="mb-1.5 block text-sm font-medium text-subtle">Name</label>
                 <input
                   value={incomeName}
                   onChange={(e) => setIncomeName(e.target.value)}
                   type="text"
                   placeholder="e.g. Salary — Acme Corp"
-                  className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-emerald-400 focus:outline-none"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-300">Amount</label>
+                  <label className="mb-1.5 block text-sm font-medium text-subtle">Amount</label>
                   <input
                     value={incomeAmount}
                     onChange={(e) => setIncomeAmount(e.target.value)}
                     type="number"
                     placeholder="0.00"
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-emerald-400 focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-300">Schedule</label>
+                  <label className="mb-1.5 block text-sm font-medium text-subtle">Schedule</label>
                   <select
                     value={incomeSchedule}
                     onChange={(e) => setIncomeSchedule(e.target.value as IncomeSchedule)}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-sm text-slate-200 focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
                   >
                     {scheduleOptions.map((s) => (
                       <option key={s} value={s}>{s}</option>

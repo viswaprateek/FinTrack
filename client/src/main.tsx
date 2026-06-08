@@ -8,6 +8,7 @@ import { Provider as ReduxProvider } from 'react-redux'
 import './index.css'
 import { router } from './app/router'
 import { store } from './app/store'
+import { ThemeProvider } from './contexts/ThemeContext'
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
@@ -17,12 +18,14 @@ if (!PUBLISHABLE_KEY) {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-      <ReduxProvider store={store}>
-        <QueryClientProvider client={queryClient}>
-          <RouterProvider router={router} />
-        </QueryClientProvider>
-      </ReduxProvider>
-    </ClerkProvider>
+    <ThemeProvider>
+      <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+        <ReduxProvider store={store}>
+          <QueryClientProvider client={queryClient}>
+            <RouterProvider router={router} />
+          </QueryClientProvider>
+        </ReduxProvider>
+      </ClerkProvider>
+    </ThemeProvider>
   </StrictMode>,
 )

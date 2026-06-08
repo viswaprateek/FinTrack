@@ -31,14 +31,14 @@ export function AssistantMessage({
       <div
         className={cn(
           'max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm',
-          isUser ? 'bg-purple-600 text-white' : 'border border-slate-800 bg-slate-900 text-slate-100',
+          isUser ? 'bg-purple-600 text-heading' : 'border border-border bg-surface-solid text-foreground',
         )}
       >
         {message.imagePreview && (
           <img
             src={message.imagePreview}
             alt="Uploaded attachment preview"
-            className="mb-2 max-h-40 rounded-lg border border-slate-700 object-cover"
+            className="mb-2 max-h-40 rounded-lg border border-border-muted object-cover"
           />
         )}
 
@@ -48,7 +48,7 @@ export function AssistantMessage({
             <button
               type="button"
               onClick={() => onSpeak(message.content)}
-              className="shrink-0 text-slate-400 transition-colors hover:text-slate-100"
+              className="shrink-0 text-muted-fg transition-colors hover:text-foreground"
               title="Replay message"
               aria-label="Replay message"
             >

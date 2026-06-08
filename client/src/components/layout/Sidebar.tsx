@@ -24,10 +24,10 @@ const navItems = [
 
 export function Sidebar() {
   return (
-    <aside className="hidden w-64 shrink-0 flex-col border-r border-slate-800 bg-slate-950/80 lg:flex">
+    <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-background/80 lg:flex">
       <div className="flex items-center gap-2 px-6 py-6">
         <Logo />
-        <span className="text-lg font-bold tracking-tight text-white">FinTrack</span>
+        <span className="text-lg font-bold tracking-tight text-heading">FinTrack</span>
       </div>
 
       <nav className="flex-1 space-y-1 px-3">
@@ -40,7 +40,7 @@ export function Sidebar() {
                 'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
                 isActive
                   ? 'bg-emerald-500/10 text-emerald-400'
-                  : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-100',
+                  : 'text-muted-fg hover:bg-hover/60 hover:text-foreground',
               )
             }
           >
@@ -50,9 +50,9 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <div className="flex items-center gap-3 border-t border-slate-800 px-6 py-4">
+      <div className="flex items-center gap-3 border-t border-border px-6 py-4">
         <UserButton afterSignOutUrl="/" />
-        <span className="text-sm text-slate-400">My Account</span>
+        <span className="text-sm text-muted-fg">My Account</span>
       </div>
     </aside>
   )
