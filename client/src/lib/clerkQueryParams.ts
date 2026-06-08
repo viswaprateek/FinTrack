@@ -1,4 +1,4 @@
-const CLERK_QUERY_PARAMS = [
+export const CLERK_QUERY_PARAMS = [
   '__clerk_handshake',
   '__clerk_handshake_nonce',
   '__clerk_db_jwt',
@@ -8,6 +8,16 @@ const CLERK_QUERY_PARAMS = [
   '__clerk_api_version',
   '__clerk_hs_reason',
 ] as const
+
+export function hasClerkAuthCallbackParams(): boolean {
+  const params = new URL(window.location.href).searchParams
+  return CLERK_QUERY_PARAMS.some((param) => params.has(param))
+}
+
+export function hasClerkHandshakeParams(): boolean {
+  const params = new URL(window.location.href).searchParams
+  return params.has('__clerk_handshake') || params.has('__clerk_handshake_nonce')
+}
 
 /** Remove Clerk-internal query params from the URL after auth has finished. */
 export function stripClerkQueryParams(): boolean {
