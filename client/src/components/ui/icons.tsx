@@ -21,6 +21,21 @@ export const IconLayoutDashboard = (props: IconProps) => (
   </svg>
 )
 
+export const IconCreditCard = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <rect x="2" y="5" width="20" height="14" rx="2.5" />
+    <path d="M2 10h20" />
+    <path d="M6 15h4" />
+  </svg>
+)
+
+export const IconLock = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <rect x="5" y="11" width="14" height="10" rx="2" />
+    <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+  </svg>
+)
+
 export const IconWallet = (props: IconProps) => (
   <svg {...base} {...props}>
     <path d="M3 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" />

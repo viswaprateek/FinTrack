@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from app.api.v1.routers import (
     budgets,
     categories,
+    credit_cards,
     goals,
     health,
     income_sources,
@@ -22,3 +23,4 @@ api_router.include_router(income_sources.router)
 api_router.include_router(transactions.router)
 api_router.include_router(recurring.router)
 api_router.include_router(goals.router)
+api_router.include_router(credit_cards.router)

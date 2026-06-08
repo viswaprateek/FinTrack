@@ -22,3 +22,4 @@ class User(Base, TimestampMixin):
     categories: Mapped[list["Category"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     recurring_rules: Mapped[list["RecurringRule"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     goals: Mapped[list["Goal"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    credit_cards: Mapped[list["CreditCard"]] = relationship(back_populates="user", cascade="all, delete-orphan")

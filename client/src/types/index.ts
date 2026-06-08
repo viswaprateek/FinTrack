@@ -86,6 +86,35 @@ export interface Goal {
   isArchived: boolean
 }
 
+export type CardBrand = 'visa' | 'mastercard' | 'amex' | 'paypal'
+export type CardTheme = 'lime' | 'yellow' | 'navy' | 'emerald' | 'violet'
+
+export interface CreditCard {
+  id: string
+  label: string
+  cardholderName: string
+  lastFour: string
+  brand: CardBrand
+  theme: CardTheme
+  creditLimit: number
+  currentBalance: number
+  availableCredit: number
+  utilizationPercent: number
+  expiryMonth: number
+  expiryYear: number
+  isActive: boolean
+}
+
+export interface CardTransaction {
+  id: string
+  cardId: string
+  cardLabel: string
+  description: string
+  amount: number
+  category?: string | null
+  transactedAt: string
+}
+
 export interface GoalContribution {
   id: string
   goalId: string

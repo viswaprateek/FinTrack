@@ -12,6 +12,7 @@ const titles: Record<string, string> = {
   '/transactions': 'Transactions',
   '/recurring': 'Recurring Bills',
   '/goals': 'Goals',
+  '/cards': 'Cards',
   '/reports': 'Reports & Forecasts',
   '/settings': 'Settings',
 }

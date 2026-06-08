@@ -1,8 +1,9 @@
 import { NavLink } from 'react-router-dom'
 import { cn } from '../../lib/utils'
-import { IconBarChart, IconRepeat, IconSettings, IconTarget, IconX } from '../ui/icons'
+import { IconBarChart, IconCreditCard, IconRepeat, IconSettings, IconTarget, IconX } from '../ui/icons'
 
 const moreItems = [
+  { to: '/cards', label: 'Cards', icon: IconCreditCard, description: 'Mock credit cards' },
   { to: '/goals', label: 'Goals', icon: IconTarget, description: 'Savings targets' },
   { to: '/reports', label: 'Reports & Forecasts', icon: IconBarChart, description: 'Cashflow and trends' },
   { to: '/recurring', label: 'Recurring Bills', icon: IconRepeat, description: 'Automated payments' },
