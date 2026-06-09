@@ -7,6 +7,7 @@ import { OnboardingGate } from '../components/guards/OnboardingGate'
 import { LandingPage } from '../pages/public/LandingPage'
 import { SignInPage } from '../pages/public/SignInPage'
 import { SignUpPage } from '../pages/public/SignUpPage'
+import { ClerkSsoCallbackPage } from '../pages/public/ClerkSsoCallbackPage'
 
 import { DashboardPage } from '../pages/app/DashboardPage'
 import { BudgetListPage } from '../pages/app/BudgetListPage'
@@ -26,6 +27,8 @@ export const router = createBrowserRouter([
     element: <PublicLayout />,
     children: [
       { path: '/', element: <LandingPage /> },
+      { path: '/sign-in/sso-callback', element: <ClerkSsoCallbackPage /> },
+      { path: '/sign-up/sso-callback', element: <ClerkSsoCallbackPage /> },
       { path: '/sign-in/*', element: <SignInPage /> },
       { path: '/sign-up/*', element: <SignUpPage /> },
     ],

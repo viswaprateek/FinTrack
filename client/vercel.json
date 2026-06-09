@@ -3,6 +3,10 @@
     {
       "source": "/__clerk/(.*)",
       "destination": "https://modern-pollwork-84.clerk.accounts.dev/$1"
+    },
+    {
+      "source": "/((?!assets/).*)",
+      "destination": "/index.html"
     }
   ]
 }
