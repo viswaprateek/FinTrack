@@ -25,6 +25,7 @@ import {
   type TransactionDraft,
 } from '../../lib/onboardingDraft'
 import { budgetForCalendarMonth, monthlyBudgetPeriod } from '../../lib/budgets'
+import { TransactionTypeToggle, type TransactionType } from '../../components/transactions/TransactionTypeToggle'
 import { IconArrowRight, IconCheck, IconSparkles, IconTrash, IconWallet } from '../../components/ui/icons'
 import { cn } from '../../lib/utils'
 import { OnboardingProgress } from './onboarding/OnboardingProgress'
@@ -74,8 +75,7 @@ export function OnboardingPage() {
   const [transactionDrafts, setTransactionDrafts] = useState<TransactionDraft[]>(storedDraft?.transactions ?? [])
   const [envelopeCategories, setEnvelopeCategories] = useState<EnvelopeCategory[]>([])
   const [pendingEnvelope, setPendingEnvelope] = useState<EnvelopeDraft | null>(null)
-  const [incomeForm, setIncomeForm] = useState<TransactionDraft | null>(null)
-  const [expenseForm, setExpenseForm] = useState<TransactionDraft | null>(null)
+  const [transactionForm, setTransactionForm] = useState<TransactionDraft | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [stepError, setStepError] = useState<string | null>(null)
   const [resumeChecked, setResumeChecked] = useState(false)
@@ -159,8 +159,7 @@ export function OnboardingPage() {
 
   useEffect(() => {
     if (envelopeCategories.length === 0) return
-    setIncomeForm((prev) => prev ?? emptyTransactionDraft(envelopeCategories, 'income'))
-    setExpenseForm((prev) => prev ?? emptyTransactionDraft(envelopeCategories, 'expense'))
+    setTransactionForm((prev) => prev ?? emptyTransactionDraft(envelopeCategories, 'expense'))
   }, [envelopeCategories])
 
   const complete = useMutation({
@@ -338,6 +337,20 @@ export function OnboardingPage() {
   function removeTransaction(index: number) {
     setTransactionDrafts((prev) => prev.filter((_, i) => i !== index))
   }
+
+  function applyTransactionType(form: TransactionDraft, type: TransactionType): TransactionDraft {
+    const defaults = emptyTransactionDraft(envelopeCategories, type)
+    return {
+      ...form,
+      type,
+      categoryId: defaults.categoryId,
+      categoryName: defaults.categoryName,
+      description: form.description.trim() ? form.description : defaults.description,
+    }
+  }
+
+  const hasIncomeDraft = transactionDrafts.some((tx) => tx.type === 'income')
+  const hasExpenseDraft = transactionDrafts.some((tx) => tx.type === 'expense')
 
   const pendingBusy = isSaving || complete.isPending
 
@@ -612,9 +625,20 @@ export function OnboardingPage() {
               <div className="text-center">
                 <h1 className="text-2xl font-bold text-heading">Log your first transactions</h1>
                 <p className="mt-2 text-sm text-muted">
-                  Try adding money coming in and something you spent — you&apos;ll do this often in FinTrack.
+                  Add one income and one expense — use the toggle to switch between them.
                 </p>
               </div>
+
+              {budgetId && (
+                <div className="flex flex-wrap justify-center gap-4 text-xs">
+                  <span className={hasIncomeDraft ? 'font-medium text-emerald-400' : 'text-muted'}>
+                    {hasIncomeDraft ? '✓' : '○'} Income added
+                  </span>
+                  <span className={hasExpenseDraft ? 'font-medium text-red-400' : 'text-muted'}>
+                    {hasExpenseDraft ? '✓' : '○'} Expense added
+                  </span>
+                </div>
+              )}
 
               {!budgetId && (
                 <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-amber-200/90">
@@ -636,32 +660,17 @@ export function OnboardingPage() {
                 </p>
               )}
 
-              {incomeForm && budgetId && (
+              {transactionForm && budgetId && (
                 <TransactionFormCard
-                  title="Money in — e.g. salary"
-                  hint="This is income entering your budget."
-                  form={incomeForm}
+                  form={transactionForm}
                   categories={envelopeCategories}
-                  onChange={setIncomeForm}
+                  onChange={setTransactionForm}
+                  onTypeChange={(type) =>
+                    setTransactionForm((prev) => (prev ? applyTransactionType(prev, type) : prev))
+                  }
                   onAdd={() => {
-                    if (addTransactionToList(incomeForm)) {
-                      setIncomeForm(emptyTransactionDraft(envelopeCategories, 'income'))
-                    }
-                  }}
-                  disabled={pendingBusy}
-                />
-              )}
-
-              {expenseForm && budgetId && (
-                <TransactionFormCard
-                  title="Money out — e.g. groceries"
-                  hint="This is spending from an envelope."
-                  form={expenseForm}
-                  categories={envelopeCategories}
-                  onChange={setExpenseForm}
-                  onAdd={() => {
-                    if (addTransactionToList(expenseForm)) {
-                      setExpenseForm(emptyTransactionDraft(envelopeCategories, 'expense'))
+                    if (addTransactionToList(transactionForm)) {
+                      setTransactionForm(emptyTransactionDraft(envelopeCategories, 'expense'))
                     }
                   }}
                   disabled={pendingBusy}
@@ -678,7 +687,12 @@ export function OnboardingPage() {
                     >
                       <div>
                         <p className="text-sm font-medium text-foreground">{tx.description}</p>
-                        <p className="text-xs text-muted">
+                        <p
+                          className={cn(
+                            'text-xs',
+                            tx.type === 'income' ? 'text-emerald-400' : 'text-red-400',
+                          )}
+                        >
                           {tx.type === 'income' ? 'Income' : 'Expense'} · {tx.categoryName} · {tx.amount}
                         </p>
                       </div>
@@ -721,32 +735,31 @@ export function OnboardingPage() {
 }
 
 interface TransactionFormCardProps {
-  title: string
-  hint: string
   form: TransactionDraft
   categories: EnvelopeCategory[]
   onChange: (form: TransactionDraft) => void
+  onTypeChange: (type: TransactionType) => void
   onAdd: () => void
   disabled?: boolean
 }
 
 function TransactionFormCard({
-  title,
-  hint,
   form,
   categories,
   onChange,
+  onTypeChange,
   onAdd,
   disabled,
 }: TransactionFormCardProps) {
   const canAdd = Number(form.amount) > 0 && form.description.trim() && form.categoryId
 
   return (
-    <div className="rounded-2xl border border-border bg-surface-muted/20 p-4 space-y-3">
-      <div>
-        <p className="text-sm font-semibold text-heading">{title}</p>
-        <p className="text-xs text-muted">{hint}</p>
-      </div>
+    <div className="space-y-3 rounded-2xl border border-border bg-surface-muted/20 p-4">
+      <TransactionTypeToggle
+        value={form.type}
+        onChange={onTypeChange}
+        disabled={disabled}
+      />
 
       <div className="grid grid-cols-2 gap-3">
         <div>
@@ -754,10 +767,16 @@ function TransactionFormCard({
           <input
             type="number"
             min="0"
-            placeholder="0"
+            step="0.01"
+            placeholder="0.00"
             value={form.amount}
             onChange={(e) => onChange({ ...form, amount: e.target.value })}
-            className={inputClass}
+            className={cn(
+              inputClass,
+              form.type === 'expense'
+                ? 'border-red-500/30 focus:border-red-500/50 focus:ring-red-500/20'
+                : 'border-emerald-500/30 focus:border-emerald-500/50 focus:ring-emerald-500/20',
+            )}
             disabled={disabled}
           />
         </div>
@@ -812,7 +831,7 @@ function TransactionFormCard({
       )}
 
       <Button size="sm" variant="secondary" onClick={onAdd} disabled={disabled || !canAdd}>
-        Add to list
+        Add {form.type === 'income' ? 'income' : 'expense'} to list
       </Button>
     </div>
   )

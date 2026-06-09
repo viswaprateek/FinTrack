@@ -10,9 +10,10 @@ import { useApiClient, categoriesApi, transactionsApi } from '../../api'
 import { useBudgetPeriod } from '../../contexts/BudgetPeriodContext'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { budgetForDate, clampDateToBudget, isDateInBudget } from '../../lib/budgets'
-import { formatShortDate } from '../../lib/utils'
+import { cn, formatShortDate } from '../../lib/utils'
 import { IconPlus, IconSearch, IconSplit } from '../../components/ui/icons'
 import { AddTransactionModal } from '../../components/transactions/AddTransactionModal'
+import { TransactionTypeToggle, type TransactionType } from '../../components/transactions/TransactionTypeToggle'
 import { TransactionListItem } from '../../components/transactions/TransactionListItem'
 import { useIsMobile } from '../../hooks/useMediaQuery'
 import type { Budget, ReimbursementStatus, Transaction } from '../../types'
@@ -47,6 +48,7 @@ export function TransactionsPage() {
   const [editTarget, setEditTarget] = useState<Transaction | null>(null)
   const [editBudgetId, setEditBudgetId] = useState('')
   const [editDate, setEditDate] = useState('')
+  const [editType, setEditType] = useState<TransactionType>('expense')
   const [editAmount, setEditAmount] = useState('')
   const [editDescription, setEditDescription] = useState('')
   const [editCategoryId, setEditCategoryId] = useState('')
@@ -126,7 +128,8 @@ export function TransactionsPage() {
     setEditTarget(transaction)
     setEditBudgetId(transaction.budgetId)
     setEditDate(transaction.date)
-    setEditAmount(String(transaction.amount))
+    setEditType(transaction.amount < 0 ? 'expense' : 'income')
+    setEditAmount(String(Math.abs(transaction.amount)))
     setEditDescription(transaction.description)
     setEditCategoryId(transaction.categoryId ?? '')
     setEditNotes(transaction.notes ?? '')
@@ -138,6 +141,7 @@ export function TransactionsPage() {
     setEditTarget(null)
     setEditBudgetId('')
     setEditDate('')
+    setEditType('expense')
     setEditAmount('')
     setEditDescription('')
     setEditCategoryId('')
@@ -172,7 +176,7 @@ export function TransactionsPage() {
         date: editDate,
         description: editDescription,
         amount: Math.abs(Number(editAmount)),
-        type: Number(editAmount) < 0 ? 'expense' : 'income',
+        type: editType,
         reimbursable: editReimbursableOn ? editReimbursable : 'none',
         notes: editNotes || null,
       }),
@@ -212,6 +216,7 @@ export function TransactionsPage() {
     editDateInBudget &&
     !!editDate &&
     !!editAmount &&
+    Number(editAmount) > 0 &&
     !!editDescription
 
   if (budgetsLoading || transactionsQuery.isLoading) {
@@ -474,6 +479,14 @@ export function TransactionsPage() {
                 </select>
               </div>
 
+              <TransactionTypeToggle
+                value={editType}
+                onChange={(next) => {
+                  setEditType(next)
+                  if (next === 'income') setEditReimbursableOn(false)
+                }}
+              />
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-subtle">Date</label>
@@ -490,12 +503,20 @@ export function TransactionsPage() {
                   )}
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-subtle">Amount (negative for expense)</label>
+                  <label className="mb-1.5 block text-sm font-medium text-subtle">Amount</label>
                   <input
                     value={editAmount}
                     onChange={(e) => setEditAmount(e.target.value)}
                     type="number"
-                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00"
+                    className={cn(
+                      'w-full rounded-xl border bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2',
+                      editType === 'expense'
+                        ? 'border-red-500/30 focus:border-red-500/50 focus:ring-red-500/20'
+                        : 'border-emerald-500/30 focus:border-emerald-500/50 focus:ring-emerald-500/20',
+                    )}
                   />
                 </div>
               </div>
