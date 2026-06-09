@@ -2,6 +2,7 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.services.activity_service import ActivityService
 from app.services.budget_service import BudgetService
 from app.services.category_service import CategoryService
 from app.services.credit_card_service import CreditCardService
@@ -47,3 +48,7 @@ def get_onboarding_service(db: Session = Depends(get_db)) -> OnboardingService:
 
 def get_user_service(db: Session = Depends(get_db)) -> UserService:
     return UserService(db)
+
+
+def get_activity_service(db: Session = Depends(get_db)) -> ActivityService:
+    return ActivityService(db)

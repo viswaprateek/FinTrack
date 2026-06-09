@@ -5,6 +5,8 @@ import { Button } from '../../components/ui/Button'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { usePrivacy } from '../../contexts/PrivacyContext'
 import { useTheme, type Theme } from '../../contexts/ThemeContext'
+import { ActivityHeatmap } from '../../components/settings/ActivityHeatmap'
+import { DummyBadges } from '../../components/settings/DummyBadges'
 import { ContentLoader } from '../../components/ui/Spinner'
 import { SUPPORTED_CURRENCIES } from '../../lib/currencies'
 
@@ -37,6 +39,25 @@ export function SettingsPage() {
         <h2 className="text-xl font-semibold text-heading">Settings</h2>
         <p className="mt-1 text-sm text-muted">Manage your account, preferences, and data.</p>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Activity</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch">
+            <div className="min-w-0 flex-1">
+              <p className="mb-4 text-xs text-muted">
+                Days you logged expenses — darker green means more transactions that day.
+              </p>
+              <ActivityHeatmap />
+            </div>
+            <div className="w-full shrink-0 lg:w-56 xl:w-64">
+              <DummyBadges />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
