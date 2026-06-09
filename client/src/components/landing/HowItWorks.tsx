@@ -42,14 +42,14 @@ const FLOW_PATH =
 
 export function HowItWorks() {
   return (
-    <section className="relative overflow-hidden border-t border-border/80 bg-background py-24 sm:py-32">
+    <section className="relative overflow-hidden border-t border-border bg-background py-24 sm:py-32">
       <div className="relative mx-auto max-w-6xl px-6">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-medium uppercase tracking-widest text-emerald-400/80">How it works</p>
+          <p className="text-sm font-medium uppercase tracking-widest text-accent/80">How it works</p>
           <h2 className="mt-3 text-3xl font-bold tracking-tight text-heading sm:text-4xl lg:text-5xl">
             Built for people who want
             <br />
-            <span className="text-emerald-400">clarity, not spreadsheets</span>
+            <span className="text-accent">clarity, not spreadsheets</span>
           </h2>
           <p className="mt-5 text-lg text-muted-fg">
             We turned envelope budgeting into a simple four-step rhythm — so you always know where your money is
@@ -59,7 +59,7 @@ export function HowItWorks() {
 
         <div className="relative mt-20 sm:mt-28">
           <svg
-            className="pointer-events-none absolute inset-0 hidden h-full w-full text-emerald-400/50 lg:block"
+            className="pointer-events-none absolute inset-0 hidden h-full w-full text-accent/30 lg:block"
             viewBox="0 0 100 100"
             fill="none"
             preserveAspectRatio="none"
@@ -115,7 +115,7 @@ function StepRow({
       </div>
 
       <div className={cn('flex flex-col justify-center', graphicLeft ? 'lg:pl-4' : 'lg:pr-4 lg:text-right lg:items-end')}>
-        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-500/10 text-xs font-bold text-emerald-400">
+        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-accent/30 bg-accent-muted text-xs font-bold text-accent">
           {step.number}
         </span>
         <h3 className="mt-4 text-2xl font-bold tracking-tight text-heading sm:text-3xl">{step.title}</h3>
@@ -127,8 +127,8 @@ function StepRow({
 
 function IllustrationFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative rounded-3xl bg-gradient-to-br from-emerald-950 to-emerald-900/80 p-6 shadow-xl shadow-emerald-950/40 sm:p-8">
-      <div className="absolute inset-0 rounded-3xl ring-1 ring-emerald-500/20" />
+    <div className="relative rounded-2xl border border-border bg-surface-solid p-6 shadow-sm shadow-black/5 dark:shadow-none dark:ring-1 dark:ring-white/[0.04] sm:p-8">
+      <div className="absolute inset-0 rounded-2xl ring-1 ring-accent/10 dark:ring-accent/20" />
       <div className="relative">{children}</div>
     </div>
   )
@@ -138,7 +138,7 @@ function IllustrationFrame({ children }: { children: React.ReactNode }) {
 
 function EnvelopeIllustration() {
   const envelopes = [
-    { name: 'Groceries', pct: 72, color: 'bg-emerald-400' },
+    { name: 'Groceries', pct: 72, color: 'bg-accent' },
     { name: 'Rent', pct: 100, color: 'bg-sky-400' },
     { name: 'Dining out', pct: 45, color: 'bg-amber-400' },
   ]
@@ -146,12 +146,12 @@ function EnvelopeIllustration() {
   return (
     <div className="space-y-3">
       {envelopes.map((env) => (
-        <div key={env.name} className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
+        <div key={env.name} className="rounded-xl border border-border bg-surface-muted p-4">
           <div className="flex items-center justify-between text-sm">
-            <span className="font-medium text-heading/90">{env.name}</span>
-            <span className="text-xs text-heading/50">{env.pct}%</span>
+            <span className="font-medium text-heading">{env.name}</span>
+            <span className="text-xs text-muted">{env.pct}%</span>
           </div>
-          <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-white/10">
+          <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-border">
             <div className={cn('h-full rounded-full', env.color)} style={{ width: `${env.pct}%` }} />
           </div>
         </div>
@@ -164,25 +164,25 @@ function TransactionIllustration() {
   const txs = [
     { merchant: 'Whole Foods', amount: '-$47.20', cat: 'Groceries', tone: 'text-heading/80' },
     { merchant: 'Netflix', amount: '-$15.99', cat: 'Subscriptions', tone: 'text-heading/80' },
-    { merchant: 'Paycheck', amount: '+$2,125.00', cat: 'Income', tone: 'text-emerald-400' },
+    { merchant: 'Paycheck', amount: '+$2,125.00', cat: 'Income', tone: 'text-success' },
   ]
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/10 bg-surface">
-      <div className="flex items-center gap-2 border-b border-white/10 px-4 py-3">
+    <div className="overflow-hidden rounded-xl border border-border bg-surface-solid">
+      <div className="flex items-center gap-2 border-b border-border px-4 py-3">
         <div className="flex gap-1.5">
           <span className="h-2 w-2 rounded-full bg-red-400/60" />
           <span className="h-2 w-2 rounded-full bg-amber-400/60" />
-          <span className="h-2 w-2 rounded-full bg-emerald-400/60" />
+          <span className="h-2 w-2 rounded-full bg-accent/60" />
         </div>
-        <span className="mx-auto text-[10px] text-heading/40">Transactions</span>
+        <span className="mx-auto text-[10px] text-muted">Transactions</span>
       </div>
-      <div className="divide-y divide-white/5 p-2">
+      <div className="divide-y divide-border p-2">
         {txs.map((tx) => (
           <div key={tx.merchant} className="flex items-center justify-between px-3 py-3">
             <div>
-              <p className="text-sm font-medium text-heading/90">{tx.merchant}</p>
-              <p className="text-[10px] text-heading/40">{tx.cat}</p>
+              <p className="text-sm font-medium text-heading">{tx.merchant}</p>
+              <p className="text-[10px] text-muted">{tx.cat}</p>
             </div>
             <span className={cn('text-sm font-semibold tabular-nums', tx.tone)}>{tx.amount}</span>
           </div>
@@ -202,16 +202,16 @@ function RecurringIllustration() {
   return (
     <div className="space-y-2">
       {bills.map((bill) => (
-        <div key={bill.name} className="flex items-center gap-3 rounded-2xl border border-emerald-400/30 bg-white/5 px-4 py-3">
-          <div className="flex h-9 w-9 shrink-0 flex-col items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-300">
+        <div key={bill.name} className="flex items-center gap-3 rounded-xl border border-border bg-surface-muted px-4 py-3">
+          <div className="flex h-9 w-9 shrink-0 flex-col items-center justify-center rounded-lg bg-accent-muted text-accent">
             <span className="text-[8px] uppercase leading-none">Jun</span>
             <span className="text-sm font-bold leading-tight">{bill.date}</span>
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-heading/90">{bill.name}</p>
-            <p className="text-[10px] text-heading/40">Repeats monthly</p>
+            <p className="truncate text-sm font-medium text-heading">{bill.name}</p>
+            <p className="text-[10px] text-muted">Repeats monthly</p>
           </div>
-          <span className="text-sm font-semibold tabular-nums text-heading/70">{bill.amount}</span>
+          <span className="text-sm font-semibold tabular-nums text-heading">{bill.amount}</span>
         </div>
       ))}
     </div>
@@ -235,22 +235,22 @@ function ForecastIllustration() {
     <div>
       <div className="mb-3 flex items-baseline justify-between">
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-heading/40">Projected balance</p>
-          <p className="text-2xl font-bold text-emerald-400">$1,470</p>
+          <p className="text-[10px] uppercase tracking-wider text-muted">Projected balance</p>
+          <p className="text-2xl font-bold text-heading">$1,470</p>
         </div>
-        <span className="rounded-full bg-emerald-500/20 px-2.5 py-1 text-[10px] font-medium text-emerald-300">
+        <span className="rounded-full bg-accent-muted px-2.5 py-1 text-[10px] font-medium text-accent">
           +30 days
         </span>
       </div>
       <svg viewBox={`0 0 ${w} ${h}`} className="w-full" aria-hidden>
         <defs>
           <linearGradient id="forecast-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#34d399" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="#34d399" stopOpacity="0" />
+            <stop offset="0%" stopColor="#6366f1" stopOpacity="0.25" />
+            <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
           </linearGradient>
         </defs>
         <path d={areaPath} fill="url(#forecast-fill)" />
-        <path d={linePath} fill="none" stroke="#34d399" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d={linePath} fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
         <line x1="0" y1={h * 0.85} x2={w} y2={h * 0.85} stroke="#f87171" strokeWidth="1" strokeDasharray="4 4" opacity="0.5" />
       </svg>
     </div>

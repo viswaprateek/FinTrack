@@ -22,7 +22,7 @@ import {
 import type { CardBrand, CardTheme, CardTransaction, CreditCard } from '../../types'
 
 const inputClass =
-  'w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-emerald-400 focus:outline-none'
+  'w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted'
 
 const CATEGORY_ICONS: Record<string, string> = {
   Transfer: '↗',
@@ -182,14 +182,16 @@ export function CardsPage() {
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
       {/* Demo banner */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 sm:px-5">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-300/80 bg-amber-50 px-4 py-3 dark:border-amber-500/30 dark:bg-amber-500/10 sm:px-5">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400">
             <IconSparkles className="h-4 w-4" />
           </div>
           <div>
-            <p className="text-sm font-medium text-amber-200">Demo mode</p>
-            <p className="text-xs text-amber-200/70">Cards are mock — not connected to real banks or payment networks.</p>
+            <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">Demo mode</p>
+            <p className="text-xs text-amber-800/90 dark:text-amber-200/80">
+              Cards are mock — not connected to real banks or payment networks.
+            </p>
           </div>
         </div>
         {cards.length === 0 && (
@@ -200,7 +202,7 @@ export function CardsPage() {
       </div>
 
       {mockNotice && (
-        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 text-sm text-emerald-300">
+        <div className="rounded-xl border border-accent/30 bg-accent-muted px-4 py-2.5 text-sm text-accent">
           {mockNotice}
         </div>
       )}
@@ -262,7 +264,7 @@ export function CardsPage() {
       <div className="grid gap-3 sm:grid-cols-3">
         <StatTile label="Total limit" value={displayAmount(totals.limit)} />
         <StatTile label="Balance owed" value={displayAmount(totals.balance)} accent="text-amber-400" />
-        <StatTile label="Available" value={displayAmount(totals.available)} accent="text-emerald-400" />
+        <StatTile label="Available" value={displayAmount(totals.available)} accent="text-success" />
       </div>
 
       {selectedCard && (
@@ -432,9 +434,9 @@ function QuickAction({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-surface-solid px-3 py-4 text-center transition-colors hover:border-emerald-500/40 hover:bg-emerald-500/5 disabled:opacity-50"
+      className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-surface-solid px-3 py-4 text-center transition-colors hover:border-accent/40 hover:bg-accent-muted disabled:opacity-50"
     >
-      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-input text-emerald-400">
+      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-input text-success">
         <Icon className="h-5 w-5" />
       </div>
       <span className="text-xs font-medium text-muted-fg">{label}</span>

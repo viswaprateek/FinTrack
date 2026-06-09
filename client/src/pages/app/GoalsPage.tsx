@@ -14,7 +14,7 @@ import { IconPlus, IconX } from '../../components/ui/icons'
 import type { Goal, GoalContribution } from '../../types'
 
 const inputClass =
-  'w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-emerald-400 focus:outline-none'
+  'w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted'
 
 export function GoalsPage() {
   const client = useApiClient()
@@ -248,7 +248,7 @@ export function GoalsPage() {
                 type="button"
                 disabled={exists}
                 onClick={() => openCreateFromTemplate(template)}
-                className="flex items-center gap-3 rounded-2xl border border-border bg-surface-solid px-4 py-3.5 text-left transition-colors hover:border-emerald-500/40 hover:bg-emerald-500/5 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex items-center gap-3 rounded-2xl border border-border bg-surface-solid px-4 py-3.5 text-left transition-colors hover:border-accent/40 hover:bg-accent-muted disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <GoalIcon name={template.name} icon={template.icon} />
                 <div className="min-w-0">
@@ -529,7 +529,7 @@ function ContributionRow({
   return (
     <li className="flex items-center justify-between gap-3 rounded-xl bg-input/40 px-3 py-2.5">
       <div className="min-w-0">
-        <p className={`text-sm font-medium ${positive ? 'text-emerald-400' : 'text-red-400'}`}>
+        <p className={`text-sm font-medium ${positive ? 'text-success' : 'text-red-400'}`}>
           {positive ? '+' : ''}{displayAmount(contribution.amount)}
         </p>
         <p className="text-xs text-muted">

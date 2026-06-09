@@ -31,7 +31,7 @@ export function AssistantMessage({
       <div
         className={cn(
           'max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm',
-          isUser ? 'bg-purple-600 text-heading' : 'border border-border bg-surface-solid text-foreground',
+          isUser ? 'bg-accent text-accent-fg' : 'border border-border bg-surface-solid text-foreground',
         )}
       >
         {message.imagePreview && (

@@ -40,13 +40,7 @@ import {
   IconZap,
   IconPlus,
 } from '../../components/ui/icons'
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const CHART_COLORS = [
-  '#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444',
-  '#06b6d4', '#84cc16', '#f97316', '#ec4899', '#14b8a6',
-]
+import { CHART_COLORS, useChartTheme } from '../../lib/chartTheme'
 
 // ─── Data helpers ─────────────────────────────────────────────────────────────
 
@@ -137,7 +131,7 @@ function getSpendingVelocity(transactions: Transaction[], plannedTotal: number) 
 
 // ─── Custom Tooltips ──────────────────────────────────────────────────────────
 
-const tooltipBox = 'rounded-xl border border-border-muted bg-input/95 px-3 py-2.5 shadow-xl backdrop-blur'
+const tooltipBox = 'rounded-lg border border-border bg-surface-solid px-3 py-2 shadow-sm dark:shadow-none dark:ring-1 dark:ring-white/[0.06]'
 
 function SpendingTooltip({ active, payload, label, formatCurrency }: {
   active?: boolean; payload?: Array<{ value: number }>; label?: string; formatCurrency: (v: number) => string
@@ -146,7 +140,7 @@ function SpendingTooltip({ active, payload, label, formatCurrency }: {
   return (
     <div className={tooltipBox}>
       <p className="text-xs font-medium text-muted-fg">{label}</p>
-      <p className="mt-0.5 text-sm font-semibold text-emerald-400">{formatCurrency(payload[0].value)}</p>
+      <p className="mt-0.5 text-sm font-semibold text-heading">{formatCurrency(payload[0].value)}</p>
     </div>
   )
 }
@@ -176,7 +170,7 @@ function PieTooltip({ active, payload, formatCurrency }: {
   return (
     <div className={tooltipBox}>
       <p className="text-xs font-medium text-subtle">{payload[0].name}</p>
-      <p className="mt-0.5 text-sm font-semibold text-emerald-400">{formatCurrency(payload[0].value)}</p>
+      <p className="mt-0.5 text-sm font-semibold text-heading">{formatCurrency(payload[0].value)}</p>
       <p className="text-xs text-muted">{payload[0].payload.pct}% of spending</p>
     </div>
   )
@@ -185,10 +179,10 @@ function PieTooltip({ active, payload, formatCurrency }: {
 // ─── Health badge ─────────────────────────────────────────────────────────────
 
 const healthStyles = {
-  emerald: { badge: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400', dot: 'bg-emerald-400' },
+  emerald: { badge: 'bg-success-muted border-success/20 text-success', dot: 'bg-success' },
   amber:   { badge: 'bg-amber-500/10 border-amber-500/20 text-amber-400',     dot: 'bg-amber-400'   },
-  red:     { badge: 'bg-red-500/10 border-red-500/20 text-red-400',           dot: 'bg-red-400'     },
-  slate:   { badge: 'bg-slate-500/10 border-slate-500/20 text-muted-fg',     dot: 'bg-slate-400'   },
+  red:     { badge: 'bg-danger-muted border-danger/20 text-danger',           dot: 'bg-danger'     },
+  slate:   { badge: 'bg-surface-muted border-border text-muted-fg',     dot: 'bg-muted'   },
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -197,6 +191,7 @@ export function DashboardPage() {
   const client = useApiClient()
   const { formatCurrency } = useCurrency()
   const { currentBudget, isLoading: budgetsLoading } = useBudgetPeriod()
+  const chartTheme = useChartTheme()
 
   const categoriesQuery = useQuery({
     queryKey: ['categories', currentBudget?.id],
@@ -351,8 +346,8 @@ export function DashboardPage() {
             value: formatCurrency(Math.abs(remaining)),
             subLabel: remaining < 0 ? 'Overspent' : 'Available',
             icon: <IconShield className="h-5 w-5" />,
-            iconColor: remaining >= 0 ? 'text-emerald-400' : 'text-red-400',
-            iconBg: remaining >= 0 ? 'bg-emerald-500/10' : 'bg-red-500/10',
+            iconColor: remaining >= 0 ? 'text-success' : 'text-danger',
+            iconBg: remaining >= 0 ? 'bg-success-muted' : 'bg-danger-muted',
             tone: remaining >= 0 ? ('success' as const) : ('danger' as const),
           },
           {
@@ -365,8 +360,8 @@ export function DashboardPage() {
                   ? 'No sources set'
                   : undefined,
             icon: <IconTrendingUp className="h-5 w-5" />,
-            iconColor: 'text-emerald-400',
-            iconBg: 'bg-emerald-500/10',
+            iconColor: 'text-success',
+            iconBg: 'bg-success-muted',
             tone: expectedIncome > 0 && actualIncome >= expectedIncome ? ('success' as const) : ('neutral' as const),
           },
           {
@@ -414,20 +409,20 @@ export function DashboardPage() {
                 <AreaChart data={spendingTrend} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
                   <defs>
                     <linearGradient id="spendGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%"  stopColor="#10b981" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}    />
+                      <stop offset="5%"  stopColor={chartTheme.accent} stopOpacity={0.25} />
+                      <stop offset="95%" stopColor={chartTheme.accent} stopOpacity={0}    />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.grid} vertical={false} />
                   <XAxis
                     dataKey="date"
-                    tick={{ fill: '#64748b', fontSize: 11 }}
+                    tick={{ fill: chartTheme.axis, fontSize: 11 }}
                     axisLine={false}
                     tickLine={false}
                     interval="preserveStartEnd"
                   />
                   <YAxis
-                    tick={{ fill: '#64748b', fontSize: 11 }}
+                    tick={{ fill: chartTheme.axis, fontSize: 11 }}
                     axisLine={false}
                     tickLine={false}
                     tickFormatter={formatY}
@@ -446,11 +441,11 @@ export function DashboardPage() {
                   <Area
                     type="monotone"
                     dataKey="spending"
-                    stroke="#10b981"
+                    stroke={chartTheme.accent}
                     strokeWidth={2.5}
                     fill="url(#spendGrad)"
-                    dot={{ fill: '#10b981', r: 3, strokeWidth: 0 }}
-                    activeDot={{ r: 5, fill: '#10b981', strokeWidth: 0 }}
+                    dot={{ fill: chartTheme.accent, r: 3, strokeWidth: 0 }}
+                    activeDot={{ r: 5, fill: chartTheme.accent, strokeWidth: 0 }}
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -549,9 +544,9 @@ export function DashboardPage() {
             {budgetVsActual.length > 0 ? (
               <ResponsiveContainer width="100%" height={240}>
                 <BarChart data={budgetVsActual} margin={{ top: 8, right: 8, bottom: 0, left: 0 }} barGap={3}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={formatY} width={42} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.grid} vertical={false} />
+                  <XAxis dataKey="name" tick={{ fill: chartTheme.axis, fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: chartTheme.axis, fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={formatY} width={42} />
                   <Tooltip
                     content={({ active, payload, label }) => (
                       <BarTooltip
@@ -562,9 +557,9 @@ export function DashboardPage() {
                       />
                     )}
                   />
-                  <Legend wrapperStyle={{ fontSize: '12px', color: '#94a3b8', paddingTop: '12px' }} />
-                  <Bar dataKey="Planned" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={30} />
-                  <Bar dataKey="Spent"   fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={30} />
+                  <Legend wrapperStyle={{ fontSize: '12px', color: chartTheme.legend, paddingTop: '12px' }} />
+                  <Bar dataKey="Planned" fill={chartTheme.secondary} radius={[4, 4, 0, 0]} maxBarSize={30} />
+                  <Bar dataKey="Spent"   fill={chartTheme.accent} radius={[4, 4, 0, 0]} maxBarSize={30} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -650,13 +645,13 @@ export function DashboardPage() {
                 <div>
                   <p className="text-xs font-medium text-muted-fg">Daily Spend Rate</p>
                   <p className="mt-0.5 text-lg font-bold text-foreground">{formatCurrency(velocity.dailyRate)}/day</p>
-                  <p className={`text-xs ${velocity.onTrack ? 'text-emerald-400' : 'text-amber-400'}`}>
+                  <p className={`text-xs ${velocity.onTrack ? 'text-success' : 'text-amber-400'}`}>
                     Projected: {formatCurrency(velocity.projectedMonthly)}/mo
                   </p>
                 </div>
                 <div
                   className={`flex h-9 w-9 items-center justify-center rounded-lg ${
-                    velocity.onTrack ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'
+                    velocity.onTrack ? 'bg-success-muted text-success' : 'bg-amber-500/10 text-amber-400'
                   }`}
                 >
                   <IconZap className="h-4 w-4" />
@@ -789,7 +784,7 @@ export function DashboardPage() {
                     <td className="px-6 py-3.5 text-xs text-muted">{t.account}</td>
                     <td
                       className={`px-6 py-3.5 text-right font-semibold tabular-nums ${
-                        t.amount >= 0 ? 'text-emerald-400' : 'text-foreground'
+                        t.amount >= 0 ? 'text-success' : 'text-foreground'
                       }`}
                     >
                       {t.amount >= 0 ? '+' : ''}

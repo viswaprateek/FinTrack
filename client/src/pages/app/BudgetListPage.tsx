@@ -115,7 +115,7 @@ export function BudgetListPage() {
                 key={i}
                 className={cn(
                   'h-1.5 w-1.5 rounded-full transition-colors',
-                  selectedMonth === i + 1 ? 'bg-emerald-400' : 'bg-border-muted',
+                  selectedMonth === i + 1 ? 'bg-accent' : 'bg-border-muted',
                 )}
               />
             ))}
@@ -134,11 +134,11 @@ export function BudgetListPage() {
 
         <div className="flex flex-wrap gap-x-6 gap-y-2 border-t border-border bg-background/50 px-4 py-3 text-[11px] text-muted sm:px-6">
           <span className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50" />
+            <span className="h-2 w-2 rounded-full bg-accent shadow-sm shadow-accent/50" />
             Today
           </span>
           <span className="flex items-center gap-2">
-            <span className="h-3 w-6 rounded bg-gradient-to-r from-emerald-600/80 to-teal-500/60" />
+            <span className="h-3 w-6 rounded bg-gradient-to-r from-accent/80 to-indigo-400/60" />
             Month header
           </span>
           <span className="flex items-center gap-2">
@@ -178,7 +178,7 @@ export function BudgetListPage() {
                     </Button>
                   )}
                   {currentBudget?.id === selectedBudget.id && (
-                    <span className="text-xs text-emerald-400">Active in app header</span>
+                    <span className="text-xs text-success">Active in app header</span>
                   )}
                 </div>
               </>
@@ -198,7 +198,7 @@ export function BudgetListPage() {
                       type="checkbox"
                       checked={copyEnvelopes}
                       onChange={(e) => setCopyEnvelopes(e.target.checked)}
-                      className="h-4 w-4 rounded border-border-muted bg-input text-emerald-500 focus:ring-emerald-500"
+                      className="h-4 w-4 rounded border-border-muted bg-input text-accent focus:ring-2 focus:ring-accent-muted"
                     />
                     <span className="text-sm text-subtle">
                       Copy category envelopes from {copySourceBudget.name}
@@ -213,7 +213,7 @@ export function BudgetListPage() {
                 <Button
                   onClick={() => createBudget.mutate()}
                   disabled={createBudget.isPending}
-                  className={cn(isCurrentCalendarMonth(viewYear, selectedMonth) && 'ring-2 ring-emerald-400/30')}
+                  className={cn(isCurrentCalendarMonth(viewYear, selectedMonth) && 'ring-2 ring-accent/30')}
                 >
                   {createBudget.isPending ? 'Creating…' : 'Create budget'}
                 </Button>

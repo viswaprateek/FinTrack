@@ -13,7 +13,7 @@ export function AssistantWidget() {
       <button
         type="button"
         onClick={toggle}
-        className="relative flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-fuchsia-600 text-2xl text-heading shadow-lg shadow-purple-900/40 transition-transform hover:scale-105"
+        className="relative flex h-14 w-14 items-center justify-center rounded-full bg-accent text-2xl text-accent-fg shadow-lg shadow-accent/25 transition-transform hover:bg-accent-hover hover:scale-105"
         aria-label={isOpen ? 'Close finance assistant' : 'Open finance assistant'}
       >
         ✨

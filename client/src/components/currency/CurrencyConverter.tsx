@@ -25,7 +25,7 @@ function defaultToCurrency(homeCurrency: string): string {
 }
 
 const selectClassName =
-  'w-full rounded-xl border border-border-muted bg-input/80 px-3 py-2.5 text-sm text-foreground focus:border-emerald-400/70 focus:outline-none focus:ring-2 focus:ring-emerald-400/20'
+  'w-full rounded-xl border border-border-muted bg-input/80 px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted'
 
 export function CurrencyConverter() {
   const { currency: homeCurrency } = useCurrency()
@@ -106,7 +106,7 @@ export function CurrencyConverter() {
         aria-label={open ? 'Close currency converter' : 'Open currency converter'}
         className={cn(
           'flex items-center justify-center p-1 transition-colors',
-          open ? 'text-emerald-400' : 'text-muted-fg hover:text-emerald-400',
+          open ? 'text-success' : 'text-muted-fg hover:text-success',
         )}
       >
         <IconCalculator className="h-5 w-5" />
@@ -119,7 +119,7 @@ export function CurrencyConverter() {
           aria-label="Currency converter"
           className="absolute right-0 top-full z-[60] mt-2 w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-border-muted/80 bg-surface-solid shadow-2xl shadow-black/40"
         >
-          <div className="border-b border-border/80 bg-gradient-to-r from-emerald-500/10 via-transparent to-sky-500/10 px-4 py-3">
+          <div className="border-b border-border bg-gradient-to-r from-accent-muted via-transparent to-sky-500/10 px-4 py-3">
             <p className="text-sm font-semibold text-heading">Currency converter</p>
             <p className="mt-0.5 text-xs text-muted">Quick reference — rates are approximate</p>
           </div>
@@ -137,7 +137,7 @@ export function CurrencyConverter() {
                 inputMode="decimal"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full rounded-xl border border-border-muted bg-input/80 px-3 py-2.5 text-lg font-semibold tabular-nums text-heading focus:border-emerald-400/70 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
+                className="w-full rounded-xl border border-border-muted bg-input/80 px-3 py-2.5 text-lg font-semibold tabular-nums text-heading focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                 placeholder="0"
               />
             </div>
@@ -165,7 +165,7 @@ export function CurrencyConverter() {
                 type="button"
                 onClick={swapCurrencies}
                 aria-label="Swap currencies"
-                className="mb-0.5 flex h-10 w-10 items-center justify-center rounded-xl border border-border-muted bg-hover/60 text-muted-fg transition-colors hover:border-emerald-400/40 hover:text-emerald-400"
+                className="mb-0.5 flex h-10 w-10 items-center justify-center rounded-xl border border-border-muted bg-hover/60 text-muted-fg transition-colors hover:border-accent/40 hover:text-accent"
               >
                 <IconArrowLeftRight className="h-4 w-4" />
               </button>
@@ -189,14 +189,14 @@ export function CurrencyConverter() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-3 py-3">
+            <div className="rounded-xl border border-accent/20 bg-accent-muted px-3 py-3">
               {rateQuery.isLoading ? (
                 <p className="text-sm text-muted-fg">Fetching rate…</p>
               ) : rateQuery.isError ? (
                 <p className="text-sm text-red-400">Could not load rate. Try another pair.</p>
               ) : convertedAmount != null ? (
                 <>
-                  <p className="text-xs font-medium uppercase tracking-wide text-emerald-400/80">Result</p>
+                  <p className="text-xs font-medium uppercase tracking-wide text-accent/80">Result</p>
                   <p className="mt-1 text-2xl font-bold tabular-nums text-heading">
                     {formatCurrencyAmount(convertedAmount, toCurrency)}
                   </p>

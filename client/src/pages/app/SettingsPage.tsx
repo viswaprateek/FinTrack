@@ -9,12 +9,14 @@ import { ActivityHeatmap } from '../../components/settings/ActivityHeatmap'
 import { DummyBadges } from '../../components/settings/DummyBadges'
 import { ContentLoader } from '../../components/ui/Spinner'
 import { SUPPORTED_CURRENCIES } from '../../lib/currencies'
+import { useClerkAppearance } from '../../lib/clerkAppearance'
 
 export function SettingsPage() {
   const { user } = useUser()
   const { currency, updateCurrency, isLoading, isSaving } = useCurrency()
   const { privacyMode, setPrivacyMode } = usePrivacy()
   const { theme, setTheme } = useTheme()
+  const clerkAppearance = useClerkAppearance()
   const [profileOpen, setProfileOpen] = useState(false)
   const [selectedCurrency, setSelectedCurrency] = useState(currency)
 
@@ -117,7 +119,7 @@ export function SettingsPage() {
             </p>
             <select
               id="theme"
-              className="w-full max-w-xs rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+              className="w-full max-w-xs rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
               value={theme}
               onChange={(e) => setTheme(e.target.value as Theme)}
             >
@@ -134,7 +136,7 @@ export function SettingsPage() {
             </p>
             <select
               id="default-currency"
-              className="w-full max-w-xs rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+              className="w-full max-w-xs rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
               value={selectedCurrency}
               onChange={(e) => setSelectedCurrency(e.target.value)}
               disabled={isLoading || isSaving}
@@ -148,7 +150,7 @@ export function SettingsPage() {
           </div>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-subtle">Default rollover type for new categories</label>
-            <select className="w-full max-w-xs rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none">
+            <select className="w-full max-w-xs rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted">
               <option>Reset</option>
               <option>Rollover</option>
               <option>Capped</option>
@@ -156,7 +158,7 @@ export function SettingsPage() {
           </div>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-subtle">Default budget name format</label>
-            <select className="w-full max-w-xs rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none">
+            <select className="w-full max-w-xs rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted">
               <option>Month Year — e.g. June 2026</option>
               <option>MM/YYYY — e.g. 06/2026</option>
             </select>
@@ -183,14 +185,7 @@ export function SettingsPage() {
       {profileOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 px-4 py-8" onClick={() => setProfileOpen(false)}>
           <div onClick={(e) => e.stopPropagation()}>
-            <UserProfile
-              appearance={{
-                elements: {
-                  rootBox: 'mx-auto',
-                  card: 'bg-surface-solid border border-border shadow-xl shadow-black/30',
-                },
-              }}
-            />
+            <UserProfile appearance={clerkAppearance} />
           </div>
         </div>
       )}

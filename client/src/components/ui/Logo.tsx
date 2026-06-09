@@ -10,7 +10,7 @@ export function Logo({ className, iconClassName }: LogoProps) {
   return (
     <div
       className={cn(
-        'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-slate-950',
+        'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-fg',
         className,
       )}
     >

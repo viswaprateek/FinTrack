@@ -61,7 +61,7 @@ export function TransactionListItem({
         <p
           className={cn(
             'shrink-0 text-base font-bold tabular-nums',
-            isIncome ? 'text-emerald-400' : 'text-foreground',
+            isIncome ? 'text-success' : 'text-foreground',
           )}
         >
           {isIncome ? '+' : ''}

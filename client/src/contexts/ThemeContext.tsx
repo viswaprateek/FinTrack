@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 export type Theme = 'light' | 'dark'
 
 const STORAGE_KEY = 'fintrack-theme'
+const LIGHT_DEFAULT_MIGRATION_KEY = 'fintrack-theme-light-default-v1'
 
 interface ThemeContextValue {
   theme: Theme
@@ -13,9 +14,14 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
 function readStoredTheme(): Theme {
+  if (!localStorage.getItem(LIGHT_DEFAULT_MIGRATION_KEY)) {
+    localStorage.setItem(STORAGE_KEY, 'light')
+    localStorage.setItem(LIGHT_DEFAULT_MIGRATION_KEY, '1')
+    return 'light'
+  }
   const stored = localStorage.getItem(STORAGE_KEY)
   if (stored === 'light' || stored === 'dark') return stored
-  return 'dark'
+  return 'light'
 }
 
 function applyTheme(theme: Theme) {

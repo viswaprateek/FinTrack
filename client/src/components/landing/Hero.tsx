@@ -3,41 +3,15 @@ import { motion, useMotionValue, useSpring, useTransform } from 'motion/react'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
 import { IconArrowRight, IconShield } from '../ui/icons'
-import { GlitchText } from './GlitchText'
+import { RotatingHeadline } from './RotatingHeadline'
 import { DashboardMockup } from './DashboardMockup'
 import { FloatingAvatar } from './FloatingAvatar'
 import { TiltCard } from './TiltCard'
-
-const avatars = [
-  {
-    src: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&h=120&fit=crop&crop=face',
-    className: 'top-[12%] left-[8%] w-14 h-14 sm:w-16 sm:h-16',
-    delay: 0,
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=face',
-    className: 'top-[20%] right-[10%] w-12 h-12 sm:w-14 sm:h-14',
-    delay: 0.5,
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=120&h=120&fit=crop&crop=face',
-    className: 'bottom-[28%] left-[6%] w-11 h-11 sm:w-12 sm:h-12',
-    delay: 1,
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=120&h=120&fit=crop&crop=face',
-    className: 'bottom-[18%] right-[8%] w-14 h-14 sm:w-16 sm:h-16',
-    delay: 1.5,
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&h=120&fit=crop&crop=face',
-    className: 'top-[45%] left-[4%] w-10 h-10 sm:w-12 sm:h-12',
-    delay: 2,
-  },
-]
+import { AvatarStack } from './AvatarStack'
+import { HERO_FLOATING_FACES, LANDING_FACES } from '../../lib/landingFaces'
 
 const stats = [
-  { label: 'Monthly Income', value: '$4,250', tone: 'text-emerald-400' },
+  { label: 'Monthly Income', value: '$4,250', tone: 'text-success' },
   { label: 'Planned Spending', value: '$2,780', tone: 'text-amber-400' },
   { label: 'Available', value: '$1,470', tone: 'text-sky-400' },
 ]
@@ -80,20 +54,21 @@ export function Hero() {
         style={{ x: bgX, y: bgY }}
         aria-hidden
       >
-        <div className="absolute -top-1/4 left-1/4 h-[500px] w-[500px] rounded-full bg-emerald-500/20 blur-[120px] animate-float-slow" />
-        <div className="absolute -right-1/4 top-1/3 h-[400px] w-[400px] rounded-full bg-sky-500/15 blur-[100px] animate-float-slow-reverse" />
-        <div className="absolute bottom-0 left-1/2 h-[350px] w-[350px] -translate-x-1/2 rounded-full bg-violet-500/10 blur-[90px] animate-pulse-glow" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(16,185,129,0.08)_0%,_transparent_60%)]" />
+        <div className="absolute -top-1/4 left-1/4 h-[500px] w-[500px] rounded-full bg-accent/20 blur-[120px] animate-float-slow dark:bg-accent/10" />
+        <div className="absolute -right-1/4 top-1/3 h-[400px] w-[400px] rounded-full bg-sky-500/15 blur-[100px] animate-float-slow-reverse dark:bg-sky-500/8" />
+        <div className="absolute bottom-0 left-1/2 h-[350px] w-[350px] -translate-x-1/2 rounded-full bg-violet-500/10 blur-[90px] animate-pulse-glow dark:bg-violet-500/5" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(99,102,241,0.08)_0%,_transparent_60%)] dark:bg-[radial-gradient(ellipse_at_top,_rgba(123,137,244,0.12)_0%,_transparent_55%)]" />
       </motion.div>
 
-      {/* Floating avatars */}
-      <div className="pointer-events-none absolute inset-0 hidden lg:block" aria-hidden>
-        {avatars.map((avatar, i) => (
+      {/* Floating portraits — desktop */}
+      <div className="pointer-events-none absolute inset-0 hidden md:block" aria-hidden>
+        {HERO_FLOATING_FACES.map((face, i) => (
           <FloatingAvatar
-            key={avatar.src}
-            src={avatar.src}
-            className={avatar.className}
-            delay={avatar.delay}
+            key={face.id}
+            src={face.src}
+            alt={face.name}
+            className={face.className}
+            delay={face.delay}
             index={i}
             springX={springX}
             springY={springY}
@@ -110,19 +85,19 @@ export function Hero() {
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           >
             <motion.span
-              className="inline-flex items-center gap-2 rounded-full border border-border-muted/80 bg-surface px-4 py-1.5 text-sm text-subtle backdrop-blur-sm"
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-surface-solid px-4 py-1.5 text-sm text-subtle"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <IconShield className="h-4 w-4 text-emerald-400" />
+              <IconShield className="h-4 w-4 text-success" />
               Personal Finance • Envelope Budgeting
             </motion.span>
 
             <h1 className="mt-6 text-4xl font-bold tracking-tight text-heading sm:text-5xl lg:text-6xl">
               Budget smarter,
               <br />
-              <GlitchText words={accentWords} />
+              <RotatingHeadline words={accentWords} />
             </h1>
 
             <p className="mx-auto mt-6 max-w-xl text-lg text-muted-fg lg:mx-0">
@@ -142,6 +117,13 @@ export function Hero() {
                   Sign in
                 </Button>
               </Link>
+            </div>
+
+            <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row lg:justify-start">
+              <AvatarStack faces={LANDING_FACES} size="lg" max={6} />
+              <p className="max-w-xs text-center text-sm text-subtle sm:text-left">
+                Trusted by teachers, freelancers, students, and families who budget month to month.
+              </p>
             </div>
           </motion.div>
 

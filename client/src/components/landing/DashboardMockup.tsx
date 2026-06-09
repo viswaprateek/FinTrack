@@ -1,7 +1,7 @@
 import { cn } from '../../lib/utils'
 
 const categories = [
-  { name: 'Groceries', spent: 320, budget: 400, color: 'bg-emerald-500' },
+  { name: 'Groceries', spent: 320, budget: 400, color: 'bg-accent' },
   { name: 'Rent', spent: 1200, budget: 1200, color: 'bg-sky-500' },
   { name: 'Dining', spent: 185, budget: 150, color: 'bg-amber-500' },
   { name: 'Transport', spent: 92, budget: 200, color: 'bg-violet-500' },
@@ -17,7 +17,7 @@ export function DashboardMockup({ className }: DashboardMockupProps) {
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-2xl border border-border-muted/80 bg-surface-solid/90 shadow-2xl shadow-black/40 backdrop-blur-sm',
+        'overflow-hidden rounded-xl border border-border bg-surface-solid shadow-lg shadow-black/10 dark:shadow-none dark:ring-1 dark:ring-white/[0.06]',
         className,
       )}
     >
@@ -26,7 +26,7 @@ export function DashboardMockup({ className }: DashboardMockupProps) {
         <div className="flex gap-1.5">
           <span className="h-2.5 w-2.5 rounded-full bg-red-500/70" />
           <span className="h-2.5 w-2.5 rounded-full bg-amber-500/70" />
-          <span className="h-2.5 w-2.5 rounded-full bg-emerald-500/70" />
+          <span className="h-2.5 w-2.5 rounded-full bg-accent/70" />
         </div>
         <span className="mx-auto text-xs text-muted">FinTrack — June 2026</span>
       </div>
@@ -35,7 +35,7 @@ export function DashboardMockup({ className }: DashboardMockupProps) {
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-2 sm:gap-3">
           {[
-            { label: 'Income', value: '$4,250', tone: 'text-emerald-400' },
+            { label: 'Income', value: '$4,250', tone: 'text-success' },
             { label: 'Spent', value: '$2,780', tone: 'text-amber-400' },
             { label: 'Available', value: '$1,470', tone: 'text-sky-400' },
           ].map((stat) => (
@@ -55,7 +55,7 @@ export function DashboardMockup({ className }: DashboardMockupProps) {
             {barHeights.map((h, i) => (
               <div
                 key={i}
-                className="flex-1 rounded-t bg-emerald-500/60 transition-all"
+                className="flex-1 rounded-t bg-accent/60 transition-all"
                 style={{ height: `${h}%` }}
               />
             ))}

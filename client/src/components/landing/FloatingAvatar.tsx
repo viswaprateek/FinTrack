@@ -3,6 +3,7 @@ import { cn } from '../../lib/utils'
 
 interface FloatingAvatarProps {
   src: string
+  alt: string
   className: string
   delay: number
   index: number
@@ -10,16 +11,20 @@ interface FloatingAvatarProps {
   springY: MotionValue<number>
 }
 
-export function FloatingAvatar({ src, className, delay, index, springX, springY }: FloatingAvatarProps) {
+export function FloatingAvatar({ src, alt, className, delay, index, springX, springY }: FloatingAvatarProps) {
   const x = useTransform(springX, [-1, 1], [-12 - index * 4, 12 + index * 4])
   const y = useTransform(springY, [-1, 1], [-8 - index * 3, 8 + index * 3])
 
   return (
     <motion.img
       src={src}
-      alt=""
+      alt={alt}
+      width={64}
+      height={64}
+      loading="lazy"
+      decoding="async"
       className={cn(
-        'absolute rounded-full border-2 border-border-muted/60 object-cover shadow-lg shadow-black/30 animate-float-slow',
+        'absolute rounded-full border-2 border-surface-solid object-cover shadow-md shadow-black/15 animate-float-slow dark:shadow-black/40',
         className,
       )}
       style={{ x, y, animationDelay: `${delay}s` }}

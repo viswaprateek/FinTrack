@@ -72,7 +72,7 @@ export function AssistantInput({
         onChange={(e) => setValue(e.target.value)}
         placeholder="Tell me about a transaction..."
         disabled={disabled}
-        className="min-w-0 flex-1 rounded-xl border border-border-muted bg-surface-solid px-3 py-2 text-sm text-foreground placeholder:text-muted focus:border-purple-500 focus:outline-none disabled:opacity-50"
+        className="min-w-0 flex-1 rounded-lg border border-border bg-surface-solid px-3 py-2 text-sm text-foreground placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted disabled:opacity-50"
       />
 
       {micSupported ? (
@@ -101,7 +101,7 @@ export function AssistantInput({
       <button
         type="submit"
         disabled={disabled || !value.trim()}
-        className="shrink-0 rounded-xl bg-gradient-to-br from-purple-500 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-heading transition-opacity hover:opacity-90 disabled:opacity-40"
+        className="shrink-0 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-fg transition-colors hover:bg-accent-hover disabled:opacity-40"
       >
         Send
       </button>

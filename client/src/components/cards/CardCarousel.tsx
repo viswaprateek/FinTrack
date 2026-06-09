@@ -26,7 +26,7 @@ export function CardSwitcher({ cards, selectedId, onSelect, onAddClick }: CardCa
             className={cn(
               'shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition-colors',
               selected
-                ? 'border-emerald-500/50 bg-emerald-500/15 text-emerald-400'
+                ? 'border-accent/50 bg-accent-muted text-accent'
                 : 'border-border bg-surface-solid text-muted-fg hover:border-border-muted hover:text-foreground',
             )}
           >
@@ -56,7 +56,7 @@ export function CardSwitcher({ cards, selectedId, onSelect, onAddClick }: CardCa
       <button
         type="button"
         onClick={onAddClick}
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-dashed border-border-muted text-muted transition-colors hover:border-emerald-500/40 hover:text-emerald-400"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-dashed border-border-muted text-muted transition-colors hover:border-accent/40 hover:text-accent"
         aria-label="Add card"
       >
         +
@@ -81,7 +81,7 @@ export function CardCarousel({ cards, selectedId, onSelect, onAddClick }: CardCa
       <button
         type="button"
         onClick={onAddClick}
-        className="flex w-full max-w-sm flex-col items-center justify-center rounded-3xl border-2 border-dashed border-border-muted bg-surface-muted/50 px-8 py-16 text-muted transition-colors hover:border-emerald-500/40 hover:text-emerald-400"
+        className="flex w-full max-w-sm flex-col items-center justify-center rounded-3xl border-2 border-dashed border-border-muted bg-surface-muted/50 px-8 py-16 text-muted transition-colors hover:border-accent/40 hover:text-accent"
       >
         <span className="text-3xl">+</span>
         <span className="mt-2 text-sm font-medium">Add a card</span>
@@ -111,7 +111,7 @@ export function CardCarousel({ cards, selectedId, onSelect, onAddClick }: CardCa
               card={card}
               className={cn(
                 'shadow-lg transition-shadow',
-                selected && 'shadow-emerald-500/20 ring-2 ring-emerald-400/50 ring-inset',
+                selected && 'shadow-accent/20 ring-2 ring-accent/50 ring-inset',
                 !card.isActive && 'grayscale',
               )}
             />
@@ -125,7 +125,7 @@ export function CardCarousel({ cards, selectedId, onSelect, onAddClick }: CardCa
       <button
         type="button"
         onClick={onAddClick}
-        className="flex aspect-[1.7/1] w-[260px] shrink-0 snap-center flex-col items-center justify-center rounded-3xl border-2 border-dashed border-border-muted bg-surface-muted/30 text-muted transition-colors hover:border-emerald-500/40 hover:text-emerald-400 sm:w-[280px]"
+        className="flex aspect-[1.62/1] w-[260px] shrink-0 snap-center flex-col items-center justify-center rounded-3xl border-2 border-dashed border-border-muted bg-surface-muted/30 text-muted transition-colors hover:border-accent/40 hover:text-accent sm:w-[280px]"
       >
         <span className="text-3xl">+</span>
         <span className="mt-2 text-sm font-medium">Add new card</span>

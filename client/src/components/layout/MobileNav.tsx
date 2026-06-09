@@ -27,7 +27,7 @@ export function MobileNav() {
   return (
     <>
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur-md lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface-solid lg:hidden"
         aria-label="Main navigation"
       >
         <div className="flex items-stretch justify-around px-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1">
@@ -38,7 +38,7 @@ export function MobileNav() {
               className={({ isActive }) =>
                 cn(
                   'flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-2 text-[10px] font-medium transition-colors',
-                  isActive ? 'text-emerald-400' : 'text-muted',
+                  isActive ? 'text-accent' : 'text-muted',
                 )
               }
             >
@@ -51,7 +51,7 @@ export function MobileNav() {
             onClick={() => setMoreOpen(true)}
             className={cn(
               'flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-2 text-[10px] font-medium transition-colors',
-              moreActive || moreOpen ? 'text-emerald-400' : 'text-muted',
+              moreActive || moreOpen ? 'text-accent' : 'text-muted',
             )}
             aria-label="More navigation"
             aria-expanded={moreOpen}

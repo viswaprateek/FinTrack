@@ -15,7 +15,7 @@ export function QueryLoadingBar() {
       role="progressbar"
       aria-busy={active}
     >
-      <div className={cn('query-loading-bar h-full w-1/3 bg-gradient-to-r from-transparent via-emerald-400 to-transparent', active && 'is-active')} />
+      <div className={cn('query-loading-bar h-full w-1/3 bg-gradient-to-r from-transparent via-accent to-transparent', active && 'is-active')} />
     </div>
   )
 }

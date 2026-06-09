@@ -86,8 +86,8 @@ function MonthCalendarTile({
         hasBudget
           ? 'border-border-muted/80 bg-gradient-to-b from-input/90 to-surface-solid'
           : 'border-border-muted/50 border-dashed bg-surface-solid/50',
-        isSelected && 'border-emerald-400/80 ring-2 ring-emerald-400/40 ring-offset-2 ring-offset-background',
-        isCurrent && !isSelected && 'ring-1 ring-emerald-400/50',
+        isSelected && 'border-accent/80 ring-2 ring-accent/40 ring-offset-2 ring-offset-background',
+        isCurrent && !isSelected && 'ring-1 ring-accent/50',
       )}
     >
       {/* Binding holes */}
@@ -142,7 +142,7 @@ function MonthCalendarTile({
                 className={cn(
                   'flex aspect-square items-center justify-center rounded-sm text-[9px] font-medium',
                   today
-                    ? 'bg-emerald-500 font-bold text-slate-950 shadow-sm shadow-emerald-500/40'
+                    ? 'bg-accent font-bold text-slate-950 shadow-sm shadow-accent/40'
                     : hasBudget
                       ? 'text-muted-fg'
                       : 'text-muted',
@@ -174,7 +174,7 @@ function MonthCalendarTile({
               <div
                 className={cn(
                   'h-full rounded-full transition-all',
-                  overBudget ? 'bg-red-500' : spentPct > 85 ? 'bg-amber-500' : 'bg-emerald-500',
+                  overBudget ? 'bg-red-500' : spentPct > 85 ? 'bg-amber-500' : 'bg-accent',
                 )}
                 style={{ width: `${Math.min(100, spentPct)}%` }}
               />
@@ -185,7 +185,7 @@ function MonthCalendarTile({
           </div>
         ) : (
           <div className="flex items-center justify-center gap-1.5 py-0.5">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full border border-dashed border-border-muted text-muted transition-colors group-hover:border-emerald-500/50 group-hover:text-emerald-400">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full border border-dashed border-border-muted text-muted transition-colors group-hover:border-accent/50 group-hover:text-accent">
               +
             </span>
             <span className="text-[10px] font-medium text-muted group-hover:text-muted-fg">Create budget</span>

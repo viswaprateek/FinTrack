@@ -238,7 +238,7 @@ export function RecurringPage() {
                   onChange={(e) => setFormName(e.target.value)}
                   type="text"
                   placeholder="e.g. Rent"
-                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                 />
               </div>
 
@@ -250,7 +250,7 @@ export function RecurringPage() {
                     onChange={(e) => setFormAmount(e.target.value)}
                     type="number"
                     placeholder="0.00"
-                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                   />
                 </div>
                 <div>
@@ -258,7 +258,7 @@ export function RecurringPage() {
                   <select
                     value={formCategoryId}
                     onChange={(e) => setFormCategoryId(e.target.value)}
-                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                   >
                     <option value="">Uncategorized</option>
                     {categories.map((c) => (
@@ -273,7 +273,7 @@ export function RecurringPage() {
                 <select
                   value={formFrequency}
                   onChange={(e) => setFormFrequency(e.target.value as RecurringFrequency)}
-                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                 >
                   {frequencyOptions.map((f) => (
                     <option key={f} value={f}>{frequencyLabel[f]}</option>
@@ -287,7 +287,7 @@ export function RecurringPage() {
                   value={formNextDue}
                   onChange={(e) => setFormNextDue(e.target.value)}
                   type="date"
-                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                 />
               </div>
 
@@ -316,7 +316,7 @@ export function RecurringPage() {
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                   type="text"
-                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                 />
               </div>
 
@@ -327,7 +327,7 @@ export function RecurringPage() {
                     value={editAmount}
                     onChange={(e) => setEditAmount(e.target.value)}
                     type="number"
-                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                   />
                 </div>
                 <div>
@@ -335,7 +335,7 @@ export function RecurringPage() {
                   <select
                     value={editStatus}
                     onChange={(e) => setEditStatus(e.target.value as RecurringStatus)}
-                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                   >
                     <option value="active">Active</option>
                     <option value="paused">Paused</option>
@@ -349,7 +349,7 @@ export function RecurringPage() {
                   <select
                     value={editFrequency}
                     onChange={(e) => setEditFrequency(e.target.value as RecurringFrequency)}
-                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                   >
                     {frequencyOptions.map((f) => (
                       <option key={f} value={f}>{frequencyLabel[f]}</option>
@@ -362,7 +362,7 @@ export function RecurringPage() {
                     value={editNextDue}
                     onChange={(e) => setEditNextDue(e.target.value)}
                     type="date"
-                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                   />
                 </div>
               </div>

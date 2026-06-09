@@ -39,7 +39,7 @@ export function ActivityHeatmap() {
           {' '}day{stats.activeDays === 1 ? '' : 's'} in the last year
           {stats.currentStreak > 0 && (
             <>
-              {' '}· <span className="font-medium text-emerald-400">{stats.currentStreak}-day</span> streak
+              {' '}· <span className="font-medium text-success">{stats.currentStreak}-day</span> streak
             </>
           )}
         </p>

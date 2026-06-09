@@ -40,7 +40,7 @@ export function BudgetPeriodSelector({ budgets, currentId, onChange, compact }: 
         onChange={(e) => onChange(e.target.value)}
         className="h-8 max-w-[10rem] cursor-pointer truncate rounded-lg border border-border-muted bg-input px-3 text-sm
                    font-medium text-foreground transition-colors hover:border-border-muted
-                   focus:border-emerald-500 focus:outline-none sm:max-w-none"
+                   focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted sm:max-w-none"
       >
         {budgets.map((b) => (
           <option key={b.id} value={b.id}>

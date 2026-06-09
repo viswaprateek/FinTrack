@@ -357,7 +357,7 @@ export function OnboardingPage() {
           {step === 'welcome' && (
             <div className="space-y-6 text-center">
               <motion.div
-                className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-400"
+                className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-muted text-accent"
                 animate={{ y: [0, -4, 0] }}
                 transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
               >
@@ -427,13 +427,13 @@ export function OnboardingPage() {
               </div>
 
               <motion.div
-                className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-5"
+                className="rounded-2xl border border-accent/30 bg-accent-muted p-5"
                 initial={{ scale: 0.98, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.05 }}
               >
                 <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent-muted text-accent">
                     <IconWallet className="h-5 w-5" />
                   </div>
                   <div>
@@ -442,7 +442,7 @@ export function OnboardingPage() {
                       {currentPeriod.periodStart} → {currentPeriod.periodEnd}
                     </p>
                     {budgetId && (
-                      <p className="mt-2 flex items-center gap-1 text-xs text-emerald-400">
+                      <p className="mt-2 flex items-center gap-1 text-xs text-success">
                         <IconCheck className="h-3.5 w-3.5" />
                         Already created
                       </p>
@@ -512,13 +512,13 @@ export function OnboardingPage() {
                         className={cn(
                           'flex flex-col items-center gap-2 rounded-2xl border p-3 text-center transition-colors',
                           added
-                            ? 'border-emerald-500/40 bg-emerald-500/10 opacity-70'
-                            : 'border-border hover:border-emerald-500/30 hover:bg-hover/50',
+                            ? 'border-accent/40 bg-accent-muted opacity-70'
+                            : 'border-border hover:border-accent/30 hover:bg-hover/50',
                         )}
                       >
                         <CategoryIcon name={t.name} icon={t.icon} size="sm" />
                         <span className="text-xs font-medium text-foreground">{t.name}</span>
-                        {added && <span className="text-[10px] text-emerald-400">Added</span>}
+                        {added && <span className="text-[10px] text-success">Added</span>}
                       </motion.button>
                     )
                   })}

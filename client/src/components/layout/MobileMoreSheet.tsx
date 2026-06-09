@@ -47,7 +47,7 @@ export function MobileMoreSheet({ open, onClose }: MobileMoreSheetProps) {
               className={({ isActive }) =>
                 cn(
                   'flex items-center gap-4 rounded-2xl px-4 py-3.5 transition-colors',
-                  isActive ? 'bg-emerald-500/10 text-emerald-400' : 'text-foreground hover:bg-input/80',
+                  isActive ? 'bg-accent-muted text-accent' : 'text-foreground hover:bg-hover',
                 )
               }
             >

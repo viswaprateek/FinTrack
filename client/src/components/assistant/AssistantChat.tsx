@@ -44,10 +44,10 @@ export function AssistantChat() {
   const lastTransactionMessageId = [...messages].reverse().find((m) => m.pendingTransaction)?.id
 
   return (
-    <div className="flex h-[520px] w-[380px] flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl shadow-black/40">
+    <div className="flex h-[520px] w-[380px] flex-col overflow-hidden rounded-xl border border-border bg-surface-solid shadow-lg shadow-black/10 dark:shadow-none dark:ring-1 dark:ring-white/[0.06]">
       <header className="flex items-center justify-between border-b border-border bg-surface-solid px-4 py-3">
         <div className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-fuchsia-600 text-sm">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-sm text-accent-fg">
             ✨
           </span>
           <div>
@@ -77,7 +77,7 @@ export function AssistantChat() {
                   key={suggestion}
                   type="button"
                   onClick={() => setDraft(suggestion)}
-                  className="rounded-full border border-border-muted bg-surface-solid px-3 py-1.5 text-xs text-subtle transition-colors hover:border-purple-500 hover:text-heading"
+                  className="rounded-full border border-border bg-surface-solid px-3 py-1.5 text-xs text-subtle transition-colors hover:border-accent hover:text-heading"
                 >
                   {suggestion}
                 </button>

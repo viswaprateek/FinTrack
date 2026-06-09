@@ -16,7 +16,7 @@ export function OnboardingProgress({ step }: OnboardingProgressProps) {
             key={s}
             className={cn(
               'h-1.5 flex-1 rounded-full transition-all duration-500 ease-out',
-              i <= currentIndex ? 'bg-emerald-400' : 'bg-input',
+              i <= currentIndex ? 'bg-accent' : 'bg-input',
               i === currentIndex && 'scale-y-125 shadow-[0_0_8px_rgba(52,211,153,0.45)]',
             )}
           />

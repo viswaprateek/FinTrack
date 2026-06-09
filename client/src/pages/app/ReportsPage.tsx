@@ -71,7 +71,7 @@ export function ReportsPage() {
             className={cn(
               'border-b-2 px-4 py-2.5 text-sm font-medium transition-colors',
               tab === t
-                ? 'border-emerald-400 text-emerald-400'
+                ? 'border-accent text-accent'
                 : 'border-transparent text-muted-fg hover:text-foreground',
             )}
           >
@@ -103,7 +103,7 @@ export function ReportsPage() {
                       <td className="px-6 py-3.5 font-medium text-foreground">{c.name}</td>
                       <td className="px-6 py-3.5 text-right text-muted-fg">{formatCurrency(c.planned)}</td>
                       <td className="px-6 py-3.5 text-right text-muted-fg">{formatCurrency(c.spent)}</td>
-                      <td className={cn('px-6 py-3.5 text-right font-semibold', variance < 0 ? 'text-red-400' : 'text-emerald-400')}>
+                      <td className={cn('px-6 py-3.5 text-right font-semibold', variance < 0 ? 'text-red-400' : 'text-success')}>
                         {variance >= 0 ? '+' : ''}
                         {formatCurrency(variance)}
                       </td>
@@ -130,7 +130,7 @@ export function ReportsPage() {
               <select
                 value={reimbursableFilter}
                 onChange={(e) => setReimbursableFilter(e.target.value as typeof reimbursableFilter)}
-                className="rounded-xl border border-border-muted bg-input px-3 py-2 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                className="rounded-xl border border-border-muted bg-input px-3 py-2 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
               >
                 <option>All</option>
                 <option>Pending</option>

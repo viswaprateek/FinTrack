@@ -119,7 +119,7 @@ export function BudgetDetailPage() {
             className={cn(
               'border-b-2 px-4 py-2.5 text-sm font-medium transition-colors',
               tab === t
-                ? 'border-emerald-400 text-emerald-400'
+                ? 'border-accent text-accent'
                 : 'border-transparent text-muted-fg hover:text-foreground',
             )}
           >
@@ -135,7 +135,7 @@ export function BudgetDetailPage() {
               <span className="text-muted-fg">Planned vs Actual</span>
               <span className="font-medium text-foreground">
                 {formatCurrency(budget.spentTotal)} of {formatCurrency(budget.plannedTotal)} spent
-                <span className={cn('ml-2', remaining >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                <span className={cn('ml-2', remaining >= 0 ? 'text-success' : 'text-red-400')}>
                   ({remaining >= 0 ? `${formatCurrency(remaining)} left` : `${formatCurrency(Math.abs(remaining))} over`})
                 </span>
               </span>
@@ -181,7 +181,7 @@ export function BudgetDetailPage() {
                   <p className="text-sm font-medium text-foreground">{s.name}</p>
                   <p className="text-xs text-muted">{s.schedule}</p>
                 </div>
-                <span className="text-sm font-semibold text-emerald-400">{formatCurrency(s.amount)}</span>
+                <span className="text-sm font-semibold text-success">{formatCurrency(s.amount)}</span>
               </div>
             ))}
             {incomeSources.length === 0 && <p className="text-sm text-muted">No income sources yet.</p>}
@@ -230,7 +230,7 @@ export function BudgetDetailPage() {
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                   type="text"
-                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                 />
               </div>
               <div className="flex items-center justify-end gap-2 pt-1">
@@ -258,7 +258,7 @@ export function BudgetDetailPage() {
                   onChange={(e) => setIncomeName(e.target.value)}
                   type="text"
                   placeholder="e.g. Salary — Acme Corp"
-                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -269,7 +269,7 @@ export function BudgetDetailPage() {
                     onChange={(e) => setIncomeAmount(e.target.value)}
                     type="number"
                     placeholder="0.00"
-                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                   />
                 </div>
                 <div>
@@ -277,7 +277,7 @@ export function BudgetDetailPage() {
                   <select
                     value={incomeSchedule}
                     onChange={(e) => setIncomeSchedule(e.target.value as IncomeSchedule)}
-                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                   >
                     {scheduleOptions.map((s) => (
                       <option key={s} value={s}>{s}</option>

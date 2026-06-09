@@ -4,11 +4,11 @@ import { cn } from '../../lib/utils'
 type Tone = 'neutral' | 'success' | 'warning' | 'danger' | 'info'
 
 const toneStyles: Record<Tone, string> = {
-  neutral: 'bg-input text-subtle border-border-muted',
-  success: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-  warning: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-  danger: 'bg-red-500/10 text-red-400 border-red-500/30',
-  info: 'bg-sky-500/10 text-sky-400 border-sky-500/30',
+  neutral: 'bg-surface-muted text-subtle border-border',
+  success: 'bg-success-muted text-success border-success/30',
+  warning: 'bg-warning/10 text-warning border-warning/30',
+  danger: 'bg-danger-muted text-danger border-danger/30',
+  info: 'bg-accent-muted text-accent border-accent/30',
 }
 
 interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {

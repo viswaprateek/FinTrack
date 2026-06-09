@@ -209,7 +209,7 @@ export function CategoryLibraryPage() {
         {!currentBudget ? (
           <Card>
             <CardContent className="py-8 text-center text-sm text-muted">
-              <Link to="/budgets" className="font-medium text-emerald-400 hover:text-emerald-300">
+              <Link to="/budgets" className="font-medium text-accent hover:text-accent-hover">
                 Create a monthly budget
               </Link>{' '}
               to plan envelopes.
@@ -243,7 +243,7 @@ export function CategoryLibraryPage() {
                         </td>
                         <td className="px-6 py-3.5 text-muted-fg">{formatCurrency(c.planned)}</td>
                         <td className="px-6 py-3.5 text-muted-fg">{formatCurrency(c.spent)}</td>
-                        <td className={`px-6 py-3.5 font-medium ${available < 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+                        <td className={`px-6 py-3.5 font-medium ${available < 0 ? 'text-red-400' : 'text-success'}`}>
                           {formatCurrency(available)}
                         </td>
                         <td className="px-6 py-3.5">
@@ -322,9 +322,9 @@ export function CategoryLibraryPage() {
       </section>
 
       {libraryOnlyNotice && (
-        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-sm text-emerald-300">
+        <div className="rounded-xl border border-accent/20 bg-accent-muted px-4 py-3 text-sm text-accent">
           {libraryOnlyNotice}
-          <button type="button" onClick={() => setLibraryOnlyNotice(null)} className="ml-2 text-emerald-400/70 hover:text-emerald-300">
+          <button type="button" onClick={() => setLibraryOnlyNotice(null)} className="ml-2 text-accent/70 hover:text-accent-hover">
             Dismiss
           </button>
         </div>
@@ -352,7 +352,7 @@ export function CategoryLibraryPage() {
                 <CategoryIcon name={t.name} icon={t.icon} size="lg" />
                 <span className="text-sm font-medium text-foreground">{t.name}</span>
                 {inEnvelope ? (
-                  <span className="text-[10px] font-medium uppercase tracking-wide text-emerald-400">In envelope</span>
+                  <span className="text-[10px] font-medium uppercase tracking-wide text-success">In envelope</span>
                 ) : inLibrary ? (
                   <span className="text-[10px] font-medium uppercase tracking-wide text-muted">In library</span>
                 ) : null}
@@ -373,7 +373,7 @@ export function CategoryLibraryPage() {
                   value={customName}
                   onChange={(e) => setCustomName(e.target.value)}
                   placeholder="e.g. Gym"
-                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                 />
               </div>
               <div>
@@ -384,7 +384,7 @@ export function CategoryLibraryPage() {
                       key={t.icon}
                       type="button"
                       onClick={() => setCustomIcon(t.icon)}
-                      className={`rounded-xl p-1 ${customIcon === t.icon ? 'ring-2 ring-emerald-400' : ''}`}
+                      className={`rounded-xl p-1 ${customIcon === t.icon ? 'ring-2 ring-accent' : ''}`}
                     >
                       <CategoryIcon name={t.name} icon={t.icon} size="sm" />
                     </button>
@@ -399,7 +399,7 @@ export function CategoryLibraryPage() {
                     onChange={(e) => setEnvelopePlanned(e.target.value)}
                     type="number"
                     placeholder="0"
-                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                   />
                 </div>
               )}
@@ -433,7 +433,7 @@ export function CategoryLibraryPage() {
                   onChange={(e) => setEnvelopeAmount(e.target.value)}
                   type="number"
                   placeholder="0"
-                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                 />
               </div>
               <div className="flex justify-end gap-2">
@@ -458,7 +458,7 @@ export function CategoryLibraryPage() {
                   value={editPlanned}
                   onChange={(e) => setEditPlanned(e.target.value)}
                   type="number"
-                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                 />
               </div>
               <div>
@@ -466,7 +466,7 @@ export function CategoryLibraryPage() {
                 <select
                   value={editRollover}
                   onChange={(e) => setEditRollover(e.target.value as RolloverType)}
-                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                 >
                   {rolloverOptions.map((r) => (
                     <option key={r} value={r}>{r}</option>
@@ -480,7 +480,7 @@ export function CategoryLibraryPage() {
                     value={editCap}
                     onChange={(e) => setEditCap(e.target.value)}
                     type="number"
-                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                   />
                 </div>
               )}
@@ -505,7 +505,7 @@ export function CategoryLibraryPage() {
                 <select
                   value={fromCategoryId}
                   onChange={(e) => setFromCategoryId(e.target.value)}
-                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                 >
                   {envelopes.map((c) => (
                     <option key={c.id} value={c.id}>{c.name}</option>
@@ -517,7 +517,7 @@ export function CategoryLibraryPage() {
                 <select
                   value={toCategoryId}
                   onChange={(e) => setToCategoryId(e.target.value)}
-                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                 >
                   {envelopes.map((c) => (
                     <option key={c.id} value={c.id}>{c.name}</option>
@@ -531,7 +531,7 @@ export function CategoryLibraryPage() {
                   onChange={(e) => setMoveAmount(e.target.value)}
                   type="number"
                   placeholder="0.00"
-                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                 />
               </div>
               <div>
@@ -541,7 +541,7 @@ export function CategoryLibraryPage() {
                   onChange={(e) => setMoveNote(e.target.value)}
                   type="text"
                   placeholder="Optional"
-                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                 />
               </div>
               <div className="flex justify-end gap-2">

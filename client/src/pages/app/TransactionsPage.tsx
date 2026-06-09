@@ -383,7 +383,7 @@ export function TransactionsPage() {
                 onChange={(e) => setSearch(e.target.value)}
                 type="text"
                 placeholder="Search by description"
-                className="w-full rounded-xl border border-border-muted bg-input py-2.5 pl-10 pr-3 text-sm text-foreground placeholder:text-muted focus:border-emerald-400 focus:outline-none"
+                className="w-full rounded-xl border border-border-muted bg-input py-2.5 pl-10 pr-3 text-sm text-foreground placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
               />
             </div>
             {isMobile && (
@@ -401,7 +401,7 @@ export function TransactionsPage() {
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none sm:w-auto"
+              className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted sm:w-auto"
             >
               {categoryOptions.map((c) => (
                 <option key={c}>{c}</option>
@@ -410,7 +410,7 @@ export function TransactionsPage() {
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value as typeof typeFilter)}
-              className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none sm:w-auto"
+              className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted sm:w-auto"
             >
               <option>All types</option>
               <option>Income</option>
@@ -419,7 +419,7 @@ export function TransactionsPage() {
             <select
               value={reimbursableFilter}
               onChange={(e) => setReimbursableFilter(e.target.value as typeof reimbursableFilter)}
-              className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none sm:w-auto"
+              className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted sm:w-auto"
             >
               <option>Reimbursable: any</option>
               <option>Pending</option>
@@ -521,7 +521,7 @@ export function TransactionsPage() {
                         <span className="text-muted">—</span>
                       )}
                     </td>
-                    <td className={`px-6 py-3.5 text-right font-semibold ${t.amount >= 0 ? 'text-emerald-400' : 'text-foreground'}`}>
+                    <td className={`px-6 py-3.5 text-right font-semibold ${t.amount >= 0 ? 'text-success' : 'text-foreground'}`}>
                       {t.amount >= 0 ? '+' : ''}
                       {formatCurrency(t.amount)}
                     </td>
@@ -597,7 +597,7 @@ export function TransactionsPage() {
                 <select
                   value={activeEditBudgetId}
                   onChange={(e) => handleEditBudgetChange(e.target.value)}
-                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                 >
                   {budgets.map((b) => (
                     <option key={b.id} value={b.id}>{b.name} · {b.period}</option>
@@ -614,7 +614,7 @@ export function TransactionsPage() {
                     type="date"
                     min={editBudget?.periodStart}
                     max={editBudget?.periodEnd}
-                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                   />
                   {editBudget && editDate && !editDateInBudget && (
                     <p className="mt-1 text-xs text-red-400">Date must fall inside this budget&apos;s period.</p>
@@ -626,7 +626,7 @@ export function TransactionsPage() {
                     value={editAmount}
                     onChange={(e) => setEditAmount(e.target.value)}
                     type="number"
-                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                   />
                 </div>
               </div>
@@ -637,7 +637,7 @@ export function TransactionsPage() {
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
                   type="text"
-                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                 />
               </div>
 
@@ -647,7 +647,7 @@ export function TransactionsPage() {
                   <select
                     value={editCategoryId}
                     onChange={(e) => setEditCategoryId(e.target.value)}
-                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                   >
                     <option value="">Uncategorized</option>
                     {allCategories.map((c) => (
@@ -665,7 +665,7 @@ export function TransactionsPage() {
                 <button
                   type="button"
                   onClick={() => setEditReimbursableOn((v) => !v)}
-                  className={`relative h-6 w-11 rounded-full transition-colors ${editReimbursableOn ? 'bg-emerald-500' : 'bg-border-muted'}`}
+                  className={`relative h-6 w-11 rounded-full transition-colors ${editReimbursableOn ? 'bg-accent' : 'bg-border-muted'}`}
                 >
                   <span className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-transform ${editReimbursableOn ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
@@ -674,7 +674,7 @@ export function TransactionsPage() {
                 <select
                   value={editReimbursable}
                   onChange={(e) => setEditReimbursable(e.target.value as 'pending' | 'received')}
-                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                 >
                   <option value="pending">Pending</option>
                   <option value="received">Received</option>
@@ -687,7 +687,7 @@ export function TransactionsPage() {
                   value={editNotes}
                   onChange={(e) => setEditNotes(e.target.value)}
                   rows={2}
-                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                 />
               </div>
 
@@ -727,7 +727,7 @@ export function TransactionsPage() {
                   <select
                     value={activeFormBudgetId}
                     onChange={(e) => handleBudgetChange(e.target.value)}
-                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                   >
                     {budgets.map((b) => (
                       <option key={b.id} value={b.id}>{b.name} · {b.period}</option>
@@ -746,7 +746,7 @@ export function TransactionsPage() {
                     min={activeBudget?.periodStart}
                     max={activeBudget?.periodEnd}
                     disabled={!activeBudget}
-                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none disabled:opacity-50"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted disabled:opacity-50"
                   />
                   {activeBudget && (
                     <p className="mt-1 text-xs text-muted">
@@ -764,7 +764,7 @@ export function TransactionsPage() {
                     onChange={(e) => setFormAmount(e.target.value)}
                     type="number"
                     placeholder="-0.00"
-                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-emerald-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                   />
                 </div>
               </div>
@@ -776,7 +776,7 @@ export function TransactionsPage() {
                   onChange={(e) => setFormDescription(e.target.value)}
                   type="text"
                   placeholder="e.g. Whole Foods Market"
-                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                 />
               </div>
 
@@ -787,7 +787,7 @@ export function TransactionsPage() {
                     <button
                       type="button"
                       onClick={() => setNewCategoryOpen((v) => !v)}
-                      className="text-xs font-medium text-emerald-400 hover:text-emerald-300"
+                      className="text-xs font-medium text-accent hover:text-accent-hover"
                     >
                       + New category
                     </button>
@@ -798,7 +798,7 @@ export function TransactionsPage() {
                         value={newCategoryName}
                         onChange={(e) => setNewCategoryName(e.target.value)}
                         placeholder="Category name"
-                        className="flex-1 rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                        className="flex-1 rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                       />
                       <Button
                         size="sm"
@@ -812,7 +812,7 @@ export function TransactionsPage() {
                     <select
                       value={formCategoryId}
                       onChange={(e) => setFormCategoryId(e.target.value)}
-                      className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                      className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                     >
                       <option value="">Uncategorized</option>
                       {allCategories.map((c) => (
@@ -826,7 +826,7 @@ export function TransactionsPage() {
                   {allCategories.length === 0 && !libraryQuery.isLoading && (
                     <p className="mt-2 text-xs text-muted">
                       No categories yet.{' '}
-                      <Link to="/categories" className="text-emerald-400 hover:text-emerald-300">
+                      <Link to="/categories" className="text-accent hover:text-accent-hover">
                         Browse suggestions
                       </Link>
                     </p>
@@ -838,7 +838,7 @@ export function TransactionsPage() {
                 <span className="text-sm font-medium text-subtle">Split transaction</span>
                 <button
                   onClick={() => setSplitOn((v) => !v)}
-                  className={`relative h-6 w-11 rounded-full transition-colors ${splitOn ? 'bg-emerald-500' : 'bg-border-muted'}`}
+                  className={`relative h-6 w-11 rounded-full transition-colors ${splitOn ? 'bg-accent' : 'bg-border-muted'}`}
                 >
                   <span className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-transform ${splitOn ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
@@ -850,7 +850,7 @@ export function TransactionsPage() {
                       <select
                         value={line.categoryId}
                         onChange={(e) => updateSplitLine(i, { categoryId: e.target.value })}
-                        className="flex-1 rounded-lg border border-border-muted bg-input px-2.5 py-2 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                        className="flex-1 rounded-lg border border-border-muted bg-input px-2.5 py-2 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                       >
                         <option value="">Select category</option>
                         {allCategories.map((c) => (
@@ -865,7 +865,7 @@ export function TransactionsPage() {
                         onChange={(e) => updateSplitLine(i, { amount: e.target.value })}
                         type="number"
                         placeholder="Amount"
-                        className="w-28 rounded-lg border border-border-muted bg-input px-2.5 py-2 text-sm text-foreground placeholder:text-muted focus:border-emerald-400 focus:outline-none"
+                        className="w-28 rounded-lg border border-border-muted bg-input px-2.5 py-2 text-sm text-foreground placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                       />
                     </div>
                   ))}
@@ -877,7 +877,7 @@ export function TransactionsPage() {
                 <span className="text-sm font-medium text-subtle">Reimbursable</span>
                 <button
                   onClick={() => setReimbursableOn((v) => !v)}
-                  className={`relative h-6 w-11 rounded-full transition-colors ${reimbursableOn ? 'bg-emerald-500' : 'bg-border-muted'}`}
+                  className={`relative h-6 w-11 rounded-full transition-colors ${reimbursableOn ? 'bg-accent' : 'bg-border-muted'}`}
                 >
                   <span className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-transform ${reimbursableOn ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
@@ -886,7 +886,7 @@ export function TransactionsPage() {
                 <select
                   value={formReimbursable}
                   onChange={(e) => setFormReimbursable(e.target.value as 'pending' | 'received')}
-                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                 >
                   <option value="pending">Pending</option>
                   <option value="received">Received</option>
@@ -900,7 +900,7 @@ export function TransactionsPage() {
                   onChange={(e) => setFormNotes(e.target.value)}
                   rows={2}
                   placeholder="Optional notes"
-                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-emerald-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
                 />
               </div>
 

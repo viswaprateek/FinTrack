@@ -17,7 +17,7 @@ const sizeClasses = {
 export function GoalIcon({ name, icon, size = 'md', className }: GoalIconProps) {
   const template = getGoalTemplate(icon, name)
   const emoji = template?.emoji ?? '🎯'
-  const color = template?.color ?? 'bg-emerald-500/15 text-emerald-400'
+  const color = template?.color ?? 'bg-accent-muted text-accent'
 
   return (
     <span

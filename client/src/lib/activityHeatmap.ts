@@ -84,5 +84,5 @@ export const LEVEL_COLORS = [
   'bg-emerald-950/80 border border-emerald-900/50',
   'bg-emerald-800/80',
   'bg-emerald-600/90',
-  'bg-emerald-400',
+  'bg-accent',
 ] as const

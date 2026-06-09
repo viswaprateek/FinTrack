@@ -41,8 +41,8 @@ export function FeatureCards({ features }: FeatureCardsProps) {
       {features.map(({ icon: Icon, title, description }) => (
         <motion.div key={title} variants={item}>
           <TiltCard maxTilt={6}>
-          <Card className="h-full p-6 transition-colors hover:border-emerald-500/30 hover:bg-surface-solid/80">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400">
+          <Card className="h-full p-6 transition-colors hover:border-accent/30 hover:bg-surface-solid/80">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-muted text-accent">
               <Icon className="h-5 w-5" />
             </div>
             <h3 className="mt-5 text-base font-semibold text-heading">{title}</h3>

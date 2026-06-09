@@ -6,6 +6,9 @@ import { CursorTrail } from '../../components/landing/CursorTrail'
 import { Hero } from '../../components/landing/Hero'
 import { FeatureCards } from '../../components/landing/FeatureCards'
 import { HowItWorks } from '../../components/landing/HowItWorks'
+import { Testimonials } from '../../components/landing/Testimonials'
+import { AvatarStack } from '../../components/landing/AvatarStack'
+import { LANDING_FACES } from '../../lib/landingFaces'
 
 const features = [
   {
@@ -34,7 +37,7 @@ export function LandingPage() {
       <HowItWorks />
 
       {/* Features */}
-      <section className="border-t border-border/80 bg-surface-solid/30">
+      <section className="border-t border-border bg-surface-muted/50 dark:bg-surface-solid/40">
         <div className="mx-auto max-w-6xl px-6 py-20">
           <motion.div
             className="mx-auto max-w-2xl text-center"
@@ -53,6 +56,8 @@ export function LandingPage() {
         </div>
       </section>
 
+      <Testimonials />
+
       {/* CTA */}
       <section className="mx-auto max-w-4xl px-6 py-20 text-center">
         <motion.div
@@ -61,6 +66,9 @@ export function LandingPage() {
           viewport={{ once: true, margin: '-60px' }}
           transition={{ duration: 0.6 }}
         >
+          <div className="mb-6 flex justify-center">
+            <AvatarStack faces={LANDING_FACES} size="md" max={5} />
+          </div>
           <h2 className="text-3xl font-bold tracking-tight text-heading">Ready to take control of your money?</h2>
           <p className="mt-4 text-muted-fg">Create your free account and set up your first budget in minutes.</p>
           <div className="mt-8">

@@ -127,7 +127,7 @@ export function TransactionConfirmCard({
             type="button"
             onClick={() => onChange({ is_reimbursable: !transaction.is_reimbursable })}
             className={`relative h-6 w-11 rounded-full transition-colors ${
-              transaction.is_reimbursable ? 'bg-emerald-500' : 'bg-border-muted'
+              transaction.is_reimbursable ? 'bg-accent' : 'bg-border-muted'
             }`}
             aria-pressed={transaction.is_reimbursable}
           >

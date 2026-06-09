@@ -58,7 +58,7 @@ export function GlitchText({ words, intervalMs = 3200, className }: GlitchTextPr
   return (
     <motion.span
       key={wordIndex}
-      className={cn('glitch-text inline-block text-emerald-400', className)}
+      className={cn('glitch-text inline-block text-success', className)}
       initial={{ opacity: 0.7 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2 }}

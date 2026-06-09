@@ -7,7 +7,7 @@ export interface CategoryTemplate {
 
 /** Curated starter categories — icons are stored on the user's Category record. */
 export const CATEGORY_TEMPLATES: CategoryTemplate[] = [
-  { name: 'Groceries', icon: 'groceries', emoji: '🛒', color: 'bg-emerald-500/15 text-emerald-400' },
+  { name: 'Groceries', icon: 'groceries', emoji: '🛒', color: 'bg-accent-muted text-accent' },
   { name: 'Rent', icon: 'rent', emoji: '🏠', color: 'bg-blue-500/15 text-blue-400' },
   { name: 'Utilities', icon: 'utilities', emoji: '💡', color: 'bg-amber-500/15 text-amber-400' },
   { name: 'Transport', icon: 'transport', emoji: '🚗', color: 'bg-cyan-500/15 text-cyan-400' },
@@ -18,7 +18,7 @@ export const CATEGORY_TEMPLATES: CategoryTemplate[] = [
   { name: 'Travel', icon: 'travel', emoji: '✈️', color: 'bg-indigo-500/15 text-indigo-400' },
   { name: 'Education', icon: 'education', emoji: '📚', color: 'bg-violet-500/15 text-violet-400' },
   { name: 'Subscriptions', icon: 'subscriptions', emoji: '📱', color: 'bg-slate-500/15 text-slate-300' },
-  { name: 'Salary', icon: 'salary', emoji: '💰', color: 'bg-emerald-500/15 text-emerald-300' },
+  { name: 'Salary', icon: 'salary', emoji: '💰', color: 'bg-accent-muted text-accent' },
   { name: 'Savings', icon: 'savings', emoji: '🏦', color: 'bg-teal-500/15 text-teal-400' },
   { name: 'Gifts', icon: 'gifts', emoji: '🎁', color: 'bg-rose-500/15 text-rose-400' },
   { name: 'Personal Care', icon: 'personal', emoji: '💇', color: 'bg-fuchsia-500/15 text-fuchsia-400' },

@@ -16,8 +16,8 @@ export function PublicLayout() {
         className={cn(
           'z-40 transition-all duration-300',
           isLanding
-            ? 'sticky top-0 border-b border-border/40 bg-background/70 backdrop-blur-xl backdrop-saturate-150'
-            : 'border-b border-border/80',
+            ? 'sticky top-0 border-b border-border bg-surface-solid'
+            : 'border-b border-border bg-surface-solid',
         )}
       >
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
