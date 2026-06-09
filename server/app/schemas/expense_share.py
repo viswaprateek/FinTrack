@@ -27,6 +27,8 @@ class ExpenseShareParticipantResponse(BaseModel):
     status: ParticipantStatus
     paidAt: str | None = None
     lastRemindedAt: str | None = None
+    friendDisplayAmount: Decimal | None = None
+    friendDisplayCurrency: str | None = None
 
 
 class ExpenseShareResponse(BaseModel):
@@ -36,6 +38,7 @@ class ExpenseShareResponse(BaseModel):
     transactionDate: str
     totalAmount: Decimal
     yourShare: Decimal
+    currency: str
     reminderFrequency: ReminderFrequency
     participants: list[ExpenseShareParticipantResponse]
 
@@ -67,6 +70,9 @@ class OwedExpenseResponse(BaseModel):
     description: str
     transactionDate: str
     amountOwed: Decimal
+    currency: str
+    displayAmount: Decimal
+    displayCurrency: str
     status: ParticipantStatus
     paidAt: str | None = None
 

@@ -6,6 +6,7 @@ import { Badge } from '../../components/ui/Badge'
 import { ContentLoader } from '../../components/ui/Spinner'
 import { useApiClient, expenseSharesApi } from '../../api'
 import { useCurrency } from '../../contexts/CurrencyContext'
+import { formatCurrencyAmount } from '../../lib/currencies'
 import { formatShortDate } from '../../lib/utils'
 import type { ExpenseShare, OwedExpense, ReminderFrequency } from '../../types'
 
@@ -66,6 +67,7 @@ export function SharedExpensesPage() {
     s.participants.some((p) => p.status === 'pending'),
   )
   const pendingOwed = owedItems.filter((o) => o.status === 'pending')
+  const hasConvertedOwed = owedItems.some((o) => o.currency !== o.displayCurrency)
 
   const isLoading =
     tab === 'owed-to-you'
@@ -151,6 +153,11 @@ export function SharedExpensesPage() {
             <p className="mt-1 text-sm text-muted">
               {pendingOwed.length} pending balance{pendingOwed.length === 1 ? '' : 's'} from friends on FinTrack
             </p>
+            {hasConvertedOwed && (
+              <p className="mt-2 text-xs text-muted">
+                Totals converted to your currency using live exchange rates.
+              </p>
+            )}
           </Card>
 
           {owedItems.length === 0 ? (
@@ -165,7 +172,6 @@ export function SharedExpensesPage() {
                 <OwedCard
                   key={item.participantId}
                   item={item}
-                  formatCurrency={formatCurrency}
                   onMarkPaid={(id) => markPaid.mutate(id)}
                   markPending={markPaid.isPending}
                 />
@@ -221,6 +227,11 @@ function ShareCard({
             <div>
               <p className="text-sm font-medium text-foreground">{p.email}</p>
               <p className="text-sm text-muted">{formatCurrency(p.amountOwed)}</p>
+              {p.friendDisplayAmount != null && p.friendDisplayCurrency && (
+                <p className="text-xs text-muted">
+                  ≈ {formatCurrencyAmount(p.friendDisplayAmount, p.friendDisplayCurrency)} for them
+                </p>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <Badge tone={p.status === 'pending' ? 'warning' : 'success'}>
@@ -246,15 +257,15 @@ function ShareCard({
 
 function OwedCard({
   item,
-  formatCurrency,
   onMarkPaid,
   markPending,
 }: {
   item: OwedExpense
-  formatCurrency: (n: number) => string
   onMarkPaid: (participantId: string) => void
   markPending: boolean
 }) {
+  const showOriginal = item.currency !== item.displayCurrency
+
   return (
     <Card>
       <CardContent className="flex flex-wrap items-center justify-between gap-3 p-5">
@@ -263,7 +274,14 @@ function OwedCard({
           <p className="mt-0.5 text-xs text-muted">
             {formatShortDate(item.transactionDate)} · Paid by {item.payerName}
           </p>
-          <p className="mt-1 text-sm text-muted">{formatCurrency(item.amountOwed)}</p>
+          <p className="mt-1 text-base font-semibold text-foreground">
+            {formatCurrencyAmount(item.displayAmount, item.displayCurrency)}
+          </p>
+          {showOriginal && (
+            <p className="mt-0.5 text-xs text-muted">
+              Originally {formatCurrencyAmount(item.amountOwed, item.currency)}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <Badge tone={item.status === 'pending' ? 'warning' : 'success'}>

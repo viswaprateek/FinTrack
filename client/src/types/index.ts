@@ -51,6 +51,8 @@ export interface ExpenseShareParticipant {
   status: 'pending' | 'paid'
   paidAt?: string | null
   lastRemindedAt?: string | null
+  friendDisplayAmount?: number | null
+  friendDisplayCurrency?: string | null
 }
 
 export interface ExpenseShare {
@@ -60,6 +62,7 @@ export interface ExpenseShare {
   transactionDate: string
   totalAmount: number
   yourShare: number
+  currency: string
   reminderFrequency: ReminderFrequency
   participants: ExpenseShareParticipant[]
 }
@@ -72,6 +75,9 @@ export interface OwedExpense {
   description: string
   transactionDate: string
   amountOwed: number
+  currency: string
+  displayAmount: number
+  displayCurrency: string
   status: 'pending' | 'paid'
   paidAt?: string | null
 }

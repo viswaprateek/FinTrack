@@ -8,6 +8,7 @@ from app.core.config import settings
 from app.core.exceptions import BadRequestError, NotFoundError
 from app.core.utils import parse_id
 from app.integrations.email import expense_share_invite_email
+from app.integrations.exchange_rates import convert_amount
 from app.models.expense_share import ExpenseShare, ExpenseShareParticipant
 from app.models.transaction import Transaction
 from app.models.user import User
@@ -39,8 +40,8 @@ class ExpenseShareService:
         base = settings.APP_BASE_URL.rstrip("/")
         return f"{base}/owe/{token}"
 
-    def _participant_response(self, p: ExpenseShareParticipant) -> dict:
-        return {
+    def _participant_response(self, p: ExpenseShareParticipant, payer: User) -> dict:
+        result = {
             "id": str(p.id),
             "email": p.email,
             "amountOwed": p.amount_owed,
@@ -48,10 +49,18 @@ class ExpenseShareService:
             "paidAt": p.paid_at.isoformat() if p.paid_at else None,
             "lastRemindedAt": p.last_reminded_at.isoformat() if p.last_reminded_at else None,
         }
+        friend = p.linked_user
+        if friend and friend.default_currency != payer.default_currency:
+            result["friendDisplayAmount"] = convert_amount(
+                p.amount_owed, payer.default_currency, friend.default_currency
+            )
+            result["friendDisplayCurrency"] = friend.default_currency
+        return result
 
     def _to_response(self, share: ExpenseShare) -> ExpenseShareResponse:
         tx = share.transaction
         friends_total = friends_owed_total(tx)
+        payer = share.created_by
         return ExpenseShareResponse(
             id=str(share.id),
             transactionId=str(tx.id),
@@ -59,8 +68,9 @@ class ExpenseShareService:
             transactionDate=tx.date.isoformat(),
             totalAmount=tx.amount,
             yourShare=tx.amount - friends_total,
+            currency=payer.default_currency,
             reminderFrequency=share.reminder_frequency,
-            participants=[self._participant_response(p) for p in share.participants],
+            participants=[self._participant_response(p, payer) for p in share.participants],
         )
 
     def _normalized_email(self, user: User) -> str:
@@ -94,10 +104,17 @@ class ExpenseShareService:
             row.email = email
         return len(rows)
 
-    def _to_owed_response(self, participant: ExpenseShareParticipant) -> OwedExpenseResponse:
+    def _to_owed_response(
+        self, participant: ExpenseShareParticipant, viewer: User
+    ) -> OwedExpenseResponse:
         share = participant.expense_share
         payer = share.created_by
         payer_name = payer.first_name or payer.email.split("@")[0]
+        payer_currency = payer.default_currency
+        viewer_currency = viewer.default_currency
+        display_amount = convert_amount(
+            participant.amount_owed, payer_currency, viewer_currency
+        )
         return OwedExpenseResponse(
             participantId=str(participant.id),
             shareId=str(share.id),
@@ -106,6 +123,9 @@ class ExpenseShareService:
             description=share.transaction.description,
             transactionDate=share.transaction.date.isoformat(),
             amountOwed=participant.amount_owed,
+            currency=payer_currency,
+            displayAmount=display_amount,
+            displayCurrency=viewer_currency,
             status=participant.status,
             paidAt=participant.paid_at.isoformat() if participant.paid_at else None,
         )
@@ -115,7 +135,9 @@ class ExpenseShareService:
             select(ExpenseShare)
             .where(ExpenseShare.id == share_id)
             .options(
-                selectinload(ExpenseShare.participants),
+                selectinload(ExpenseShare.participants).selectinload(
+                    ExpenseShareParticipant.linked_user
+                ),
                 selectinload(ExpenseShare.transaction),
                 selectinload(ExpenseShare.created_by),
             )
@@ -189,8 +211,11 @@ class ExpenseShareService:
             select(ExpenseShare)
             .where(ExpenseShare.created_by_user_id == user.id)
             .options(
-                selectinload(ExpenseShare.participants),
+                selectinload(ExpenseShare.participants).selectinload(
+                    ExpenseShareParticipant.linked_user
+                ),
                 selectinload(ExpenseShare.transaction),
+                selectinload(ExpenseShare.created_by),
             )
             .order_by(ExpenseShare.created_at.desc())
         ).all()
@@ -240,12 +265,12 @@ class ExpenseShareService:
             stmt = stmt.where(ExpenseShareParticipant.linked_user_id == user.id)
 
         participants = self.db.scalars(stmt).all()
-        return [self._to_owed_response(p) for p in participants]
+        return [self._to_owed_response(p, user) for p in participants]
 
     def owed_total(self, user: User) -> Decimal:
         return sum(
             (
-                p.amount_owed
+                p.displayAmount
                 for p in self.list_owed_to_others(user)
                 if p.status == "pending"
             ),
