@@ -7,7 +7,7 @@ import { ProgressBar } from '../../components/ui/ProgressBar'
 import { ContentLoader } from '../../components/ui/Spinner'
 import { CardCarousel, CardSwitcher } from '../../components/cards/CardCarousel'
 import { useApiClient, cardsApi } from '../../api'
-import { useCurrency } from '../../contexts/CurrencyContext'
+import { usePrivateCurrency } from '../../hooks/usePrivateCurrency'
 import { BRAND_OPTIONS, BRAND_LABELS, THEME_OPTIONS } from '../../lib/cardThemes'
 import { formatShortDate } from '../../lib/utils'
 import {
@@ -37,7 +37,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 export function CardsPage() {
   const client = useApiClient()
   const queryClient = useQueryClient()
-  const { formatCurrency } = useCurrency()
+  const { displayAmount, displayPercent } = usePrivateCurrency()
 
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [addOpen, setAddOpen] = useState(false)
@@ -243,7 +243,7 @@ export function CardsPage() {
               <div className="flex justify-between text-sm">
                 <span className="text-muted">Used</span>
                 <span className="font-medium text-foreground">
-                  {formatCurrency(selectedCard.currentBalance)} / {formatCurrency(selectedCard.creditLimit)}
+                  {displayAmount(selectedCard.currentBalance)} / {displayAmount(selectedCard.creditLimit)}
                 </span>
               </div>
               <ProgressBar
@@ -252,7 +252,7 @@ export function CardsPage() {
                 className="mt-2"
               />
               <p className="mt-1.5 text-xs text-muted">
-                {Math.round(selectedCard.utilizationPercent)}% utilized · {formatCurrency(selectedCard.availableCredit)} available
+                {displayPercent(selectedCard.utilizationPercent)} utilized · {displayAmount(selectedCard.availableCredit)} available
               </p>
             </div>
           </CardContent>
@@ -260,9 +260,9 @@ export function CardsPage() {
       )}
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <StatTile label="Total limit" value={formatCurrency(totals.limit)} />
-        <StatTile label="Balance owed" value={formatCurrency(totals.balance)} accent="text-amber-400" />
-        <StatTile label="Available" value={formatCurrency(totals.available)} accent="text-emerald-400" />
+        <StatTile label="Total limit" value={displayAmount(totals.limit)} />
+        <StatTile label="Balance owed" value={displayAmount(totals.balance)} accent="text-amber-400" />
+        <StatTile label="Available" value={displayAmount(totals.available)} accent="text-emerald-400" />
       </div>
 
       {selectedCard && (
@@ -301,7 +301,7 @@ export function CardsPage() {
             <p className="py-6 text-center text-sm text-muted">No transactions yet. Add a mock charge to get started.</p>
           ) : (
             transactions.map((txn) => (
-              <TxnRow key={txn.id} txn={txn} formatCurrency={formatCurrency} />
+              <TxnRow key={txn.id} txn={txn} displayAmount={displayAmount} />
             ))
           )}
         </CardContent>
@@ -444,10 +444,10 @@ function QuickAction({
 
 function TxnRow({
   txn,
-  formatCurrency,
+  displayAmount,
 }: {
   txn: CardTransaction
-  formatCurrency: (n: number) => string
+  displayAmount: (n: number) => string
 }) {
   const icon = CATEGORY_ICONS[txn.category ?? ''] ?? CATEGORY_ICONS.default
   return (
@@ -462,7 +462,7 @@ function TxnRow({
           </p>
         </div>
       </div>
-      <span className="text-sm font-semibold text-red-400">-{formatCurrency(txn.amount)}</span>
+      <span className="text-sm font-semibold text-red-400">-{displayAmount(txn.amount)}</span>
     </div>
   )
 }

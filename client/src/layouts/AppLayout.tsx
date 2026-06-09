@@ -6,9 +6,11 @@ import { MobileNav } from '../components/layout/MobileNav'
 import { Topbar } from '../components/layout/Topbar'
 import { BudgetPeriodProvider } from '../contexts/BudgetPeriodContext'
 import { CurrencyProvider } from '../contexts/CurrencyContext'
+import { PrivacyProvider } from '../contexts/PrivacyContext'
 
 export function AppLayout() {
   return (
+    <PrivacyProvider>
     <CurrencyProvider>
       <BudgetPeriodProvider>
         <QueryLoadingBar />
@@ -25,5 +27,6 @@ export function AppLayout() {
         </div>
       </BudgetPeriodProvider>
     </CurrencyProvider>
+    </PrivacyProvider>
   )
 }

@@ -3,6 +3,7 @@ import { useUser, UserProfile } from '@clerk/clerk-react'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { useCurrency } from '../../contexts/CurrencyContext'
+import { usePrivacy } from '../../contexts/PrivacyContext'
 import { useTheme, type Theme } from '../../contexts/ThemeContext'
 import { ContentLoader } from '../../components/ui/Spinner'
 import { SUPPORTED_CURRENCIES } from '../../lib/currencies'
@@ -10,6 +11,7 @@ import { SUPPORTED_CURRENCIES } from '../../lib/currencies'
 export function SettingsPage() {
   const { user } = useUser()
   const { currency, updateCurrency, isLoading, isSaving } = useCurrency()
+  const { privacyMode, setPrivacyMode } = usePrivacy()
   const { theme, setTheme } = useTheme()
   const [profileOpen, setProfileOpen] = useState(false)
   const [selectedCurrency, setSelectedCurrency] = useState(currency)
@@ -62,6 +64,29 @@ export function SettingsPage() {
           <CardTitle>Preferences</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-surface-muted/30 px-4 py-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-subtle">Privacy mode</p>
+              <p className="mt-0.5 text-xs text-muted">
+                Hide amounts on Goals and Cards — shown as ★ stars instead of numbers.
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={privacyMode}
+              onClick={() => setPrivacyMode(!privacyMode)}
+              className={`relative h-7 w-11 shrink-0 overflow-hidden rounded-full transition-colors ${
+                privacyMode ? 'bg-amber-500' : 'bg-border-muted'
+              }`}
+            >
+              <span
+                className={`absolute top-1 left-1 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                  privacyMode ? 'translate-x-4' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
           <div>
             <label htmlFor="theme" className="mb-1.5 block text-sm font-medium text-subtle">
               Appearance

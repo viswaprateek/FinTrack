@@ -2,6 +2,7 @@ import { useLocation } from 'react-router-dom'
 import { UserButton } from '@clerk/clerk-react'
 import { BudgetPeriodSelector } from '../budgets/BudgetPeriodSelector'
 import { CurrencyConverter } from '../currency/CurrencyConverter'
+import { PrivacyToggle } from '../ui/PrivacyToggle'
 import { ThemeToggle } from '../ui/ThemeToggle'
 import { useBudgetPeriod } from '../../contexts/BudgetPeriodContext'
 
@@ -46,6 +47,7 @@ export function Topbar() {
       </div>
 
       <div className="flex shrink-0 items-center gap-2">
+        <PrivacyToggle />
         <ThemeToggle />
         <CurrencyConverter />
         <div className="lg:hidden">

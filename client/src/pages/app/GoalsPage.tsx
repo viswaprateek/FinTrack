@@ -7,7 +7,7 @@ import { ProgressBar } from '../../components/ui/ProgressBar'
 import { ContentLoader } from '../../components/ui/Spinner'
 import { GoalIcon } from '../../components/goals/GoalIcon'
 import { useApiClient, goalsApi } from '../../api'
-import { useCurrency } from '../../contexts/CurrencyContext'
+import { usePrivateCurrency } from '../../hooks/usePrivateCurrency'
 import { GOAL_TEMPLATES } from '../../lib/goalTemplates'
 import { formatShortDate } from '../../lib/utils'
 import { IconPlus, IconX } from '../../components/ui/icons'
@@ -19,7 +19,7 @@ const inputClass =
 export function GoalsPage() {
   const client = useApiClient()
   const queryClient = useQueryClient()
-  const { formatCurrency } = useCurrency()
+  const { displayAmount, displayPercent } = usePrivateCurrency()
 
   const [showArchived, setShowArchived] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
@@ -217,18 +217,18 @@ export function GoalsPage() {
           <Card>
             <CardContent className="pt-6">
               <p className="text-xs font-medium uppercase tracking-wide text-muted">Total saved</p>
-              <p className="mt-1 text-2xl font-bold text-heading">{formatCurrency(totals.saved)}</p>
+              <p className="mt-1 text-2xl font-bold text-heading">{displayAmount(totals.saved)}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
               <p className="text-xs font-medium uppercase tracking-wide text-muted">Total targets</p>
-              <p className="mt-1 text-2xl font-bold text-heading">{formatCurrency(totals.target)}</p>
+              <p className="mt-1 text-2xl font-bold text-heading">{displayAmount(totals.target)}</p>
               {totals.target > 0 && (
                 <div className="mt-3">
                   <ProgressBar value={totals.saved} max={totals.target} />
                   <p className="mt-1.5 text-xs text-muted">
-                    {Math.round((totals.saved / totals.target) * 100)}% across all goals
+                    {displayPercent((totals.saved / totals.target) * 100)} across all goals
                   </p>
                 </div>
               )}
@@ -254,7 +254,7 @@ export function GoalsPage() {
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium text-foreground">{template.name}</p>
                   <p className="text-xs text-muted">
-                    {exists ? 'Already added' : `Target ${formatCurrency(template.suggestedTarget)}`}
+                    {exists ? 'Already added' : `Target ${displayAmount(template.suggestedTarget)}`}
                   </p>
                 </div>
               </button>
@@ -277,7 +277,8 @@ export function GoalsPage() {
               <GoalCard
                 key={goal.id}
                 goal={goal}
-                formatCurrency={formatCurrency}
+                displayAmount={displayAmount}
+                displayPercent={displayPercent}
                 onAddFunds={() => openContribute(goal)}
                 onView={() => openDetail(goal)}
                 onEdit={() => openEdit(goal)}
@@ -385,12 +386,12 @@ export function GoalsPage() {
                   {detailGoal.isArchived && <Badge tone="neutral">Archived</Badge>}
                 </div>
                 <p className="mt-2 text-sm text-muted-fg">
-                  {formatCurrency(detailGoal.currentAmount)} of {formatCurrency(detailGoal.targetAmount)}
+                  {displayAmount(detailGoal.currentAmount)} of {displayAmount(detailGoal.targetAmount)}
                 </p>
                 <div className="mt-2">
                   <ProgressBar value={detailGoal.currentAmount} max={detailGoal.targetAmount} />
                   <p className="mt-1.5 text-xs text-muted">
-                    {Math.round(detailGoal.percentComplete)}% · {formatCurrency(detailGoal.remainingAmount)} remaining
+                    {displayPercent(detailGoal.percentComplete)} · {displayAmount(detailGoal.remainingAmount)} remaining
                     {detailGoal.targetDate ? ` · due ${formatShortDate(detailGoal.targetDate)}` : ''}
                   </p>
                 </div>
@@ -440,7 +441,7 @@ export function GoalsPage() {
                     <ContributionRow
                       key={c.id}
                       contribution={c}
-                      formatCurrency={formatCurrency}
+                      displayAmount={displayAmount}
                       onRemove={() => removeContribution.mutate({ goalId: detailGoal.id, contributionId: c.id })}
                       removing={removeContribution.isPending}
                     />
@@ -457,13 +458,15 @@ export function GoalsPage() {
 
 function GoalCard({
   goal,
-  formatCurrency,
+  displayAmount,
+  displayPercent,
   onAddFunds,
   onView,
   onEdit,
 }: {
   goal: Goal
-  formatCurrency: (n: number) => string
+  displayAmount: (n: number) => string
+  displayPercent: (n: number) => string
   onAddFunds: () => void
   onView: () => void
   onEdit: () => void
@@ -476,7 +479,7 @@ function GoalCard({
           <div className="min-w-0">
             <CardTitle className="truncate text-base">{goal.name}</CardTitle>
             <p className="text-xs text-muted">
-              {formatCurrency(goal.currentAmount)} / {formatCurrency(goal.targetAmount)}
+              {displayAmount(goal.currentAmount)} / {displayAmount(goal.targetAmount)}
             </p>
           </div>
         </div>
@@ -489,7 +492,7 @@ function GoalCard({
         <div>
           <ProgressBar value={goal.currentAmount} max={goal.targetAmount} />
           <p className="mt-1.5 text-xs text-muted">
-            {Math.round(goal.percentComplete)}% · {formatCurrency(goal.remainingAmount)} to go
+            {displayPercent(goal.percentComplete)} · {displayAmount(goal.remainingAmount)} to go
             {goal.targetDate ? ` · due ${formatShortDate(goal.targetDate)}` : ''}
           </p>
         </div>
@@ -513,12 +516,12 @@ function GoalCard({
 
 function ContributionRow({
   contribution,
-  formatCurrency,
+  displayAmount,
   onRemove,
   removing,
 }: {
   contribution: GoalContribution
-  formatCurrency: (n: number) => string
+  displayAmount: (n: number) => string
   onRemove: () => void
   removing: boolean
 }) {
@@ -527,7 +530,7 @@ function ContributionRow({
     <li className="flex items-center justify-between gap-3 rounded-xl bg-input/40 px-3 py-2.5">
       <div className="min-w-0">
         <p className={`text-sm font-medium ${positive ? 'text-emerald-400' : 'text-red-400'}`}>
-          {positive ? '+' : ''}{formatCurrency(contribution.amount)}
+          {positive ? '+' : ''}{displayAmount(contribution.amount)}
         </p>
         <p className="text-xs text-muted">
           {formatShortDate(contribution.contributedAt)}
