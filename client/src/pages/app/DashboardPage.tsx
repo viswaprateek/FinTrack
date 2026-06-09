@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import {
@@ -27,6 +27,7 @@ import { useApiClient, categoriesApi, incomeSourcesApi, transactionsApi, recurri
 import { useBudgetPeriod } from '../../contexts/BudgetPeriodContext'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { formatShortDate } from '../../lib/utils'
+import { AddTransactionModal } from '../../components/transactions/AddTransactionModal'
 import { TransactionListItem } from '../../components/transactions/TransactionListItem'
 import type { Transaction, Category } from '../../types'
 import {
@@ -192,6 +193,7 @@ export function DashboardPage() {
   const { formatCurrency } = useCurrency()
   const { currentBudget, isLoading: budgetsLoading } = useBudgetPeriod()
   const chartTheme = useChartTheme()
+  const [addTransactionOpen, setAddTransactionOpen] = useState(false)
 
   const categoriesQuery = useQuery({
     queryKey: ['categories', currentBudget?.id],
@@ -306,13 +308,11 @@ export function DashboardPage() {
             <span className="text-sm font-medium">{health.label}</span>
             <span className="hidden text-xs text-muted sm:inline">{health.score}% remaining</span>
           </div>
-          <Link to="/transactions">
-            <Button size="sm">
-              <IconPlus className="h-4 w-4" />
-              <span className="hidden sm:inline">Add Transaction</span>
-              <span className="sm:hidden">Add</span>
-            </Button>
-          </Link>
+          <Button size="sm" onClick={() => setAddTransactionOpen(true)}>
+            <IconPlus className="h-4 w-4" />
+            <span className="hidden sm:inline">Add Transaction</span>
+            <span className="sm:hidden">Add</span>
+          </Button>
         </div>
       </div>
 
@@ -805,6 +805,11 @@ export function DashboardPage() {
         </CardContent>
       </Card>
 
+      <AddTransactionModal
+        open={addTransactionOpen}
+        onClose={() => setAddTransactionOpen(false)}
+        initialBudgetId={currentBudget?.id}
+      />
     </div>
   )
 }

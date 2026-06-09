@@ -1,15 +1,25 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { CategoryIcon } from '../../components/categories/CategoryIcon'
+import { TransactionListItem } from '../../components/transactions/TransactionListItem'
+import { Badge } from '../../components/ui/Badge'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { ProgressBar } from '../../components/ui/ProgressBar'
 import { ContentLoader } from '../../components/ui/Spinner'
-import { useApiClient, budgetsApi, categoriesApi, incomeSourcesApi } from '../../api'
+import { useApiClient, budgetsApi, categoriesApi, incomeSourcesApi, transactionsApi } from '../../api'
+import { useBudgetPeriod } from '../../contexts/BudgetPeriodContext'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { cn } from '../../lib/utils'
 import { IconArrowRight, IconPlus } from '../../components/ui/icons'
-import type { IncomeSchedule } from '../../types'
+import type { IncomeSchedule, RolloverType } from '../../types'
+
+const rolloverTone: Record<RolloverType, 'neutral' | 'success' | 'info'> = {
+  reset: 'neutral',
+  rollover: 'success',
+  capped: 'info',
+}
 
 const tabs = ['Overview', 'Income', 'Categories', 'Transactions'] as const
 type Tab = (typeof tabs)[number]
@@ -21,6 +31,7 @@ export function BudgetDetailPage() {
   const budgetId = id!
   const client = useApiClient()
   const { formatCurrency } = useCurrency()
+  const { selectBudget } = useBudgetPeriod()
   const queryClient = useQueryClient()
   const [tab, setTab] = useState<Tab>('Overview')
 
@@ -44,6 +55,16 @@ export function BudgetDetailPage() {
     queryKey: ['income-sources', budgetId],
     queryFn: () => incomeSourcesApi.listForBudget(client, budgetId),
     enabled: tab === 'Income',
+  })
+  const libraryQuery = useQuery({
+    queryKey: ['category-library'],
+    queryFn: () => categoriesApi.listAll(client),
+    enabled: tab === 'Categories',
+  })
+  const transactionsQuery = useQuery({
+    queryKey: ['transactions', { budgetId }],
+    queryFn: () => transactionsApi.list(client, { budget_id: budgetId }),
+    enabled: tab === 'Transactions',
   })
 
   const updateBudget = useMutation({
@@ -73,6 +94,19 @@ export function BudgetDetailPage() {
   const budget = budgetQuery.data
   const categories = categoriesQuery.data ?? []
   const incomeSources = incomeSourcesQuery.data ?? []
+  const library = libraryQuery.data ?? []
+  const transactions = useMemo(
+    () => [...(transactionsQuery.data ?? [])].sort((a, b) => b.date.localeCompare(a.date)),
+    [transactionsQuery.data],
+  )
+
+  function openCategoriesPage() {
+    selectBudget(budgetId)
+  }
+
+  function openTransactionsPage() {
+    selectBudget(budgetId)
+  }
 
   if (budgetQuery.isLoading || categoriesQuery.isLoading) {
     return <ContentLoader label="Loading budget…" />
@@ -191,28 +225,108 @@ export function BudgetDetailPage() {
 
       {tab === 'Categories' && (
         <Card>
-          <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
-            <p className="text-sm text-muted-fg">Manage envelopes and rollover rules for this budget.</p>
-            <Link to={`/budgets/${budget.id}/categories`}>
-              <Button>
-                Open Categories
+          <CardHeader>
+            <CardTitle>Envelopes</CardTitle>
+            <Link to="/categories" onClick={openCategoriesPage}>
+              <Button variant="secondary" size="sm">
+                Manage
                 <IconArrowRight className="h-4 w-4" />
               </Button>
             </Link>
+          </CardHeader>
+          <CardContent className="p-0">
+            {libraryQuery.isLoading ? (
+              <p className="px-6 py-8 text-sm text-muted">Loading categories…</p>
+            ) : categories.length > 0 ? (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted">
+                    <th className="px-6 py-3 font-medium">Category</th>
+                    <th className="px-6 py-3 font-medium">Planned</th>
+                    <th className="px-6 py-3 font-medium">Spent</th>
+                    <th className="px-6 py-3 font-medium">Available</th>
+                    <th className="px-6 py-3 font-medium">Rollover</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {categories.map((c) => {
+                    const available = c.planned - c.spent
+                    const libItem = library.find((l) => l.id === c.id)
+                    return (
+                      <tr key={c.id} className="border-b border-border/60 last:border-0">
+                        <td className="px-6 py-3.5">
+                          <div className="flex items-center gap-2 font-medium text-foreground">
+                            <CategoryIcon name={c.name} icon={libItem?.icon} size="sm" />
+                            {c.name}
+                          </div>
+                        </td>
+                        <td className="px-6 py-3.5 text-muted-fg">{formatCurrency(c.planned)}</td>
+                        <td className="px-6 py-3.5 text-muted-fg">{formatCurrency(c.spent)}</td>
+                        <td
+                          className={cn(
+                            'px-6 py-3.5 font-medium',
+                            available < 0 ? 'text-red-400' : 'text-success',
+                          )}
+                        >
+                          {formatCurrency(available)}
+                        </td>
+                        <td className="px-6 py-3.5">
+                          <Badge tone={rolloverTone[c.rolloverType]}>
+                            {c.rolloverType}
+                            {c.rolloverType === 'capped' && c.rolloverCap
+                              ? ` · cap ${formatCurrency(c.rolloverCap)}`
+                              : ''}
+                          </Badge>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            ) : (
+              <div className="px-6 py-10 text-center">
+                <p className="text-sm text-muted">No envelopes for this month yet.</p>
+                <Link to="/categories" onClick={openCategoriesPage} className="mt-3 inline-block">
+                  <Button size="sm">Add categories</Button>
+                </Link>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
 
       {tab === 'Transactions' && (
         <Card>
-          <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
-            <p className="text-sm text-muted-fg">View transactions filtered to this budget's period.</p>
-            <Link to="/transactions">
-              <Button>
-                Open Transactions
+          <CardHeader>
+            <CardTitle>Transactions</CardTitle>
+            <Link to="/transactions" onClick={openTransactionsPage}>
+              <Button variant="secondary" size="sm">
+                Add &amp; edit
                 <IconArrowRight className="h-4 w-4" />
               </Button>
             </Link>
+          </CardHeader>
+          <CardContent>
+            {transactionsQuery.isLoading ? (
+              <p className="text-sm text-muted">Loading transactions…</p>
+            ) : transactions.length > 0 ? (
+              <div className="space-y-3">
+                {transactions.map((t) => (
+                  <TransactionListItem
+                    key={t.id}
+                    transaction={t}
+                    formatCurrency={formatCurrency}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="py-8 text-center">
+                <p className="text-sm text-muted">No transactions for this month yet.</p>
+                <Link to="/transactions" onClick={openTransactionsPage} className="mt-3 inline-block">
+                  <Button size="sm">Add transaction</Button>
+                </Link>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
