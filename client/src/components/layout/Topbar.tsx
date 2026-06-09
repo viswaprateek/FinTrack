@@ -6,21 +6,10 @@ import { CurrencyConverter } from '../currency/CurrencyConverter'
 import { PrivacyToggle } from '../ui/PrivacyToggle'
 import { ThemeToggle } from '../ui/ThemeToggle'
 import { BudgetPeriodContext } from '../../contexts/BudgetPeriodContext'
-
-const titles: Record<string, string> = {
-  '/dashboard': 'Dashboard',
-  '/budgets': 'Budgets',
-  '/categories': 'Categories',
-  '/transactions': 'Transactions',
-  '/recurring': 'Recurring Bills',
-  '/goals': 'Goals',
-  '/cards': 'Cards',
-  '/reports': 'Reports & Forecasts',
-  '/settings': 'Settings',
-}
+import { pageTitles } from './navConfig'
 
 function pageTitle(pathname: string): string {
-  if (titles[pathname]) return titles[pathname]
+  if (pageTitles[pathname]) return pageTitles[pathname]
   if (pathname.startsWith('/budgets/')) return 'Budget Detail'
   return 'FinTrack'
 }

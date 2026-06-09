@@ -1,23 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { cn } from '../../lib/utils'
-import {
-  IconBarChart,
-  IconCreditCard,
-  IconRepeat,
-  IconSettings,
-  IconTarget,
-  IconUsers,
-  IconX,
-} from '../ui/icons'
-
-const moreItems = [
-  { to: '/shared-expenses', label: 'Shared Expenses', icon: IconUsers, description: 'Friends who owe you' },
-  { to: '/cards', label: 'Cards', icon: IconCreditCard, description: 'Mock credit cards' },
-  { to: '/goals', label: 'Goals', icon: IconTarget, description: 'Savings targets' },
-  { to: '/reports', label: 'Reports & Forecasts', icon: IconBarChart, description: 'Cashflow and trends' },
-  { to: '/recurring', label: 'Recurring Bills', icon: IconRepeat, description: 'Automated payments' },
-  { to: '/settings', label: 'Settings', icon: IconSettings, description: 'Account & preferences' },
-]
+import { IconX } from '../ui/icons'
+import { mobileMoreNav } from './navConfig'
 
 interface MobileMoreSheetProps {
   open: boolean
@@ -48,7 +32,7 @@ export function MobileMoreSheet({ open, onClose }: MobileMoreSheetProps) {
           </button>
         </div>
         <nav className="space-y-2">
-          {moreItems.map(({ to, label, icon: Icon, description }) => (
+          {mobileMoreNav.map(({ to, label, icon: Icon, description }) => (
             <NavLink
               key={to}
               to={to}
@@ -65,7 +49,7 @@ export function MobileMoreSheet({ open, onClose }: MobileMoreSheetProps) {
               </div>
               <div>
                 <p className="text-sm font-medium">{label}</p>
-                <p className="text-xs text-muted">{description}</p>
+                {description && <p className="text-xs text-muted">{description}</p>}
               </div>
             </NavLink>
           ))}

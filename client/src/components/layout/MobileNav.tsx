@@ -1,28 +1,14 @@
 import { useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { cn } from '../../lib/utils'
-import {
-  IconLayoutDashboard,
-  IconReceipt,
-  IconTags,
-  IconWallet,
-  IconMore,
-} from '../ui/icons'
+import { IconMore } from '../ui/icons'
 import { MobileMoreSheet } from './MobileMoreSheet'
-
-const items = [
-  { to: '/dashboard', label: 'Home', icon: IconLayoutDashboard },
-  { to: '/budgets', label: 'Budgets', icon: IconWallet },
-  { to: '/transactions', label: 'Ledger', icon: IconReceipt },
-  { to: '/categories', label: 'Categories', icon: IconTags },
-]
-
-const moreRoutes = ['/shared-expenses', '/cards', '/goals', '/reports', '/recurring', '/settings']
+import { mobileMoreRoutes, mobilePrimaryNav } from './navConfig'
 
 export function MobileNav() {
   const [moreOpen, setMoreOpen] = useState(false)
   const { pathname } = useLocation()
-  const moreActive = moreRoutes.some((r) => pathname.startsWith(r))
+  const moreActive = mobileMoreRoutes.some((r) => pathname.startsWith(r))
 
   return (
     <>
@@ -31,7 +17,7 @@ export function MobileNav() {
         aria-label="Main navigation"
       >
         <div className="flex items-stretch justify-around px-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1">
-          {items.map(({ to, label, icon: Icon }) => (
+          {mobilePrimaryNav.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
