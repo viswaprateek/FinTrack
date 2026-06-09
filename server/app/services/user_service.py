@@ -17,6 +17,7 @@ class UserService:
             email=user.email,
             first_name=user.first_name,
             default_currency=user.default_currency,
+            onboardingCompleted=user.onboarding_completed_at is not None,
         )
 
     def update_preferences(self, user: User, payload: UserPreferencesUpdate) -> UserResponse:

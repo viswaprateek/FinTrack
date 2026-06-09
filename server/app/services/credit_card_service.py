@@ -56,8 +56,10 @@ _DEMO_CARDS = [
 _DEMO_TRANSACTIONS = [
     ("Everyday Visa", "Brody Zmymo — Sent", Decimal("128.08"), "Transfer", 1),
     ("Everyday Visa", "Gym — Payment", Decimal("30.08"), "Health", 2),
+    ("Everyday Visa", "Coffee shop", Decimal("12.50"), "Dining", 4),
     ("PayPal Credit", "Amazon Purchase", Decimal("89.99"), "Shopping", 3),
     ("PayPal Credit", "Netflix", Decimal("15.99"), "Subscriptions", 5),
+    ("PayPal Credit", "Spotify", Decimal("9.99"), "Subscriptions", 7),
     ("Business Amex", "Flight Booking", Decimal("450.00"), "Travel", 4),
     ("Business Amex", "Hotel Stay", Decimal("220.50"), "Travel", 6),
 ]
@@ -198,13 +200,17 @@ class CreditCardService:
         self.db.refresh(card)
         return self._to_response(card)
 
-    def seed_demo_cards(self, user: User) -> list[CreditCardResponse]:
+    def seed_demo_cards(self, user: User, *, minimal: bool = False) -> list[CreditCardResponse]:
         existing = self.db.scalar(select(CreditCard).where(CreditCard.user_id == user.id).limit(1))
         if existing is not None:
             raise ConflictError("You already have cards — demo data is only for empty wallets")
 
+        card_specs = _DEMO_CARDS[:2] if minimal else _DEMO_CARDS
+        allowed_labels = {spec["label"] for spec in card_specs}
+        txn_specs = [t for t in _DEMO_TRANSACTIONS if t[0] in allowed_labels]
+
         created: dict[str, CreditCard] = {}
-        for spec in _DEMO_CARDS:
+        for spec in card_specs:
             card = CreditCard(user_id=user.id, **spec)
             self.db.add(card)
             created[spec["label"]] = card
@@ -212,7 +218,7 @@ class CreditCardService:
         self.db.flush()
 
         now = datetime.now()
-        for label, description, amount, category, days_ago in _DEMO_TRANSACTIONS:
+        for label, description, amount, category, days_ago in txn_specs:
             card = created[label]
             self.db.add(
                 CardTransaction(

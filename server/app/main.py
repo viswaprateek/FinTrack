@@ -42,6 +42,16 @@ def _apply_schema_patches() -> None:
             with engine.begin() as conn:
                 conn.execute(text("ALTER TABLE budgets DROP COLUMN currency"))
 
+    if "onboarding_completed_at" not in columns:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE users ADD COLUMN onboarding_completed_at DATETIME NULL"))
+            conn.execute(
+                text(
+                    "UPDATE users SET onboarding_completed_at = created_at "
+                    "WHERE onboarding_completed_at IS NULL"
+                )
+            )
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

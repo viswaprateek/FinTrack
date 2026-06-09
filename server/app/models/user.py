@@ -1,4 +1,6 @@
-from sqlalchemy import String
+from datetime import datetime
+
+from sqlalchemy import DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.constants import DEFAULT_CURRENCY
@@ -17,6 +19,7 @@ class User(Base, TimestampMixin):
     default_currency: Mapped[str] = mapped_column(
         String(3), default=DEFAULT_CURRENCY, server_default=DEFAULT_CURRENCY
     )
+    onboarding_completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     budgets: Mapped[list["Budget"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     categories: Mapped[list["Category"]] = relationship(back_populates="user", cascade="all, delete-orphan")

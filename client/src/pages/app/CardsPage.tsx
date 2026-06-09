@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
@@ -57,7 +57,6 @@ export function CardsPage() {
   const [chargeDesc, setChargeDesc] = useState('')
   const [chargeAmount, setChargeAmount] = useState('')
   const [chargeCategory, setChargeCategory] = useState('')
-  const seededRef = useRef(false)
 
   const cardsQuery = useQuery({ queryKey: ['cards'], queryFn: () => cardsApi.list(client) })
   const txnsQuery = useQuery({ queryKey: ['cards', 'transactions'], queryFn: () => cardsApi.listTransactions(client, 15) })
@@ -96,13 +95,6 @@ export function CardsPage() {
       setSelectedId(data[0]?.id ?? null)
     },
   })
-
-  useEffect(() => {
-    if (cardsQuery.isSuccess && cards.length === 0 && !seededRef.current && !seedDemo.isPending) {
-      seededRef.current = true
-      seedDemo.mutate()
-    }
-  }, [cardsQuery.isSuccess, cards.length, seedDemo.isPending, seedDemo.mutate])
 
   const createCard = useMutation({
     mutationFn: () =>
@@ -183,21 +175,28 @@ export function CardsPage() {
   const canCreate =
     !!formLabel.trim() && !!formName.trim() && formLastFour.length === 4 && !!formLimit && Number(formLimit) > 0
 
-  if (cardsQuery.isLoading || (cards.length === 0 && seedDemo.isPending)) {
-    return <ContentLoader label="Loading demo cards…" />
+  if (cardsQuery.isLoading) {
+    return <ContentLoader label="Loading cards…" />
   }
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
       {/* Demo banner */}
-      <div className="flex items-center gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 sm:px-5">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400">
-          <IconSparkles className="h-4 w-4" />
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 sm:px-5">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400">
+            <IconSparkles className="h-4 w-4" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-amber-200">Demo mode</p>
+            <p className="text-xs text-amber-200/70">Cards are mock — not connected to real banks or payment networks.</p>
+          </div>
         </div>
-        <div>
-          <p className="text-sm font-medium text-amber-200">Demo mode</p>
-          <p className="text-xs text-amber-200/70">Cards are mock — not connected to real banks or payment networks.</p>
-        </div>
+        {cards.length === 0 && (
+          <Button size="sm" onClick={() => seedDemo.mutate()} disabled={seedDemo.isPending}>
+            {seedDemo.isPending ? 'Loading…' : 'Load demo cards'}
+          </Button>
+        )}
       </div>
 
       {mockNotice && (

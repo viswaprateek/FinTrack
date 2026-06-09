@@ -7,6 +7,7 @@ from app.services.category_service import CategoryService
 from app.services.credit_card_service import CreditCardService
 from app.services.goal_service import GoalService
 from app.services.income_source_service import IncomeSourceService
+from app.services.onboarding_service import OnboardingService
 from app.services.recurring_service import RecurringService
 from app.services.transaction_service import TransactionService
 from app.services.user_service import UserService
@@ -38,6 +39,10 @@ def get_goal_service(db: Session = Depends(get_db)) -> GoalService:
 
 def get_credit_card_service(db: Session = Depends(get_db)) -> CreditCardService:
     return CreditCardService(db)
+
+
+def get_onboarding_service(db: Session = Depends(get_db)) -> OnboardingService:
+    return OnboardingService(db)
 
 
 def get_user_service(db: Session = Depends(get_db)) -> UserService:

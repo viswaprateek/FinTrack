@@ -30,3 +30,4 @@ class UserResponse(BaseModel):
     email: str
     first_name: str | None = None
     default_currency: str
+    onboardingCompleted: bool

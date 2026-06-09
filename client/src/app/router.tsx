@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router-dom'
 import { PublicLayout } from '../layouts/PublicLayout'
 import { AppLayout } from '../layouts/AppLayout'
 import { ProtectedRoute } from '../components/guards/ProtectedRoute'
+import { OnboardingGate } from '../components/guards/OnboardingGate'
 
 import { LandingPage } from '../pages/public/LandingPage'
 import { SignInPage } from '../pages/public/SignInPage'
@@ -18,6 +19,7 @@ import { ReportsPage } from '../pages/app/ReportsPage'
 import { SettingsPage } from '../pages/app/SettingsPage'
 import { GoalsPage } from '../pages/app/GoalsPage'
 import { CardsPage } from '../pages/app/CardsPage'
+import { OnboardingPage } from '../pages/app/OnboardingPage'
 
 export const router = createBrowserRouter([
   {
@@ -31,9 +33,13 @@ export const router = createBrowserRouter([
   {
     element: <ProtectedRoute />,
     children: [
+      { path: '/onboarding', element: <OnboardingPage /> },
       {
-        element: <AppLayout />,
+        element: <OnboardingGate />,
         children: [
+          {
+            element: <AppLayout />,
+            children: [
           { path: '/dashboard', element: <DashboardPage /> },
           { path: '/budgets', element: <BudgetListPage /> },
           { path: '/budgets/:id', element: <BudgetDetailPage /> },
@@ -45,6 +51,8 @@ export const router = createBrowserRouter([
           { path: '/goals', element: <GoalsPage /> },
           { path: '/cards', element: <CardsPage /> },
           { path: '/settings', element: <SettingsPage /> },
+            ],
+          },
         ],
       },
     ],

@@ -6,6 +6,7 @@ export interface MeResponse {
   email: string
   first_name: string | null
   default_currency: string
+  onboardingCompleted: boolean
 }
 
 export interface UserPreferencesUpdate {

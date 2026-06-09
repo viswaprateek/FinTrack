@@ -209,6 +209,19 @@ export const IconX = (props: IconProps) => (
   </svg>
 )
 
+export const IconCheck = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <path d="M20 6 9 17l-5-5" />
+  </svg>
+)
+
+export const IconTrash = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" />
+    <path d="M10 11v6M14 11v6" />
+  </svg>
+)
+
 export const IconMore = (props: IconProps) => (
   <svg {...base} {...props}>
     <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
