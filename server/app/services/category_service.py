@@ -1,14 +1,16 @@
 from decimal import Decimal
 
-from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy import select
+from sqlalchemy.orm import Session, selectinload
 
 from app.core.exceptions import BadRequestError, ConflictError, NotFoundError
 from app.core.utils import parse_id
 from app.models.budget_category_plan import BudgetCategoryPlan
 from app.models.category import Category
 from app.models.fund_transfer import FundTransfer
+from app.models.expense_share import ExpenseShare
 from app.models.transaction import Transaction, TransactionSplit
+from app.services.expense_amount import payer_expense_amount, scale_to_payer_share
 from app.models.user import User
 from app.schemas.category import (
     CategoryCreate,
@@ -27,31 +29,28 @@ class CategoryService:
         self.budgets = BudgetService(db)
 
     def _spent_by_category(self, budget_id: int) -> dict[int, Decimal]:
-        direct = self.db.execute(
-            select(Transaction.category_id, func.sum(Transaction.amount))
-            .where(
-                Transaction.budget_id == budget_id,
-                Transaction.type == "expense",
-                Transaction.is_split.is_(False),
+        transactions = self.db.scalars(
+            select(Transaction)
+            .where(Transaction.budget_id == budget_id, Transaction.type == "expense")
+            .options(
+                selectinload(Transaction.splits),
+                selectinload(Transaction.expense_share).selectinload(ExpenseShare.participants),
             )
-            .group_by(Transaction.category_id)
-        ).all()
-        split = self.db.execute(
-            select(TransactionSplit.category_id, func.sum(TransactionSplit.amount))
-            .join(Transaction, TransactionSplit.transaction_id == Transaction.id)
-            .where(
-                Transaction.budget_id == budget_id,
-                Transaction.type == "expense",
-                Transaction.is_split.is_(True),
-            )
-            .group_by(TransactionSplit.category_id)
         ).all()
 
         totals: dict[int, Decimal] = {}
-        for category_id, amount in (*direct, *split):
-            if category_id is None:
+        for tx in transactions:
+            payer_amount = payer_expense_amount(tx)
+            if payer_amount <= 0:
                 continue
-            totals[category_id] = totals.get(category_id, Decimal("0")) + Decimal(amount)
+            if tx.is_split:
+                for split in tx.splits:
+                    if split.category_id is None:
+                        continue
+                    portion = scale_to_payer_share(tx, split.amount)
+                    totals[split.category_id] = totals.get(split.category_id, Decimal("0")) + portion
+            elif tx.category_id is not None:
+                totals[tx.category_id] = totals.get(tx.category_id, Decimal("0")) + payer_amount
         return totals
 
     def _to_response(self, plan: BudgetCategoryPlan, spent: Decimal) -> CategoryResponse:

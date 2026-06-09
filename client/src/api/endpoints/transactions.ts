@@ -6,6 +6,7 @@ export interface TransactionListParams {
   category?: string
   type?: 'expense' | 'income'
   reimbursable?: ReimbursementStatus
+  has_friend_split?: boolean
   search?: string
 }
 
@@ -13,6 +14,11 @@ export interface TransactionSplitInput {
   category_id?: string | null
   amount: number
   notes?: string | null
+}
+
+export interface FriendSplitInput {
+  email: string
+  amount: number
 }
 
 export interface TransactionCreateInput {
@@ -26,6 +32,8 @@ export interface TransactionCreateInput {
   reimbursable?: ReimbursementStatus
   notes?: string | null
   splits?: TransactionSplitInput[]
+  friend_splits?: FriendSplitInput[]
+  reminder_frequency?: 'off' | 'weekly' | 'monthly'
   source?: 'manual' | 'assistant'
 }
 

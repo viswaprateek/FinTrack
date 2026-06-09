@@ -20,6 +20,7 @@ class UserInDB(UserBase):
 
 class UserPreferencesUpdate(BaseModel):
     default_currency: str | None = None
+    share_reminders_enabled: bool | None = None
 
 
 class UserResponse(BaseModel):
@@ -30,4 +31,5 @@ class UserResponse(BaseModel):
     email: str
     first_name: str | None = None
     default_currency: str
+    shareRemindersEnabled: bool = True
     onboardingCompleted: bool

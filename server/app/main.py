@@ -52,6 +52,15 @@ def _apply_schema_patches() -> None:
                 )
             )
 
+    if "share_reminders_enabled" not in columns:
+        with engine.begin() as conn:
+            conn.execute(
+                text(
+                    "ALTER TABLE users ADD COLUMN share_reminders_enabled BOOLEAN "
+                    "NOT NULL DEFAULT 1"
+                )
+            )
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

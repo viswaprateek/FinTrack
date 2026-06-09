@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useUser, UserProfile } from '@clerk/clerk-react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
+import { useApiClient, usersApi } from '../../api'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { usePrivacy } from '../../contexts/PrivacyContext'
 import { useTheme, type Theme } from '../../contexts/ThemeContext'
@@ -12,8 +14,12 @@ import { SUPPORTED_CURRENCIES } from '../../lib/currencies'
 import { useClerkAppearance } from '../../lib/clerkAppearance'
 
 export function SettingsPage() {
+  const client = useApiClient()
+  const queryClient = useQueryClient()
   const { user } = useUser()
-  const { currency, updateCurrency, isLoading, isSaving } = useCurrency()
+  const { currency, isLoading, isSaving } = useCurrency()
+  const meQuery = useQuery({ queryKey: ['me'], queryFn: () => usersApi.getMe(client) })
+  const [shareReminders, setShareReminders] = useState(true)
   const { privacyMode, setPrivacyMode } = usePrivacy()
   const { theme, setTheme } = useTheme()
   const clerkAppearance = useClerkAppearance()
@@ -24,12 +30,32 @@ export function SettingsPage() {
     setSelectedCurrency(currency)
   }, [currency])
 
+  useEffect(() => {
+    if (meQuery.data) setShareReminders(meQuery.data.shareRemindersEnabled)
+  }, [meQuery.data])
+
+  const savePrefsMutation = useMutation({
+    mutationFn: async () => {
+      const payload: { default_currency?: string; share_reminders_enabled?: boolean } = {}
+      if (selectedCurrency !== currency) payload.default_currency = selectedCurrency
+      if (shareReminders !== meQuery.data?.shareRemindersEnabled) {
+        payload.share_reminders_enabled = shareReminders
+      }
+      if (Object.keys(payload).length === 0) return
+      await usersApi.updatePreferences(client, payload)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['me'] })
+    },
+  })
+
   async function savePreferences() {
-    if (selectedCurrency === currency) return
-    await updateCurrency(selectedCurrency)
+    await savePrefsMutation.mutateAsync()
   }
 
   const currencyDirty = selectedCurrency !== currency
+  const remindersDirty = shareReminders !== (meQuery.data?.shareRemindersEnabled ?? true)
+  const prefsDirty = currencyDirty || remindersDirty
 
   if (isLoading) {
     return <ContentLoader label="Loading settings…" />
@@ -87,6 +113,29 @@ export function SettingsPage() {
           <CardTitle>Preferences</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-surface-muted/30 px-4 py-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-subtle">Friend payment reminders</p>
+              <p className="mt-0.5 text-xs text-muted">
+                Send weekly or monthly emails when friends owe you from shared expenses.
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={shareReminders}
+              onClick={() => setShareReminders(!shareReminders)}
+              className={`relative h-7 w-11 shrink-0 overflow-hidden rounded-full transition-colors ${
+                shareReminders ? 'bg-accent' : 'bg-border-muted'
+              }`}
+            >
+              <span
+                className={`absolute top-1 left-1 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                  shareReminders ? 'translate-x-4' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
           <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-surface-muted/30 px-4 py-3">
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-subtle">Privacy mode</p>
@@ -163,8 +212,12 @@ export function SettingsPage() {
               <option>MM/YYYY — e.g. 06/2026</option>
             </select>
           </div>
-          <Button size="sm" onClick={savePreferences} disabled={!currencyDirty || isSaving || isLoading}>
-            {isSaving ? 'Saving…' : 'Save Preferences'}
+          <Button
+            size="sm"
+            onClick={savePreferences}
+            disabled={!prefsDirty || isSaving || isLoading || savePrefsMutation.isPending}
+          >
+            {isSaving || savePrefsMutation.isPending ? 'Saving…' : 'Save Preferences'}
           </Button>
         </CardContent>
       </Card>

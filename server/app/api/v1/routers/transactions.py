@@ -17,6 +17,7 @@ def list_transactions(
     category: str | None = Query(default=None, description="Filter by category name"),
     type: str | None = Query(default=None, pattern="^(expense|income)$"),
     reimbursable: str | None = Query(default=None, pattern="^(none|pending|received)$"),
+    has_friend_split: bool | None = Query(default=None),
     search: str | None = Query(default=None, description="Matches against description"),
 ):
     return service.list_transactions(
@@ -25,6 +26,7 @@ def list_transactions(
         category=category,
         type=type,
         reimbursable=reimbursable,
+        has_friend_split=has_friend_split,
         search=search,
     )
 

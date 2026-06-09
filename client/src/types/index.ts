@@ -38,7 +38,30 @@ export interface Transaction {
   amount: number
   reimbursable: ReimbursementStatus
   isSplit: boolean
+  hasFriendSplit?: boolean
   notes?: string
+}
+
+export type ReminderFrequency = 'off' | 'weekly' | 'monthly'
+
+export interface ExpenseShareParticipant {
+  id: string
+  email: string
+  amountOwed: number
+  status: 'pending' | 'paid'
+  paidAt?: string | null
+  lastRemindedAt?: string | null
+}
+
+export interface ExpenseShare {
+  id: string
+  transactionId: string
+  description: string
+  transactionDate: string
+  totalAmount: number
+  yourShare: number
+  reminderFrequency: ReminderFrequency
+  participants: ExpenseShareParticipant[]
 }
 
 export type RecurringFrequency = 'weekly' | 'monthly' | 'quarterly' | 'yearly'

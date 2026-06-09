@@ -5,10 +5,12 @@ from app.api.v1.routers import (
     budgets,
     categories,
     credit_cards,
+    expense_shares,
     goals,
     health,
     income_sources,
     onboarding,
+    public_routes,
     recurring,
     transactions,
     user_categories,
@@ -24,6 +26,8 @@ api_router.include_router(categories.router)
 api_router.include_router(user_categories.router)
 api_router.include_router(income_sources.router)
 api_router.include_router(transactions.router)
+api_router.include_router(expense_shares.router)
+api_router.include_router(public_routes.router)
 api_router.include_router(recurring.router)
 api_router.include_router(goals.router)
 api_router.include_router(credit_cards.router)

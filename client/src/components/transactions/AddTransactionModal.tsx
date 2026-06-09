@@ -3,13 +3,21 @@ import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent } from '../ui/Card'
 import { Button } from '../ui/Button'
+import { ToggleSwitch } from '../ui/ToggleSwitch'
 import { useApiClient, categoriesApi, transactionsApi } from '../../api'
 import type { TransactionSplitInput } from '../../api/endpoints/transactions'
 import { useBudgetPeriod } from '../../contexts/BudgetPeriodContext'
+import { useCurrency } from '../../contexts/CurrencyContext'
 import { budgetForDate, clampDateToBudget, isDateInBudget } from '../../lib/budgets'
+import type { ReminderFrequency } from '../../types'
 
 interface SplitLine {
   categoryId: string
+  amount: string
+}
+
+interface FriendLine {
+  email: string
   amount: string
 }
 
@@ -23,9 +31,13 @@ export function AddTransactionModal({ open, onClose, initialBudgetId }: AddTrans
   const client = useApiClient()
   const queryClient = useQueryClient()
   const { budgets, currentBudget } = useBudgetPeriod()
+  const { formatCurrency } = useCurrency()
 
   const [splitOn, setSplitOn] = useState(false)
+  const [friendSplitOn, setFriendSplitOn] = useState(false)
   const [reimbursableOn, setReimbursableOn] = useState(false)
+  const [reminderFrequency, setReminderFrequency] = useState<ReminderFrequency>('weekly')
+  const [friendLines, setFriendLines] = useState<FriendLine[]>([{ email: '', amount: '' }])
   const [formBudgetId, setFormBudgetId] = useState('')
   const [formDate, setFormDate] = useState('')
   const [formAmount, setFormAmount] = useState('')
@@ -69,9 +81,12 @@ export function AddTransactionModal({ open, onClose, initialBudgetId }: AddTrans
     setFormCategoryId('')
     setFormNotes('')
     setSplitOn(false)
+    setFriendSplitOn(false)
     setReimbursableOn(false)
+    setReminderFrequency('weekly')
     setFormReimbursable('pending')
     setSplitLines([{ categoryId: '', amount: '' }])
+    setFriendLines([{ email: '', amount: '' }])
     setNewCategoryOpen(false)
     setNewCategoryName('')
   }
@@ -119,6 +134,7 @@ export function AddTransactionModal({ open, onClose, initialBudgetId }: AddTrans
     queryClient.invalidateQueries({ queryKey: ['transactions'] })
     queryClient.invalidateQueries({ queryKey: ['categories'] })
     queryClient.invalidateQueries({ queryKey: ['budgets'] })
+    queryClient.invalidateQueries({ queryKey: ['expense-shares'] })
   }
 
   const createCategory = useMutation({
@@ -139,6 +155,12 @@ export function AddTransactionModal({ open, onClose, initialBudgetId }: AddTrans
             .map((s) => ({ category_id: s.categoryId, amount: Number(s.amount) }))
         : undefined
 
+      const friend_splits = friendSplitOn
+        ? friendLines
+            .filter((f) => f.email && f.amount)
+            .map((f) => ({ email: f.email.trim().toLowerCase(), amount: Number(f.amount) }))
+        : undefined
+
       return transactionsApi.create(client, {
         budget_id: activeFormBudgetId,
         category_id: formCategoryId || null,
@@ -146,9 +168,11 @@ export function AddTransactionModal({ open, onClose, initialBudgetId }: AddTrans
         description: formDescription,
         amount: Math.abs(Number(formAmount)),
         type: Number(formAmount) < 0 ? 'expense' : 'income',
-        reimbursable: reimbursableOn ? formReimbursable : 'none',
+        reimbursable: reimbursableOn && !friendSplitOn ? formReimbursable : 'none',
         notes: formNotes || null,
         splits: splits && splits.length > 0 ? splits : undefined,
+        friend_splits: friend_splits && friend_splits.length > 0 ? friend_splits : undefined,
+        reminder_frequency: friendSplitOn ? reminderFrequency : 'off',
       })
     },
     onSuccess: () => {
@@ -167,7 +191,27 @@ export function AddTransactionModal({ open, onClose, initialBudgetId }: AddTrans
     setSplitLines((lines) => lines.map((l, i) => (i === index ? { ...l, ...patch } : l)))
   }
 
+  function addFriendLine() {
+    setFriendLines((lines) => [...lines, { email: '', amount: '' }])
+  }
+
+  function updateFriendLine(index: number, patch: Partial<FriendLine>) {
+    setFriendLines((lines) => lines.map((l, i) => (i === index ? { ...l, ...patch } : l)))
+  }
+
+  const txAmount = Math.abs(Number(formAmount) || 0)
+  const isExpense = Number(formAmount) < 0
+  const friendsTotal = friendLines.reduce((sum, f) => sum + (Number(f.amount) || 0), 0)
+  const yourShare = Math.max(0, txAmount - friendsTotal)
+
   const dateInBudget = activeBudget && formDate ? isDateInBudget(formDate, activeBudget) : false
+
+  const friendSplitValid =
+    !friendSplitOn ||
+    (isExpense &&
+      friendLines.some((f) => f.email && f.amount) &&
+      friendsTotal > 0 &&
+      friendsTotal <= txAmount)
 
   const canSubmit =
     !!activeFormBudgetId &&
@@ -176,7 +220,8 @@ export function AddTransactionModal({ open, onClose, initialBudgetId }: AddTrans
     !!formDate &&
     !!formAmount &&
     !!formDescription &&
-    (!splitOn || splitLines.some((s) => s.categoryId && s.amount))
+    (!splitOn || splitLines.some((s) => s.categoryId && s.amount)) &&
+    friendSplitValid
 
   if (!open) return null
 
@@ -251,7 +296,7 @@ export function AddTransactionModal({ open, onClose, initialBudgetId }: AddTrans
             />
           </div>
 
-          {!splitOn && (
+          {!splitOn && !friendSplitOn && (
             <div>
               <div className="mb-1.5 flex items-center justify-between">
                 <label className="text-sm font-medium text-subtle">Category</label>
@@ -305,17 +350,17 @@ export function AddTransactionModal({ open, onClose, initialBudgetId }: AddTrans
             </div>
           )}
 
-          <div className="flex items-center justify-between rounded-xl bg-input/40 px-4 py-3">
-            <span className="text-sm font-medium text-subtle">Split transaction</span>
-            <button
-              type="button"
-              onClick={() => setSplitOn((v) => !v)}
-              className={`relative h-6 w-11 rounded-full transition-colors ${splitOn ? 'bg-accent' : 'bg-border-muted'}`}
-            >
-              <span
-                className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-transform ${splitOn ? 'translate-x-6' : 'translate-x-1'}`}
-              />
-            </button>
+          <div className="flex items-center justify-between gap-3 rounded-xl bg-input/40 px-4 py-3">
+            <span className="text-sm font-medium text-subtle">Split by category</span>
+            <ToggleSwitch
+              checked={splitOn}
+              disabled={friendSplitOn}
+              aria-label="Split by category"
+              onChange={() => {
+                setSplitOn((v) => !v)
+                if (!splitOn) setFriendSplitOn(false)
+              }}
+            />
           </div>
           {splitOn && (
             <div className="space-y-2 rounded-xl border border-border p-3">
@@ -349,17 +394,80 @@ export function AddTransactionModal({ open, onClose, initialBudgetId }: AddTrans
             </div>
           )}
 
-          <div className="flex items-center justify-between rounded-xl bg-input/40 px-4 py-3">
-            <span className="text-sm font-medium text-subtle">Reimbursable</span>
-            <button
-              type="button"
-              onClick={() => setReimbursableOn((v) => !v)}
-              className={`relative h-6 w-11 rounded-full transition-colors ${reimbursableOn ? 'bg-accent' : 'bg-border-muted'}`}
-            >
-              <span
-                className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-transform ${reimbursableOn ? 'translate-x-6' : 'translate-x-1'}`}
-              />
-            </button>
+          <div className="flex items-center justify-between gap-3 rounded-xl bg-input/40 px-4 py-3">
+            <div className="min-w-0">
+              <span className="text-sm font-medium text-subtle">Split with friends</span>
+              <p className="text-xs text-muted">Only your share counts toward the budget</p>
+            </div>
+            <ToggleSwitch
+              checked={friendSplitOn}
+              disabled={splitOn || !isExpense}
+              aria-label="Split with friends"
+              onChange={() => {
+                setFriendSplitOn((v) => !v)
+                if (!friendSplitOn) {
+                  setSplitOn(false)
+                  setReimbursableOn(false)
+                }
+              }}
+            />
+          </div>
+          {friendSplitOn && (
+            <div className="space-y-3 rounded-xl border border-border p-3">
+              {friendLines.map((line, i) => (
+                <div key={i} className="flex gap-2">
+                  <input
+                    value={line.email}
+                    onChange={(e) => updateFriendLine(i, { email: e.target.value })}
+                    type="email"
+                    placeholder="friend@email.com"
+                    className="min-w-0 flex-1 rounded-lg border border-border-muted bg-input px-2.5 py-2 text-sm text-foreground placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
+                  />
+                  <input
+                    value={line.amount}
+                    onChange={(e) => updateFriendLine(i, { amount: e.target.value })}
+                    type="number"
+                    placeholder="Amount"
+                    className="w-28 rounded-lg border border-border-muted bg-input px-2.5 py-2 text-sm text-foreground placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
+                  />
+                </div>
+              ))}
+              <Button variant="ghost" size="sm" onClick={addFriendLine}>
+                + Add friend
+              </Button>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted">Your share</span>
+                <span className="font-semibold text-heading">{formatCurrency(yourShare)}</span>
+              </div>
+              {friendsTotal > txAmount && txAmount > 0 && (
+                <p className="text-xs text-red-400">Friend amounts cannot exceed the transaction total.</p>
+              )}
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted">Payment reminders</label>
+                <select
+                  value={reminderFrequency}
+                  onChange={(e) => setReminderFrequency(e.target.value as ReminderFrequency)}
+                  className="w-full rounded-lg border border-border-muted bg-input px-2.5 py-2 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
+                >
+                  <option value="off">Off (initial email only)</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between gap-3 rounded-xl bg-input/40 px-4 py-3">
+            <div className="min-w-0">
+              <span className="text-sm font-medium text-subtle">Expect reimbursement</span>
+              <p className="text-xs text-muted">Employer / other (non-friend)</p>
+            </div>
+            <ToggleSwitch
+              checked={reimbursableOn}
+              disabled={friendSplitOn}
+              aria-label="Expect reimbursement"
+              onChange={() => setReimbursableOn((v) => !v)}
+            />
           </div>
           {reimbursableOn && (
             <select

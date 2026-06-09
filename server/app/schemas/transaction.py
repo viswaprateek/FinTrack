@@ -4,6 +4,8 @@ from typing import Literal
 
 from pydantic import BaseModel
 
+from app.schemas.expense_share import FriendSplitInput, ReminderFrequency
+
 ReimbursementStatus = Literal["none", "pending", "received"]
 TransactionType = Literal["expense", "income"]
 
@@ -25,6 +27,8 @@ class TransactionCreate(BaseModel):
     reimbursable: ReimbursementStatus = "none"
     notes: str | None = None
     splits: list[TransactionSplitInput] | None = None
+    friend_splits: list[FriendSplitInput] | None = None
+    reminder_frequency: ReminderFrequency = "off"
     source: Literal["manual", "assistant"] = "manual"
 
 
@@ -55,4 +59,5 @@ class TransactionResponse(BaseModel):
     amount: Decimal
     reimbursable: ReimbursementStatus
     isSplit: bool
+    hasFriendSplit: bool = False
     notes: str | None = None

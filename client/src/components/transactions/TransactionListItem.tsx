@@ -1,7 +1,7 @@
 import { Badge } from '../ui/Badge'
 import { Button } from '../ui/Button'
 import { cn, formatShortDate } from '../../lib/utils'
-import { IconSplit } from '../ui/icons'
+import { IconSplit, IconUsers } from '../ui/icons'
 import type { ReimbursementStatus, Transaction } from '../../types'
 
 const reimbursementTone: Record<ReimbursementStatus, 'neutral' | 'warning' | 'success'> = {
@@ -47,7 +47,16 @@ export function TransactionListItem({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <p className="font-medium text-foreground">{t.description}</p>
-            {t.isSplit && <IconSplit className="h-3.5 w-3.5 shrink-0 text-sky-400" />}
+            {t.hasFriendSplit && (
+              <span title="Split with friends">
+                <IconUsers className="h-3.5 w-3.5 shrink-0 text-sky-400" />
+              </span>
+            )}
+            {t.isSplit && !t.hasFriendSplit && (
+              <span title="Split by category">
+                <IconSplit className="h-3.5 w-3.5 shrink-0 text-sky-400" />
+              </span>
+            )}
           </div>
           <p className="mt-1 text-xs text-muted">
             {formatShortDate(t.date)}
@@ -71,9 +80,10 @@ export function TransactionListItem({
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <Badge>{t.category}</Badge>
-        {t.reimbursable !== 'none' && (
+        {t.hasFriendSplit && <Badge tone="info">Shared</Badge>}
+        {t.reimbursable !== 'none' && !t.hasFriendSplit && (
           <Badge tone={reimbursementTone[t.reimbursable]}>
-            {t.reimbursable === 'pending' ? 'Reimb. pending' : 'Reimb. received'}
+            {t.reimbursable === 'pending' ? 'Employer pending' : 'Employer received'}
           </Badge>
         )}
         {t.account && <span className="text-xs text-muted">{t.account}</span>}

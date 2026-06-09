@@ -29,6 +29,12 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str | None = None
     GEMINI_MODEL: str = "gemini-2.5-flash"
 
+    # Expense share emails (Resend) — optional in dev (logs instead)
+    RESEND_API_KEY: str | None = None
+    EMAIL_FROM: str | None = None
+    APP_BASE_URL: str = "http://localhost:5173"
+    CRON_SECRET: str | None = None
+
 
 @lru_cache
 def get_settings() -> Settings:

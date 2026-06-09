@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button } from '../ui/Button'
+import { ToggleSwitch } from '../ui/ToggleSwitch'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { formatDate } from '../../lib/utils'
 import type { Category } from '../../types'
@@ -123,20 +124,11 @@ export function TransactionConfirmCard({
         </Field>
 
         <Field label="Reimbursable">
-          <button
-            type="button"
-            onClick={() => onChange({ is_reimbursable: !transaction.is_reimbursable })}
-            className={`relative h-6 w-11 rounded-full transition-colors ${
-              transaction.is_reimbursable ? 'bg-accent' : 'bg-border-muted'
-            }`}
-            aria-pressed={transaction.is_reimbursable}
-          >
-            <span
-              className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
-                transaction.is_reimbursable ? 'translate-x-5' : 'translate-x-0.5'
-              }`}
-            />
-          </button>
+          <ToggleSwitch
+            checked={transaction.is_reimbursable}
+            aria-label="Reimbursable"
+            onChange={() => onChange({ is_reimbursable: !transaction.is_reimbursable })}
+          />
         </Field>
 
         <Field label="Notes">

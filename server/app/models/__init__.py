@@ -9,6 +9,7 @@ from app.models.goal import Goal
 from app.models.goal_contribution import GoalContribution
 from app.models.income_source import IncomeSource
 from app.models.recurring_rule import RecurringRule
+from app.models.expense_share import ExpenseShare, ExpenseShareParticipant
 from app.models.transaction import Transaction, TransactionSplit
 from app.models.user import User
 
@@ -21,6 +22,8 @@ __all__ = [
     "BudgetCategoryPlan",
     "Transaction",
     "TransactionSplit",
+    "ExpenseShare",
+    "ExpenseShareParticipant",
     "RecurringRule",
     "IncomeSource",
     "FundTransfer",

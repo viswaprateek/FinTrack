@@ -39,6 +39,9 @@ class Transaction(Base, TimestampMixin):
     splits: Mapped[list["TransactionSplit"]] = relationship(
         back_populates="transaction", cascade="all, delete-orphan"
     )
+    expense_share: Mapped["ExpenseShare | None"] = relationship(
+        back_populates="transaction", cascade="all, delete-orphan", uselist=False
+    )
 
 
 class TransactionSplit(Base):

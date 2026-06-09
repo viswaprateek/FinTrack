@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
+import { ToggleSwitch } from '../../components/ui/ToggleSwitch'
 import { Badge } from '../../components/ui/Badge'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { ContentLoader } from '../../components/ui/Spinner'
@@ -37,7 +38,9 @@ export function TransactionsPage() {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('All categories')
   const [typeFilter, setTypeFilter] = useState<'All types' | 'Income' | 'Expense'>('All types')
-  const [reimbursableFilter, setReimbursableFilter] = useState<'Reimbursable: any' | 'Pending' | 'Received'>('Reimbursable: any')
+  const [shareFilter, setShareFilter] = useState<
+    'All transactions' | 'Shared with friends' | 'Employer reimbursement'
+  >('All transactions')
 
   const [addOpen, setAddOpen] = useState(false)
 
@@ -96,13 +99,13 @@ export function TransactionsPage() {
         typeFilter === 'All types' ||
         (typeFilter === 'Income' && t.amount >= 0) ||
         (typeFilter === 'Expense' && t.amount < 0)
-      const matchesReimbursable =
-        reimbursableFilter === 'Reimbursable: any' ||
-        (reimbursableFilter === 'Pending' && t.reimbursable === 'pending') ||
-        (reimbursableFilter === 'Received' && t.reimbursable === 'received')
-      return matchesCategory && matchesSearch && matchesType && matchesReimbursable
+      const matchesShare =
+        shareFilter === 'All transactions' ||
+        (shareFilter === 'Shared with friends' && t.hasFriendSplit) ||
+        (shareFilter === 'Employer reimbursement' && t.reimbursable !== 'none' && !t.hasFriendSplit)
+      return matchesCategory && matchesSearch && matchesType && matchesShare
     })
-  }, [transactions, search, category, typeFilter, reimbursableFilter])
+  }, [transactions, search, category, typeFilter, shareFilter])
 
   const mismatchedTransactions = useMemo(
     () => transactions.filter((t) => isMismatchedTransaction(t, budgets)),
@@ -283,13 +286,13 @@ export function TransactionsPage() {
               <option>Expense</option>
             </select>
             <select
-              value={reimbursableFilter}
-              onChange={(e) => setReimbursableFilter(e.target.value as typeof reimbursableFilter)}
+              value={shareFilter}
+              onChange={(e) => setShareFilter(e.target.value as typeof shareFilter)}
               className="w-full rounded-xl border border-border-muted bg-input px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted sm:w-auto"
             >
-              <option>Reimbursable: any</option>
-              <option>Pending</option>
-              <option>Received</option>
+              <option>All transactions</option>
+              <option>Shared with friends</option>
+              <option>Employer reimbursement</option>
             </select>
           </div>
         </div>
@@ -526,15 +529,14 @@ export function TransactionsPage() {
                 </div>
               )}
 
-              <div className="flex items-center justify-between rounded-xl bg-input/40 px-4 py-3">
-                <span className="text-sm font-medium text-subtle">Reimbursable</span>
-                <button
-                  type="button"
-                  onClick={() => setEditReimbursableOn((v) => !v)}
-                  className={`relative h-6 w-11 rounded-full transition-colors ${editReimbursableOn ? 'bg-accent' : 'bg-border-muted'}`}
-                >
-                  <span className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-transform ${editReimbursableOn ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
+              <div className="flex items-center justify-between gap-3 rounded-xl bg-input/40 px-4 py-3">
+                <span className="text-sm font-medium text-subtle">Expect reimbursement (employer)</span>
+                <ToggleSwitch
+                  checked={editReimbursableOn}
+                  disabled={editTarget.hasFriendSplit}
+                  aria-label="Expect reimbursement"
+                  onChange={() => setEditReimbursableOn((v) => !v)}
+                />
               </div>
               {editReimbursableOn && (
                 <select

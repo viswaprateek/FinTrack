@@ -10,11 +10,13 @@ from app.core.utils import parse_id
 from app.models.audit_log import AuditLog
 from app.models.budget import Budget as BudgetModel
 from app.models.category import Category
+from app.models.expense_share import ExpenseShare
 from app.models.transaction import Transaction, TransactionSplit
 from app.models.user import User
 from app.schemas.transaction import TransactionCreate, TransactionResponse, TransactionUpdate
 from app.services.budget_service import BudgetService
 from app.services.category_service import CategoryService
+from app.services.expense_share_service import ExpenseShareService
 
 
 class TransactionService:
@@ -22,6 +24,7 @@ class TransactionService:
         self.db = db
         self.budgets = BudgetService(db)
         self.categories = CategoryService(db)
+        self.expense_shares = ExpenseShareService(db)
 
     def _assert_date_in_budget(self, budget: BudgetModel, tx_date: dt.date) -> None:
         if tx_date < budget.period_start or tx_date > budget.period_end:
@@ -45,6 +48,7 @@ class TransactionService:
             amount=self._signed_amount(transaction),
             reimbursable=transaction.reimbursement_status,
             isSplit=transaction.is_split,
+            hasFriendSplit=transaction.expense_share is not None,
             notes=transaction.notes,
         )
 
@@ -53,7 +57,11 @@ class TransactionService:
         transaction = self.db.scalar(
             select(Transaction)
             .where(Transaction.id == transaction_id)
-            .options(selectinload(Transaction.category), selectinload(Transaction.splits))
+            .options(
+                selectinload(Transaction.category),
+                selectinload(Transaction.splits),
+                selectinload(Transaction.expense_share),
+            )
         )
         if transaction is None or transaction.budget.user_id != user.id:
             raise NotFoundError("Transaction")
@@ -67,13 +75,18 @@ class TransactionService:
         category: str | None = None,
         type: str | None = None,
         reimbursable: str | None = None,
+        has_friend_split: bool | None = None,
         search: str | None = None,
     ) -> list[TransactionResponse]:
         stmt = (
             select(Transaction)
             .join(BudgetModel, Transaction.budget_id == BudgetModel.id)
             .where(BudgetModel.user_id == user.id)
-            .options(selectinload(Transaction.category), selectinload(Transaction.splits))
+            .options(
+                selectinload(Transaction.category),
+                selectinload(Transaction.splits),
+                selectinload(Transaction.expense_share),
+            )
             .order_by(Transaction.date.desc(), Transaction.id.desc())
         )
         if budget_id is not None:
@@ -86,6 +99,10 @@ class TransactionService:
             stmt = stmt.where(Transaction.description.ilike(f"%{search}%"))
         if category:
             stmt = stmt.where(Transaction.category.has(Category.name == category))
+        if has_friend_split is True:
+            stmt = stmt.where(Transaction.id.in_(select(ExpenseShare.transaction_id)))
+        elif has_friend_split is False:
+            stmt = stmt.where(~Transaction.id.in_(select(ExpenseShare.transaction_id)))
 
         transactions = self.db.scalars(stmt).all()
         return [self._to_response(t) for t in transactions]
@@ -100,8 +117,13 @@ class TransactionService:
         )
 
         splits = payload.splits or []
+        friend_splits = payload.friend_splits or []
+        if splits and friend_splits:
+            raise BadRequestError("Use either category splits or friend splits, not both")
         if splits and sum(s.amount for s in splits) != payload.amount:
             raise BadRequestError("Split amounts must sum to the transaction amount")
+        if friend_splits and payload.reimbursable != "none":
+            raise BadRequestError("Use friend splits or employer reimbursement, not both")
 
         if payload.category_id:
             self.categories.ensure_envelope_plan(user, payload.budget_id, payload.category_id)
@@ -138,6 +160,15 @@ class TransactionService:
                     notes=split.notes,
                 )
             )
+
+        if friend_splits:
+            share = self.expense_shares.create_for_transaction(
+                user,
+                transaction,
+                friend_splits,
+                payload.reminder_frequency,
+            )
+            self.expense_shares.send_initial_notifications(user, share)
 
         if payload.source == "assistant":
             self.db.add(

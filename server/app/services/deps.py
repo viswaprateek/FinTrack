@@ -7,6 +7,7 @@ from app.services.assistant_service import AssistantService
 from app.services.budget_service import BudgetService
 from app.services.category_service import CategoryService
 from app.services.credit_card_service import CreditCardService
+from app.services.expense_share_service import ExpenseShareService
 from app.services.goal_service import GoalService
 from app.services.income_source_service import IncomeSourceService
 from app.services.onboarding_service import OnboardingService
@@ -57,3 +58,7 @@ def get_activity_service(db: Session = Depends(get_db)) -> ActivityService:
 
 def get_assistant_service(db: Session = Depends(get_db)) -> AssistantService:
     return AssistantService(db)
+
+
+def get_expense_share_service(db: Session = Depends(get_db)) -> ExpenseShareService:
+    return ExpenseShareService(db)

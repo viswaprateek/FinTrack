@@ -1,14 +1,16 @@
 from decimal import Decimal
 
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.core.exceptions import ConflictError, NotFoundError
 from app.core.utils import format_period, parse_id
 from app.models.budget import Budget
 from app.models.budget_category_plan import BudgetCategoryPlan
+from app.models.expense_share import ExpenseShare
 from app.models.transaction import Transaction
 from app.models.user import User
+from app.services.expense_amount import payer_expense_amount
 from app.schemas.budget import BudgetCreate, BudgetResponse, BudgetUpdate
 
 
@@ -25,12 +27,14 @@ class BudgetService:
         return Decimal(total)
 
     def _spent_total(self, budget_id: int) -> Decimal:
-        total = self.db.scalar(
-            select(func.coalesce(func.sum(Transaction.amount), 0)).where(
-                Transaction.budget_id == budget_id, Transaction.type == "expense"
+        transactions = self.db.scalars(
+            select(Transaction)
+            .where(Transaction.budget_id == budget_id, Transaction.type == "expense")
+            .options(
+                selectinload(Transaction.expense_share).selectinload(ExpenseShare.participants)
             )
-        )
-        return Decimal(total)
+        ).all()
+        return sum((payer_expense_amount(tx) for tx in transactions), Decimal("0"))
 
     def _to_response(self, budget: Budget) -> BudgetResponse:
         return BudgetResponse(

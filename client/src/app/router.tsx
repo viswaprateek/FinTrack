@@ -22,6 +22,8 @@ import { SettingsPage } from '../pages/app/SettingsPage'
 import { GoalsPage } from '../pages/app/GoalsPage'
 import { CardsPage } from '../pages/app/CardsPage'
 import { OnboardingPage } from '../pages/app/OnboardingPage'
+import { SharedExpensesPage } from '../pages/app/SharedExpensesPage'
+import { OwePage } from '../pages/public/OwePage'
 
 export const router = createBrowserRouter([
   {
@@ -32,6 +34,7 @@ export const router = createBrowserRouter([
       { path: '/sign-up/sso-callback', element: <ClerkSsoCallbackPage /> },
       { path: '/sign-in/*', element: <SignInPage /> },
       { path: '/sign-up/*', element: <SignUpPage /> },
+      { path: '/owe/:token', element: <OwePage /> },
     ],
   },
   {
@@ -53,6 +56,7 @@ export const router = createBrowserRouter([
           { path: '/budgets/:id/categories', element: <BudgetCategoriesRedirect /> },
           { path: '/categories', element: <CategoryLibraryPage /> },
           { path: '/transactions', element: <TransactionsPage /> },
+          { path: '/shared-expenses', element: <SharedExpensesPage /> },
           { path: '/recurring', element: <RecurringPage /> },
           { path: '/reports', element: <ReportsPage /> },
           { path: '/goals', element: <GoalsPage /> },

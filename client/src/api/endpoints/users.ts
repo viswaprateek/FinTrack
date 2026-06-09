@@ -6,11 +6,13 @@ export interface MeResponse {
   email: string
   first_name: string | null
   default_currency: string
+  shareRemindersEnabled: boolean
   onboardingCompleted: boolean
 }
 
 export interface UserPreferencesUpdate {
   default_currency?: string
+  share_reminders_enabled?: boolean
 }
 
 export const usersApi = {

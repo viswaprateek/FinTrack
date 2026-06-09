@@ -17,6 +17,7 @@ class UserService:
             email=user.email,
             first_name=user.first_name,
             default_currency=user.default_currency,
+            shareRemindersEnabled=user.share_reminders_enabled,
             onboardingCompleted=user.onboarding_completed_at is not None,
         )
 
@@ -26,6 +27,9 @@ class UserService:
             if code not in SUPPORTED_CURRENCIES:
                 raise BadRequestError(f"Unsupported currency: {payload.default_currency}")
             user.default_currency = code
+
+        if payload.share_reminders_enabled is not None:
+            user.share_reminders_enabled = payload.share_reminders_enabled
 
         self.db.commit()
         self.db.refresh(user)

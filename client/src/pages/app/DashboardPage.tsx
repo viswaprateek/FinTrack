@@ -23,7 +23,7 @@ import { StatCard } from '../../components/ui/StatCard'
 import { ProgressBar } from '../../components/ui/ProgressBar'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
-import { useApiClient, categoriesApi, incomeSourcesApi, transactionsApi, recurringApi } from '../../api'
+import { useApiClient, categoriesApi, expenseSharesApi, incomeSourcesApi, transactionsApi, recurringApi } from '../../api'
 import { useBudgetPeriod } from '../../contexts/BudgetPeriodContext'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { formatShortDate } from '../../lib/utils'
@@ -214,6 +214,10 @@ export function DashboardPage() {
     queryFn: () => incomeSourcesApi.listForBudget(client, currentBudget!.id),
     enabled: !!currentBudget,
   })
+  const friendsOweQuery = useQuery({
+    queryKey: ['expense-shares', 'outstanding'],
+    queryFn: () => expenseSharesApi.outstandingTotal(client),
+  })
 
   const categories = categoriesQuery.data ?? []
   const transactions = transactionsQuery.data ?? []
@@ -229,9 +233,7 @@ export function DashboardPage() {
   const remaining     = plannedTotal - spentTotal
   const overspentCategories = categories.filter((c) => toNum(c.spent) > toNum(c.planned))
   const savingsRate   = plannedTotal > 0 ? Math.max(0, Math.round(((plannedTotal - spentTotal) / plannedTotal) * 100)) : 0
-  const reimbursableTotal = transactions
-    .filter((t) => t.reimbursable === 'pending')
-    .reduce((sum, t) => sum + Math.abs(t.amount), 0)
+  const friendsOweTotal = friendsOweQuery.data?.total ?? 0
   const incomeSources = incomeSourcesQuery.data ?? []
   const expectedIncome = incomeSources.reduce((sum, s) => sum + toNum(s.amount), 0)
   const actualIncome = transactions
@@ -628,13 +630,13 @@ export function DashboardPage() {
 
           {/* Quick metrics */}
           <div className="space-y-3">
-            {reimbursableTotal > 0 && (
+            {friendsOweTotal > 0 && (
               <div className="flex items-center justify-between rounded-xl border border-blue-500/20 bg-blue-500/5 px-4 py-3">
                 <div>
-                  <p className="text-xs font-medium text-blue-400">Pending Reimbursements</p>
-                  <p className="mt-0.5 text-lg font-bold text-blue-300">{formatCurrency(reimbursableTotal)}</p>
+                  <p className="text-xs font-medium text-blue-400">Friends owe you</p>
+                  <p className="mt-0.5 text-lg font-bold text-blue-300">{formatCurrency(friendsOweTotal)}</p>
                 </div>
-                <Link to="/transactions" className="text-xs font-medium text-blue-400 hover:text-blue-300">
+                <Link to="/shared-expenses" className="text-xs font-medium text-blue-400 hover:text-blue-300">
                   View →
                 </Link>
               </div>
