@@ -32,10 +32,10 @@ export function DummyBadges() {
 
       <p className="mt-1 text-3xl font-bold tracking-tight text-heading">{totalCount}</p>
 
-      <div className="flex flex-1 items-center justify-center gap-1 py-2">
-        <BadgeHex ribbon={ribbons[0]} className="scale-90 opacity-90" />
-        <BadgeShield emoji={mostRecent.emoji} />
-        <BadgeHex ribbon={ribbons[1]} className="scale-90 opacity-90" />
+      <div className="flex flex-1 items-end justify-center gap-0.5 py-2">
+        <BadgeHex ribbon={ribbons[0]} tier="gold" className="-mr-1 scale-[0.88] opacity-95" />
+        <BadgeShield iconKey={mostRecent.id} className="z-10 -mt-1" />
+        <BadgeHex ribbon={ribbons[1]} tier="gold" className="-ml-1 scale-[0.88]" />
       </div>
 
       <div className="mt-auto border-t border-border/60 pt-3">

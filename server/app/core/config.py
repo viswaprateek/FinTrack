@@ -26,6 +26,9 @@ class Settings(BaseSettings):
 
     ]
 
+    GEMINI_API_KEY: str | None = None
+    GEMINI_MODEL: str = "gemini-2.0-flash"
+
 
 @lru_cache
 def get_settings() -> Settings:

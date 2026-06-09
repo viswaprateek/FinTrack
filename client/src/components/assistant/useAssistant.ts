@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { isAxiosError } from 'axios'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
-import { useApiClient, categoriesApi, transactionsApi } from '../../api'
+import { assistantApi, categoriesApi, transactionsApi, useApiClient } from '../../api'
+import type { ChatMessageInput } from '../../api/endpoints/assistant'
 import { useBudgetPeriod } from '../../contexts/BudgetPeriodContext'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { budgetForDate } from '../../lib/budgets'
@@ -18,7 +20,7 @@ import {
   toggleOpen,
   updatePendingTransaction,
 } from './assistantSlice'
-import type { GeminiTransactionPayload, Message, ParsedTransaction } from './assistant.types'
+import type { AssistantChatResponse, GeminiTransactionPayload, Message, ParsedTransaction } from './assistant.types'
 
 declare global {
   interface Window {
@@ -27,46 +29,12 @@ declare global {
   }
 }
 
-const GEMINI_URL =
-  'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent'
-
-const SYSTEM_PROMPT = `You are a smart financial assistant for a budgeting app.
-
-The user will give you a bank SMS, UPI notification, voice transcription,
-or natural language message about a financial transaction.
-
-Extract the following fields and return ONLY a JSON object, nothing else:
-{
-  "type": "expense" | "income" | "unknown",
-  "amount": number | null,
-  "currency": "INR" | "USD" | ...,
-  "date": "YYYY-MM-DD" | null,      // default to today if not mentioned
-  "description": string | null,      // merchant or purpose
-  "account": string | null,          // bank/card if mentioned
-  "category_suggestion": string | null, // suggest from: Groceries, Dining,
-                                        // Transport, Subscriptions, Health,
-                                        // Shopping, Rent, Utilities,
-                                        // Entertainment, Salary, Freelance, Other
-  "is_reimbursable": boolean,
-  "notes": string | null,
-  "confidence": "high" | "medium" | "low",
-  "clarification_needed": string | null  // if something is missing or ambiguous,
-                                         // ask ONE question here
-}
-
-Rules:
-- If date is missing, use today's date
-- If amount is missing, set clarification_needed
-- If type is unclear, set clarification_needed
-- Return ONLY the JSON. No explanation. No markdown. No backticks.`
-
-const IMAGE_INSTRUCTION = 'Extract transaction details from this image.'
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024
 
 const CONNECTION_ERROR = 'Having trouble connecting. Try again in a moment.'
-const PARSE_ERROR = "Sorry, I couldn't understand that. Try rephrasing or uploading a clearer image."
 const IMAGE_TOO_LARGE = 'Please upload a smaller image (under 4MB)'
 const OFFLINE_ERROR = "You're offline. Reconnect to use the assistant."
+const NOT_CONFIGURED = 'Assistant is not configured on the server.'
 
 function todayIso(): string {
   return new Date().toISOString().slice(0, 10)
@@ -76,56 +44,8 @@ function makeMessage(partial: Omit<Message, 'id' | 'timestamp'>): Message {
   return { id: crypto.randomUUID(), timestamp: Date.now(), ...partial }
 }
 
-function stripCodeFences(raw: string): string {
-  const trimmed = raw.trim()
-  const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i)
-  return fenced ? fenced[1].trim() : trimmed
-}
-
-function parseGeminiJson(raw: string): GeminiTransactionPayload | null {
-  try {
-    const cleaned = stripCodeFences(raw)
-    const parsed = JSON.parse(cleaned)
-    if (typeof parsed !== 'object' || parsed === null) return null
-    return parsed as GeminiTransactionPayload
-  } catch {
-    return null
-  }
-}
-
-interface GeminiPart {
-  text?: string
-  inline_data?: { mime_type: string; data: string }
-}
-
-async function callGemini(apiKey: string, parts: GeminiPart[]): Promise<string> {
-  const response = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contents: [{ parts }] }),
-  })
-  if (!response.ok) {
-    throw new TypeError(`Gemini request failed with status ${response.status}`)
-  }
-  const data = await response.json()
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
-  if (typeof text !== 'string') {
-    throw new TypeError('Gemini response missing text')
-  }
-  return text
-}
-
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => {
-      const result = reader.result as string
-      const base64 = result.split(',')[1] ?? ''
-      resolve(base64)
-    }
-    reader.onerror = () => reject(reader.error)
-    reader.readAsDataURL(file)
-  })
+function toChatMessages(messages: Message[]): ChatMessageInput[] {
+  return messages.map((m) => ({ role: m.role, content: m.content }))
 }
 
 function toParsedTransaction(payload: GeminiTransactionPayload, defaultCurrency: string): ParsedTransaction {
@@ -165,9 +85,24 @@ function pickVoice(): SpeechSynthesisVoice | null {
   return cachedVoice
 }
 
-interface FollowUpContext {
-  rawInput: string
-  question: string
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const result = reader.result as string
+      const base64 = result.split(',')[1] ?? ''
+      resolve(base64)
+    }
+    reader.onerror = () => reject(reader.error)
+    reader.readAsDataURL(file)
+  })
+}
+
+function assistantErrorMessage(error: unknown): string {
+  if (isAxiosError(error) && error.response?.status === 503) {
+    return NOT_CONFIGURED
+  }
+  return navigator.onLine ? CONNECTION_ERROR : OFFLINE_ERROR
 }
 
 export function useAssistant() {
@@ -175,8 +110,6 @@ export function useAssistant() {
   const state = useAppSelector((s) => s.assistant)
   const client = useApiClient()
   const { currency, formatCurrency } = useCurrency()
-
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined
 
   const queryClient = useQueryClient()
   const { budgets, currentBudget } = useBudgetPeriod()
@@ -196,7 +129,6 @@ export function useAssistant() {
   })
   const categories = categoriesQuery.data ?? []
 
-  const followUpRef = useRef<FollowUpContext | null>(null)
   const recognitionRef = useRef<any>(null)
   const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -238,8 +170,8 @@ export function useAssistant() {
     [budgets, currentBudget, client, queryClient],
   )
 
-  const handleParsedPayload = useCallback(
-    async (payload: GeminiTransactionPayload, rawInput: string, spokenInput: boolean) => {
+  const handleTransactionPayload = useCallback(
+    async (payload: GeminiTransactionPayload, spokenInput: boolean) => {
       const transaction = toParsedTransaction(payload, currency || DEFAULT_CURRENCY)
       transaction.category_id = await resolveCategoryId(transaction.category_suggestion, transaction.date)
 
@@ -247,14 +179,12 @@ export function useAssistant() {
 
       if (needsClarification) {
         const question = transaction.clarification_needed ?? 'Could you share a bit more detail about this transaction?'
-        followUpRef.current = { rawInput, question }
         const message = makeMessage({ role: 'assistant', content: question })
         dispatch(addMessage(message))
         if (spokenInput) speak(question)
         return
       }
 
-      followUpRef.current = null
       dispatch(setPendingTransaction(transaction))
 
       const warning =
@@ -269,69 +199,43 @@ export function useAssistant() {
     [currency, dispatch, formatCurrency, resolveCategoryId, speak],
   )
 
-  const runGeminiText = useCallback(
-    async (text: string, spokenInput: boolean) => {
-      if (!apiKey) {
-        dispatch(setError('Assistant is not configured. Missing Gemini API key.'))
+  const handleChatResponse = useCallback(
+    async (response: AssistantChatResponse, spokenInput: boolean) => {
+      if (response.kind === 'answer' || response.kind === 'clarification') {
+        const message = makeMessage({ role: 'assistant', content: response.message })
+        dispatch(addMessage(message))
+        if (spokenInput) speak(response.message)
         return
       }
-      dispatch(setLoading(true))
-      dispatch(setError(null))
-      try {
-        const contextual = `Today's date is ${todayIso()}.\n\n${text}`
-        const raw = await callGemini(apiKey, [{ text: SYSTEM_PROMPT }, { text: contextual }])
-        const payload = parseGeminiJson(raw)
-        if (!payload) {
-          dispatch(addMessage(makeMessage({ role: 'assistant', content: PARSE_ERROR })))
-          return
-        }
-        handleParsedPayload(payload, text, spokenInput)
-      } catch {
-        const content = navigator.onLine ? CONNECTION_ERROR : OFFLINE_ERROR
-        dispatch(setError(content))
-        dispatch(addMessage(makeMessage({ role: 'assistant', content })))
-      } finally {
-        dispatch(setLoading(false))
-      }
+      await handleTransactionPayload(response.transaction, spokenInput)
     },
-    [apiKey, dispatch, handleParsedPayload],
+    [dispatch, handleTransactionPayload, speak],
   )
 
-  const runGeminiImage = useCallback(
-    async (file: File, preview: string) => {
-      if (!apiKey) {
-        dispatch(setError('Assistant is not configured. Missing Gemini API key.'))
-        return
-      }
-      if (file.size > MAX_IMAGE_BYTES) {
-        dispatch(addMessage(makeMessage({ role: 'assistant', content: IMAGE_TOO_LARGE })))
-        return
-      }
+  const runAssistant = useCallback(
+    async (
+      messages: Message[],
+      spokenInput: boolean,
+      image?: { base64: string; mimeType: 'image/jpeg' | 'image/png' },
+    ) => {
       dispatch(setLoading(true))
       dispatch(setError(null))
       try {
-        const base64 = await fileToBase64(file)
-        const mimeType = file.type === 'image/png' ? 'image/png' : 'image/jpeg'
-        const raw = await callGemini(apiKey, [
-          { text: SYSTEM_PROMPT },
-          { inline_data: { mime_type: mimeType, data: base64 } },
-          { text: IMAGE_INSTRUCTION },
-        ])
-        const payload = parseGeminiJson(raw)
-        if (!payload) {
-          dispatch(addMessage(makeMessage({ role: 'assistant', content: PARSE_ERROR })))
-          return
-        }
-        handleParsedPayload(payload, `[uploaded screenshot: ${preview ? 'image attached' : file.name}]`, false)
-      } catch {
-        const content = navigator.onLine ? CONNECTION_ERROR : OFFLINE_ERROR
+        const response = await assistantApi.chat(client, {
+          messages: toChatMessages(messages),
+          image_base64: image?.base64,
+          image_mime_type: image?.mimeType,
+        })
+        await handleChatResponse(response, spokenInput)
+      } catch (error) {
+        const content = assistantErrorMessage(error)
         dispatch(setError(content))
         dispatch(addMessage(makeMessage({ role: 'assistant', content })))
       } finally {
         dispatch(setLoading(false))
       }
     },
-    [apiKey, dispatch, handleParsedPayload],
+    [client, dispatch, handleChatResponse],
   )
 
   const sendText = useCallback(
@@ -339,24 +243,11 @@ export function useAssistant() {
       const trimmed = text.trim()
       if (!trimmed) return
 
-      dispatch(addMessage(makeMessage({ role: 'user', content: trimmed })))
-
-      const followUp = followUpRef.current
-      if (followUp) {
-        followUpRef.current = null
-        const combined = [
-          `Original message: "${followUp.rawInput}"`,
-          `Assistant asked: "${followUp.question}"`,
-          `User's answer: "${trimmed}"`,
-          'Now extract the transaction details using all of this context.',
-        ].join('\n')
-        await runGeminiText(combined, spokenInput)
-        return
-      }
-
-      await runGeminiText(trimmed, spokenInput)
+      const userMessage = makeMessage({ role: 'user', content: trimmed })
+      dispatch(addMessage(userMessage))
+      await runAssistant([...state.messages, userMessage], spokenInput)
     },
-    [dispatch, runGeminiText],
+    [dispatch, runAssistant, state.messages],
   )
 
   const sendImage = useCallback(
@@ -369,10 +260,16 @@ export function useAssistant() {
       }
       const preview = await fileToBase64(file)
       const previewUrl = `data:${file.type};base64,${preview}`
-      dispatch(addMessage(makeMessage({ role: 'user', content: 'Uploaded an image', imagePreview: previewUrl })))
-      await runGeminiImage(file, previewUrl)
+      const userMessage = makeMessage({
+        role: 'user',
+        content: 'Uploaded an image',
+        imagePreview: previewUrl,
+      })
+      dispatch(addMessage(userMessage))
+      const mimeType = file.type === 'image/png' ? 'image/png' : 'image/jpeg'
+      await runAssistant([...state.messages, userMessage], false, { base64: preview, mimeType })
     },
-    [dispatch, runGeminiImage],
+    [dispatch, runAssistant, state.messages],
   )
 
   const stopListening = useCallback(() => {

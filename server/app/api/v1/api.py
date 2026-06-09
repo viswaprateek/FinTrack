@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.v1.routers import (
+    assistant,
     budgets,
     categories,
     credit_cards,
@@ -26,3 +27,4 @@ api_router.include_router(transactions.router)
 api_router.include_router(recurring.router)
 api_router.include_router(goals.router)
 api_router.include_router(credit_cards.router)
+api_router.include_router(assistant.router)

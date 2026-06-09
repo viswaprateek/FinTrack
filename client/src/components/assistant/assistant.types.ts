@@ -48,3 +48,8 @@ export interface GeminiTransactionPayload {
   confidence: Confidence
   clarification_needed: string | null
 }
+
+export type AssistantChatResponse =
+  | { kind: 'transaction'; transaction: GeminiTransactionPayload }
+  | { kind: 'answer'; message: string }
+  | { kind: 'clarification'; message: string }

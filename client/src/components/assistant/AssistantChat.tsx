@@ -3,7 +3,11 @@ import { AssistantInput } from './AssistantInput'
 import { AssistantMessage } from './AssistantMessage'
 import { useAssistant } from './useAssistant'
 
-const SUGGESTIONS = ['I spent ₹500 on Zomato', 'Paste a bank SMS', 'Upload a screenshot']
+const SUGGESTIONS = [
+  'I spent ₹500 on Zomato',
+  'How much did I spend on groceries?',
+  'What is my budget remaining?',
+]
 
 export function AssistantChat() {
   const assistant = useAssistant()

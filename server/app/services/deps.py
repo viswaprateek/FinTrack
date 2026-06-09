@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.services.activity_service import ActivityService
+from app.services.assistant_service import AssistantService
 from app.services.budget_service import BudgetService
 from app.services.category_service import CategoryService
 from app.services.credit_card_service import CreditCardService
@@ -52,3 +53,7 @@ def get_user_service(db: Session = Depends(get_db)) -> UserService:
 
 def get_activity_service(db: Session = Depends(get_db)) -> ActivityService:
     return ActivityService(db)
+
+
+def get_assistant_service(db: Session = Depends(get_db)) -> AssistantService:
+    return AssistantService(db)
