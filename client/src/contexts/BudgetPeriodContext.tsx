@@ -14,7 +14,7 @@ interface BudgetPeriodContextValue {
   isLoading: boolean
 }
 
-const BudgetPeriodContext = createContext<BudgetPeriodContextValue | null>(null)
+export const BudgetPeriodContext = createContext<BudgetPeriodContextValue | null>(null)
 
 function readStoredBudgetId(): string | null {
   return localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_STORAGE_KEY)

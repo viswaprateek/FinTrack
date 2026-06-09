@@ -1,10 +1,11 @@
+import { useContext } from 'react'
 import { useLocation } from 'react-router-dom'
 import { UserButton } from '@clerk/clerk-react'
 import { BudgetPeriodSelector } from '../budgets/BudgetPeriodSelector'
 import { CurrencyConverter } from '../currency/CurrencyConverter'
 import { PrivacyToggle } from '../ui/PrivacyToggle'
 import { ThemeToggle } from '../ui/ThemeToggle'
-import { useBudgetPeriod } from '../../contexts/BudgetPeriodContext'
+import { BudgetPeriodContext } from '../../contexts/BudgetPeriodContext'
 
 const titles: Record<string, string> = {
   '/dashboard': 'Dashboard',
@@ -29,18 +30,22 @@ const HIDE_PERIOD_SELECTOR = new Set(['/budgets'])
 
 export function Topbar() {
   const { pathname } = useLocation()
-  const { budgets, currentBudget, selectBudget } = useBudgetPeriod()
-  const showPeriodSelector = !HIDE_PERIOD_SELECTOR.has(pathname) && budgets.length > 0 && currentBudget
+  const budgetPeriod = useContext(BudgetPeriodContext)
+  const showPeriodSelector =
+    budgetPeriod &&
+    !HIDE_PERIOD_SELECTOR.has(pathname) &&
+    budgetPeriod.budgets.length > 0 &&
+    budgetPeriod.currentBudget
 
   return (
     <header className="sticky top-0 z-50 flex items-center justify-between gap-3 border-b border-border bg-surface-solid px-4 py-3 sm:gap-4 sm:px-6 sm:py-4 lg:px-10">
       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 sm:gap-3">
         <h1 className="truncate text-lg font-semibold text-heading sm:text-xl">{pageTitle(pathname)}</h1>
-        {showPeriodSelector && (
+        {showPeriodSelector && budgetPeriod.currentBudget && (
           <BudgetPeriodSelector
-            budgets={budgets}
-            currentId={currentBudget.id}
-            onChange={selectBudget}
+            budgets={budgetPeriod.budgets}
+            currentId={budgetPeriod.currentBudget.id}
+            onChange={budgetPeriod.selectBudget}
             compact
           />
         )}

@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom'
 import { PublicLayout } from '../layouts/PublicLayout'
 import { AppLayout } from '../layouts/AppLayout'
+import { AppProviders } from '../layouts/AppProviders'
 import { ProtectedRoute } from '../components/guards/ProtectedRoute'
 import { OnboardingGate } from '../components/guards/OnboardingGate'
 
@@ -41,6 +42,9 @@ export const router = createBrowserRouter([
         element: <OnboardingGate />,
         children: [
           {
+            element: <AppProviders />,
+            children: [
+          {
             element: <AppLayout />,
             children: [
           { path: '/dashboard', element: <DashboardPage /> },
@@ -54,6 +58,8 @@ export const router = createBrowserRouter([
           { path: '/goals', element: <GoalsPage /> },
           { path: '/cards', element: <CardsPage /> },
           { path: '/settings', element: <SettingsPage /> },
+            ],
+          },
             ],
           },
         ],

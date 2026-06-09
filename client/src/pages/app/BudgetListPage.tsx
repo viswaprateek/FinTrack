@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { BudgetYearCalendar, monthPeriodLabel } from '../../components/budgets/BudgetYearCalendar'
+import { BudgetYearFolders } from '../../components/budgets/BudgetYearFolders'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { ProgressBar } from '../../components/ui/ProgressBar'
@@ -12,6 +12,7 @@ import {
   budgetForCalendarMonth,
   findPriorBudgetForCopy,
   isCurrentCalendarMonth,
+  monthPeriodLabel,
   monthlyBudgetPeriod,
 } from '../../lib/budgets'
 import { ContentLoader } from '../../components/ui/Spinner'
@@ -75,79 +76,7 @@ export function BudgetListPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold text-heading">My Budgets</h2>
-        <p className="mt-1 text-sm text-muted">
-          Pick a month on the calendar — create a budget only when you&apos;re ready.
-        </p>
-      </div>
-
-      <Card className="overflow-hidden border-border/80 bg-surface-solid/40 p-0">
-        {/* Year binder header */}
-        <div className="border-b border-border bg-gradient-to-r from-surface-solid via-input/80 to-surface-solid px-4 py-5 sm:px-6">
-          <div className="flex items-center justify-between gap-4">
-            <Button
-              variant="secondary"
-              size="sm"
-              aria-label="Previous year"
-              onClick={() => setViewYear((y) => y - 1)}
-              className="shrink-0"
-            >
-              <IconChevronLeft className="h-4 w-4" />
-            </Button>
-            <div className="text-center">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-muted">Annual planner</p>
-              <h3 className="mt-0.5 font-serif text-3xl font-medium tracking-tight text-heading sm:text-4xl">{viewYear}</h3>
-            </div>
-            <Button
-              variant="secondary"
-              size="sm"
-              aria-label="Next year"
-              onClick={() => setViewYear((y) => y + 1)}
-              className="shrink-0"
-            >
-              <IconChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-          <div className="mt-4 flex justify-center gap-2">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <span
-                key={i}
-                className={cn(
-                  'h-1.5 w-1.5 rounded-full transition-colors',
-                  selectedMonth === i + 1 ? 'bg-accent' : 'bg-border-muted',
-                )}
-              />
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-input/20 via-background/50 to-background p-4 sm:p-6">
-          <BudgetYearCalendar
-            year={viewYear}
-            budgets={budgets}
-            selectedMonth={selectedMonth}
-            onSelectMonth={setSelectedMonth}
-            formatCurrency={formatCurrency}
-          />
-        </div>
-
-        <div className="flex flex-wrap gap-x-6 gap-y-2 border-t border-border bg-background/50 px-4 py-3 text-[11px] text-muted sm:px-6">
-          <span className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-accent shadow-sm shadow-accent/50" />
-            Today
-          </span>
-          <span className="flex items-center gap-2">
-            <span className="h-3 w-6 rounded bg-gradient-to-r from-accent/80 to-indigo-400/60" />
-            Month header
-          </span>
-          <span className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded border border-dashed border-border-muted" />
-            No budget yet
-          </span>
-        </div>
-      </Card>
-
+      {/* Selected month — top */}
       {selectedMonth !== null && selectedPeriod && (
         <Card>
           <CardHeader>
@@ -162,54 +91,40 @@ export function BudgetListPage() {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-muted">Planned</p>
-                    <p className="mt-0.5 font-medium text-foreground">{formatCurrency(selectedBudget.plannedTotal)}</p>
+                    <p className="mt-0.5 font-medium">{formatCurrency(selectedBudget.plannedTotal)}</p>
                   </div>
                   <div>
                     <p className="text-muted">Spent</p>
-                    <p className="mt-0.5 font-medium text-foreground">{formatCurrency(selectedBudget.spentTotal)}</p>
+                    <p className="mt-0.5 font-medium">{formatCurrency(selectedBudget.spentTotal)}</p>
                   </div>
                 </div>
                 <ProgressBar value={selectedBudget.spentTotal} max={selectedBudget.plannedTotal || 1} />
-                <div className="flex flex-wrap items-center gap-2 pt-1">
+                <div className="flex flex-wrap items-center gap-2">
                   <Button onClick={() => openBudget(selectedBudget.id)}>Open budget</Button>
                   {currentBudget?.id !== selectedBudget.id && (
                     <Button variant="secondary" size="sm" onClick={() => selectBudget(selectedBudget.id)}>
-                      Set as active month
+                      Set as active
                     </Button>
                   )}
                   {currentBudget?.id === selectedBudget.id && (
-                    <span className="text-xs text-success">Active in app header</span>
+                    <span className="text-xs text-success">Active month</span>
                   )}
                 </div>
               </>
             ) : (
               <>
-                <p className="text-sm text-muted-fg">No budget for this month yet.</p>
-                <div className="rounded-xl border border-border bg-surface-muted/30 px-4 py-3 text-sm">
-                  <p className="font-medium text-foreground">{selectedPeriod.name}</p>
-                  <p className="mt-1 text-muted">
-                    {selectedPeriod.periodStart} → {selectedPeriod.periodEnd}
-                  </p>
-                </div>
-
+                <p className="text-sm text-muted-fg">No budget for this month.</p>
                 {copySourceBudget && (
-                  <label className="flex cursor-pointer items-center gap-3">
+                  <label className="flex items-center gap-2 text-sm">
                     <input
                       type="checkbox"
                       checked={copyEnvelopes}
                       onChange={(e) => setCopyEnvelopes(e.target.checked)}
-                      className="h-4 w-4 rounded border-border-muted bg-input text-accent focus:ring-2 focus:ring-accent-muted"
+                      className="rounded border-border text-accent"
                     />
-                    <span className="text-sm text-subtle">
-                      Copy category envelopes from {copySourceBudget.name}
-                    </span>
+                    Copy envelopes from {copySourceBudget.name}
                   </label>
                 )}
-
-                {createBudget.isError && (
-                  <p className="text-sm text-red-400">Could not create budget. It may already exist for this month.</p>
-                )}
-
                 <Button
                   onClick={() => createBudget.mutate()}
                   disabled={createBudget.isPending}
@@ -222,6 +137,28 @@ export function BudgetListPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Year + folders */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Button variant="secondary" size="sm" onClick={() => setViewYear((y) => y - 1)} aria-label="Previous year">
+            <IconChevronLeft className="h-4 w-4" />
+          </Button>
+          <h3 className="text-2xl font-bold text-heading">{viewYear}</h3>
+          <Button variant="secondary" size="sm" onClick={() => setViewYear((y) => y + 1)} aria-label="Next year">
+            <IconChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+
+        <BudgetYearFolders
+          year={viewYear}
+          budgets={budgets}
+          activeBudgetId={currentBudget?.id ?? null}
+          selectedMonth={selectedMonth}
+          onSelectMonth={setSelectedMonth}
+          formatCurrency={formatCurrency}
+        />
+      </div>
     </div>
   )
 }

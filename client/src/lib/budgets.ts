@@ -52,6 +52,16 @@ export function isCurrentCalendarMonth(year: number, month: number, today = new 
 }
 
 /** Nearest prior month (walking backwards) that already has a budget — for envelope copy defaults. */
+export function monthPeriodLabel(year: number, month: number) {
+  return monthlyBudgetPeriod(year, month).name
+}
+
+export function monthFromBudget(budget: Budget): { year: number; month: number } | null {
+  const match = /^(\d{4})-(\d{2})-\d{2}$/.exec(budget.periodStart)
+  if (!match) return null
+  return { year: Number(match[1]), month: Number(match[2]) }
+}
+
 export function findPriorBudgetForCopy(budgets: Budget[], year: number, month: number): Budget | null {
   let y = year
   let m = month
