@@ -1,5 +1,5 @@
 import type { AxiosInstance } from 'axios'
-import type { ExpenseShare, ReminderFrequency } from '../../types'
+import type { ExpenseShare, OwedExpense, ParticipantUpdateResult, ReminderFrequency } from '../../types'
 
 export interface FriendSplitInput {
   email: string
@@ -30,6 +30,12 @@ export const expenseSharesApi = {
   outstandingTotal: (client: AxiosInstance) =>
     client.get<{ total: number }>('/api/expense-shares/outstanding-total').then((res) => res.data),
 
+  listOwed: (client: AxiosInstance) =>
+    client.get<OwedExpense[]>('/api/expense-shares/owed').then((res) => res.data),
+
+  owedTotal: (client: AxiosInstance) =>
+    client.get<{ total: number }>('/api/expense-shares/owed-total').then((res) => res.data),
+
   get: (client: AxiosInstance, id: string) =>
     client.get<ExpenseShare>(`/api/expense-shares/${id}`).then((res) => res.data),
 
@@ -38,7 +44,7 @@ export const expenseSharesApi = {
 
   updateParticipant: (client: AxiosInstance, participantId: string, payload: ExpenseShareParticipantUpdate) =>
     client
-      .patch<ExpenseShare>(`/api/expense-shares/participants/${participantId}`, payload)
+      .patch<ParticipantUpdateResult>(`/api/expense-shares/participants/${participantId}`, payload)
       .then((res) => res.data),
 
   publicOwe: (token: string) => {

@@ -218,6 +218,10 @@ export function DashboardPage() {
     queryKey: ['expense-shares', 'outstanding'],
     queryFn: () => expenseSharesApi.outstandingTotal(client),
   })
+  const youOweQuery = useQuery({
+    queryKey: ['expense-shares', 'owed-total'],
+    queryFn: () => expenseSharesApi.owedTotal(client),
+  })
 
   const categories = categoriesQuery.data ?? []
   const transactions = transactionsQuery.data ?? []
@@ -234,6 +238,7 @@ export function DashboardPage() {
   const overspentCategories = categories.filter((c) => toNum(c.spent) > toNum(c.planned))
   const savingsRate   = plannedTotal > 0 ? Math.max(0, Math.round(((plannedTotal - spentTotal) / plannedTotal) * 100)) : 0
   const friendsOweTotal = friendsOweQuery.data?.total ?? 0
+  const youOweTotal = youOweQuery.data?.total ?? 0
   const incomeSources = incomeSourcesQuery.data ?? []
   const expectedIncome = incomeSources.reduce((sum, s) => sum + toNum(s.amount), 0)
   const actualIncome = transactions
@@ -637,6 +642,21 @@ export function DashboardPage() {
                   <p className="mt-0.5 text-lg font-bold text-blue-300">{formatCurrency(friendsOweTotal)}</p>
                 </div>
                 <Link to="/shared-expenses" className="text-xs font-medium text-blue-400 hover:text-blue-300">
+                  View →
+                </Link>
+              </div>
+            )}
+
+            {youOweTotal > 0 && (
+              <div className="flex items-center justify-between rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3">
+                <div>
+                  <p className="text-xs font-medium text-amber-400">You owe friends</p>
+                  <p className="mt-0.5 text-lg font-bold text-amber-300">{formatCurrency(youOweTotal)}</p>
+                </div>
+                <Link
+                  to="/shared-expenses?tab=owed"
+                  className="text-xs font-medium text-amber-400 hover:text-amber-300"
+                >
                   View →
                 </Link>
               </div>

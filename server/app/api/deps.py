@@ -152,7 +152,11 @@ def get_current_user(
     if settings.CLERK_SECRET_KEY:
         profile_changed = _sync_profile_from_clerk_api(user, clerk_user_id) or profile_changed
 
-    if is_new or profile_changed:
+    from app.services.expense_share_service import ExpenseShareService
+
+    linked = ExpenseShareService(db).link_participants_for_user(user)
+
+    if is_new or profile_changed or linked:
         db.commit()
         db.refresh(user)
 

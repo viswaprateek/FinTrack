@@ -64,6 +64,25 @@ export interface ExpenseShare {
   participants: ExpenseShareParticipant[]
 }
 
+export interface OwedExpense {
+  participantId: string
+  shareId: string
+  payerName: string
+  payerEmail: string
+  description: string
+  transactionDate: string
+  amountOwed: number
+  status: 'pending' | 'paid'
+  paidAt?: string | null
+}
+
+export interface ParticipantUpdateResult {
+  participantId: string
+  shareId: string
+  status: 'pending' | 'paid'
+  paidAt?: string | null
+}
+
 export type RecurringFrequency = 'weekly' | 'monthly' | 'quarterly' | 'yearly'
 export type RecurringStatus = 'active' | 'paused'
 

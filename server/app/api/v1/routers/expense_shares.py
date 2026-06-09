@@ -6,6 +6,8 @@ from app.schemas.expense_share import (
     ExpenseShareParticipantUpdate,
     ExpenseShareResponse,
     ExpenseShareUpdate,
+    OwedExpenseResponse,
+    ParticipantUpdateResult,
 )
 from app.services.deps import get_expense_share_service
 from app.services.expense_share_service import ExpenseShareService
@@ -30,7 +32,24 @@ def outstanding_total(
     return {"total": total}
 
 
-@router.patch("/participants/{participant_id}", response_model=ExpenseShareResponse)
+@router.get("/owed", response_model=list[OwedExpenseResponse])
+def list_owed_to_others(
+    current_user: User = Depends(get_current_user),
+    service: ExpenseShareService = Depends(get_expense_share_service),
+):
+    return service.list_owed_to_others(current_user)
+
+
+@router.get("/owed-total")
+def owed_total(
+    current_user: User = Depends(get_current_user),
+    service: ExpenseShareService = Depends(get_expense_share_service),
+):
+    total = service.owed_total(current_user)
+    return {"total": total}
+
+
+@router.patch("/participants/{participant_id}", response_model=ParticipantUpdateResult)
 def update_participant(
     participant_id: str,
     payload: ExpenseShareParticipantUpdate,

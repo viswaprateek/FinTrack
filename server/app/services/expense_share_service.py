@@ -1,7 +1,7 @@
 import datetime as dt
 from decimal import Decimal
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.core.config import settings
@@ -16,6 +16,8 @@ from app.schemas.expense_share import (
     ExpenseShareResponse,
     ExpenseShareUpdate,
     FriendSplitInput,
+    OwedExpenseResponse,
+    ParticipantUpdateResult,
     PublicOweResponse,
 )
 from app.services.expense_amount import friends_owed_total
@@ -59,6 +61,53 @@ class ExpenseShareService:
             yourShare=tx.amount - friends_total,
             reminderFrequency=share.reminder_frequency,
             participants=[self._participant_response(p) for p in share.participants],
+        )
+
+    def _normalized_email(self, user: User) -> str:
+        return user.email.strip().lower()
+
+    def _participant_belongs_to_user(self, user: User, participant: ExpenseShareParticipant) -> bool:
+        if participant.linked_user_id == user.id:
+            return True
+        email = self._normalized_email(user)
+        return bool(email) and participant.email == email
+
+    def _can_manage_participant(self, user: User, participant: ExpenseShareParticipant) -> bool:
+        share = participant.expense_share
+        if share.created_by_user_id == user.id:
+            return True
+        return self._participant_belongs_to_user(user, participant)
+
+    def link_participants_for_user(self, user: User) -> int:
+        """Attach pending participant rows to a FinTrack user by email."""
+        email = self._normalized_email(user)
+        if not email:
+            return 0
+        rows = self.db.scalars(
+            select(ExpenseShareParticipant).where(
+                func.lower(ExpenseShareParticipant.email) == email,
+                ExpenseShareParticipant.linked_user_id.is_(None),
+            )
+        ).all()
+        for row in rows:
+            row.linked_user_id = user.id
+            row.email = email
+        return len(rows)
+
+    def _to_owed_response(self, participant: ExpenseShareParticipant) -> OwedExpenseResponse:
+        share = participant.expense_share
+        payer = share.created_by
+        payer_name = payer.first_name or payer.email.split("@")[0]
+        return OwedExpenseResponse(
+            participantId=str(participant.id),
+            shareId=str(share.id),
+            payerName=payer_name,
+            payerEmail=payer.email,
+            description=share.transaction.description,
+            transactionDate=share.transaction.date.isoformat(),
+            amountOwed=participant.amount_owed,
+            status=participant.status,
+            paidAt=participant.paid_at.isoformat() if participant.paid_at else None,
         )
 
     def _load_share(self, share_id: int) -> ExpenseShare:
@@ -106,7 +155,9 @@ class ExpenseShareService:
                 raise BadRequestError(f"Duplicate friend email: {email}")
             seen_emails.add(email)
 
-            linked = self.db.scalar(select(User).where(User.email == email))
+            linked = self.db.scalar(select(User).where(func.lower(User.email) == email))
+            if email == self._normalized_email(user):
+                raise BadRequestError("You cannot split an expense with yourself")
             participant = ExpenseShareParticipant(
                 expense_share_id=share.id,
                 email=email,
@@ -164,34 +215,71 @@ class ExpenseShareService:
         self.db.commit()
         return self._to_response(self._load_share(share_id))
 
-    def update_participant(
-        self, user: User, participant_id_raw: str, payload: ExpenseShareParticipantUpdate
-    ) -> ExpenseShareResponse:
-        participant_id = parse_id(participant_id_raw, label="participant id")
-        participant = self.db.scalar(
+    def list_owed_to_others(self, user: User) -> list[OwedExpenseResponse]:
+        email = self._normalized_email(user)
+        stmt = (
             select(ExpenseShareParticipant)
-            .where(ExpenseShareParticipant.id == participant_id)
+            .join(ExpenseShare, ExpenseShareParticipant.expense_share_id == ExpenseShare.id)
+            .where(ExpenseShare.created_by_user_id != user.id)
             .options(
                 selectinload(ExpenseShareParticipant.expense_share).selectinload(
                     ExpenseShare.transaction
                 ),
                 selectinload(ExpenseShareParticipant.expense_share).selectinload(
-                    ExpenseShare.participants
+                    ExpenseShare.created_by
                 ),
             )
+            .order_by(ExpenseShare.created_at.desc())
+        )
+        if email:
+            stmt = stmt.where(
+                (ExpenseShareParticipant.linked_user_id == user.id)
+                | (func.lower(ExpenseShareParticipant.email) == email)
+            )
+        else:
+            stmt = stmt.where(ExpenseShareParticipant.linked_user_id == user.id)
+
+        participants = self.db.scalars(stmt).all()
+        return [self._to_owed_response(p) for p in participants]
+
+    def owed_total(self, user: User) -> Decimal:
+        return sum(
+            (
+                p.amount_owed
+                for p in self.list_owed_to_others(user)
+                if p.status == "pending"
+            ),
+            Decimal("0"),
+        )
+
+    def update_participant(
+        self, user: User, participant_id_raw: str, payload: ExpenseShareParticipantUpdate
+    ) -> ParticipantUpdateResult:
+        participant_id = parse_id(participant_id_raw, label="participant id")
+        participant = self.db.scalar(
+            select(ExpenseShareParticipant)
+            .where(ExpenseShareParticipant.id == participant_id)
+            .options(selectinload(ExpenseShareParticipant.expense_share))
         )
         if participant is None:
             raise NotFoundError("Participant")
         share = participant.expense_share
-        if share.created_by_user_id != user.id:
+        if not self._can_manage_participant(user, participant):
             raise NotFoundError("Participant")
 
         if payload.status is not None:
             participant.status = payload.status
             participant.paid_at = dt.datetime.utcnow() if payload.status == "paid" else None
+            if participant.linked_user_id is None and self._participant_belongs_to_user(user, participant):
+                participant.linked_user_id = user.id
 
         self.db.commit()
-        return self._to_response(self._load_share(share.id))
+        return ParticipantUpdateResult(
+            participantId=str(participant.id),
+            shareId=str(share.id),
+            status=participant.status,
+            paidAt=participant.paid_at.isoformat() if participant.paid_at else None,
+        )
 
     def get_public_owe(self, token: str) -> PublicOweResponse:
         participant = self.db.scalar(

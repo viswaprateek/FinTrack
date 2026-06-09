@@ -55,3 +55,24 @@ class PublicOweResponse(BaseModel):
     amountOwed: Decimal
     currency: str
     status: ParticipantStatus
+
+
+class OwedExpenseResponse(BaseModel):
+    """Expense share where the current user is a participant (owes the payer)."""
+
+    participantId: str
+    shareId: str
+    payerName: str
+    payerEmail: str
+    description: str
+    transactionDate: str
+    amountOwed: Decimal
+    status: ParticipantStatus
+    paidAt: str | None = None
+
+
+class ParticipantUpdateResult(BaseModel):
+    participantId: str
+    shareId: str
+    status: ParticipantStatus
+    paidAt: str | None = None
