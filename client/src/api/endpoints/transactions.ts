@@ -33,7 +33,6 @@ export interface TransactionCreateInput {
   notes?: string | null
   splits?: TransactionSplitInput[]
   friend_splits?: FriendSplitInput[]
-  reminder_frequency?: 'off' | 'weekly' | 'monthly'
   source?: 'manual' | 'assistant'
 }
 

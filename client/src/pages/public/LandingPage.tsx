@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { Button } from '../../components/ui/Button'
 import { IconArrowRight, IconWallet, IconRepeat, IconTarget } from '../../components/ui/icons'
-import { CursorTrail } from '../../components/landing/CursorTrail'
 import { Hero } from '../../components/landing/Hero'
 import { FeatureCards } from '../../components/landing/FeatureCards'
 import { HowItWorks } from '../../components/landing/HowItWorks'
@@ -31,7 +30,6 @@ const features = [
 export function LandingPage() {
   return (
     <main className="relative">
-      <CursorTrail />
       <Hero />
 
       <HowItWorks />

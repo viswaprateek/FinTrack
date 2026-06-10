@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import axios from 'axios'
 import { Card } from '../ui/Card'
 import { Button } from '../ui/Button'
 import { ToggleSwitch } from '../ui/ToggleSwitch'
@@ -12,8 +13,6 @@ import { useCurrency } from '../../contexts/CurrencyContext'
 import { budgetForDate, clampDateToBudget, isDateInBudget } from '../../lib/budgets'
 import { IconChevronRight } from '../ui/icons'
 import { cn } from '../../lib/utils'
-import type { ReminderFrequency } from '../../types'
-
 interface SplitLine {
   categoryId: string
   amount: string
@@ -39,7 +38,6 @@ export function AddTransactionModal({ open, onClose, initialBudgetId }: AddTrans
   const [splitOn, setSplitOn] = useState(false)
   const [friendSplitOn, setFriendSplitOn] = useState(false)
   const [reimbursableOn, setReimbursableOn] = useState(false)
-  const [reminderFrequency, setReminderFrequency] = useState<ReminderFrequency>('weekly')
   const [friendLines, setFriendLines] = useState<FriendLine[]>([{ email: '', amount: '' }])
   const [formBudgetId, setFormBudgetId] = useState('')
   const [formDate, setFormDate] = useState('')
@@ -82,7 +80,6 @@ export function AddTransactionModal({ open, onClose, initialBudgetId }: AddTrans
     setSplitOn(false)
     setFriendSplitOn(false)
     setReimbursableOn(false)
-    setReminderFrequency('weekly')
     setFormReimbursable('pending')
     setSplitLines([{ categoryId: '', amount: '' }])
     setFriendLines([{ email: '', amount: '' }])
@@ -191,7 +188,6 @@ export function AddTransactionModal({ open, onClose, initialBudgetId }: AddTrans
         notes: formNotes || null,
         splits: splits && splits.length > 0 ? splits : undefined,
         friend_splits: friend_splits && friend_splits.length > 0 ? friend_splits : undefined,
-        reminder_frequency: friendSplitOn ? reminderFrequency : 'off',
       })
     },
     onSuccess: () => {
@@ -462,7 +458,9 @@ export function AddTransactionModal({ open, onClose, initialBudgetId }: AddTrans
               <div className="flex items-center justify-between gap-3 rounded-xl bg-input/40 px-4 py-3">
                 <div className="min-w-0">
                   <span className="text-sm font-medium text-subtle">Split with friends</span>
-                  <p className="text-xs text-muted">Only your share counts toward the budget</p>
+                  <p className="text-xs text-muted">
+                    Only your share counts toward the budget. Friends must already have a FinTrack account.
+                  </p>
                 </div>
                 <ToggleSwitch
                   checked={friendSplitOn}
@@ -507,18 +505,6 @@ export function AddTransactionModal({ open, onClose, initialBudgetId }: AddTrans
                   {friendsTotal > txAmount && txAmount > 0 && (
                     <p className="text-xs text-red-400">Friend amounts cannot exceed the transaction total.</p>
                   )}
-                  <div>
-                    <label className="mb-1.5 block text-xs font-medium text-muted">Payment reminders</label>
-                    <select
-                      value={reminderFrequency}
-                      onChange={(e) => setReminderFrequency(e.target.value as ReminderFrequency)}
-                      className="w-full rounded-lg border border-border-muted bg-input px-2.5 py-2 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
-                    >
-                      <option value="off">Off (initial email only)</option>
-                      <option value="weekly">Weekly</option>
-                      <option value="monthly">Monthly</option>
-                    </select>
-                  </div>
                 </div>
               )}
 
@@ -562,7 +548,12 @@ export function AddTransactionModal({ open, onClose, initialBudgetId }: AddTrans
 
         <div className="shrink-0 space-y-3 border-t border-border px-6 py-4">
           {createTransaction.isError && (
-            <p className="text-sm text-red-400">Failed to save transaction.</p>
+            <p className="text-sm text-red-400">
+              {axios.isAxiosError(createTransaction.error) &&
+              typeof createTransaction.error.response?.data?.detail === 'string'
+                ? createTransaction.error.response.data.detail
+                : 'Failed to save transaction.'}
+            </p>
           )}
           <div className="flex items-center justify-end gap-2">
             <Button variant="secondary" onClick={onClose}>

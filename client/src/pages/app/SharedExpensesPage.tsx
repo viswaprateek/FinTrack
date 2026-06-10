@@ -8,7 +8,7 @@ import { useApiClient, expenseSharesApi } from '../../api'
 import { useCurrency } from '../../contexts/CurrencyContext'
 import { formatCurrencyAmount } from '../../lib/currencies'
 import { formatShortDate } from '../../lib/utils'
-import type { ExpenseShare, OwedExpense, ReminderFrequency } from '../../types'
+import type { ExpenseShare, OwedExpense } from '../../types'
 
 type Tab = 'owed-to-you' | 'you-owe'
 
@@ -51,12 +51,6 @@ export function SharedExpensesPage() {
       queryClient.invalidateQueries({ queryKey: ['expense-shares'] })
       queryClient.invalidateQueries({ queryKey: ['budgets'] })
     },
-  })
-
-  const updateReminder = useMutation({
-    mutationFn: ({ shareId, frequency }: { shareId: string; frequency: ReminderFrequency }) =>
-      expenseSharesApi.update(client, shareId, { reminder_frequency: frequency }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['expense-shares'] }),
   })
 
   const shares = sharesQuery.data ?? []
@@ -136,9 +130,6 @@ export function SharedExpensesPage() {
                   share={share}
                   formatCurrency={formatCurrency}
                   onMarkPaid={(id) => markPaid.mutate(id)}
-                  onReminderChange={(frequency) =>
-                    updateReminder.mutate({ shareId: share.id, frequency })
-                  }
                   markPending={markPaid.isPending}
                 />
               ))}
@@ -188,13 +179,11 @@ function ShareCard({
   share,
   formatCurrency,
   onMarkPaid,
-  onReminderChange,
   markPending,
 }: {
   share: ExpenseShare
   formatCurrency: (n: number) => string
   onMarkPaid: (participantId: string) => void
-  onReminderChange: (frequency: ReminderFrequency) => void
   markPending: boolean
 }) {
   return (
@@ -207,16 +196,6 @@ function ShareCard({
             {formatCurrency(share.yourShare)}
           </p>
         </div>
-        <select
-          value={share.reminderFrequency}
-          onChange={(e) => onReminderChange(e.target.value as ReminderFrequency)}
-          className="rounded-lg border border-border-muted bg-input px-2 py-1.5 text-xs text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted"
-          aria-label="Reminder frequency"
-        >
-          <option value="off">Reminders off</option>
-          <option value="weekly">Weekly reminders</option>
-          <option value="monthly">Monthly reminders</option>
-        </select>
       </CardHeader>
       <CardContent className="space-y-2 p-0 pb-4">
         {share.participants.map((p) => (

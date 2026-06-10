@@ -23,7 +23,6 @@ import { GoalsPage } from '../pages/app/GoalsPage'
 import { CardsPage } from '../pages/app/CardsPage'
 import { OnboardingPage } from '../pages/app/OnboardingPage'
 import { SharedExpensesPage } from '../pages/app/SharedExpensesPage'
-import { OwePage } from '../pages/public/OwePage'
 
 export const router = createBrowserRouter([
   {
@@ -37,7 +36,6 @@ export const router = createBrowserRouter([
           { path: '/sign-up/sso-callback', element: <ClerkSsoCallbackPage /> },
           { path: '/sign-in/*', element: <SignInPage /> },
           { path: '/sign-up/*', element: <SignUpPage /> },
-          { path: '/owe/:token', element: <OwePage /> },
         ],
       },
       {

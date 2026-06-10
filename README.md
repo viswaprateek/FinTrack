@@ -27,6 +27,174 @@ Envelope budgeting app — allocate income to categories, log transactions, and 
 Browser (React)  →  Clerk  →  FastAPI /api  →  MySQL
 ```
 
+## Database schema
+
+The ER diagram below matches the SQLAlchemy models in `server/app/models/`.  
+`users` is the root entity (linked to Clerk via `clerk_user_id`). Everything else hangs off a user or one of their budgets.
+
+```mermaid
+erDiagram
+    users ||--o{ budgets : owns
+    users ||--o{ categories : owns
+    users ||--o{ goals : owns
+    users ||--o{ credit_cards : owns
+    users ||--o{ recurring_rules : owns
+    users ||--o{ audit_logs : writes
+    users ||--o{ expense_shares : creates
+    users ||--o{ expense_share_participants : "linked as friend"
+
+    budgets ||--o{ transactions : contains
+    budgets ||--o{ income_sources : plans
+    budgets ||--o{ fund_transfers : records
+    budgets ||--o{ budget_category_plans : envelopes
+
+    categories ||--o{ budget_category_plans : "planned in"
+    categories ||--o{ transactions : "optional tag"
+    categories ||--o{ transaction_splits : "split line"
+    categories ||--o{ recurring_rules : "optional tag"
+    categories ||--o{ fund_transfers : "from envelope"
+    categories ||--o{ fund_transfers : "to envelope"
+
+    transactions ||--o{ transaction_splits : splits
+    transactions ||--o| expense_shares : "friend split"
+
+    expense_shares ||--o{ expense_share_participants : includes
+
+    goals ||--o{ goal_contributions : funded_by
+
+    credit_cards ||--o{ card_transactions : charges
+
+    users {
+        int id PK
+        string clerk_user_id UK
+        string email
+        string default_currency
+    }
+
+    budgets {
+        int id PK
+        int user_id FK
+        string name
+        date period_start
+        date period_end
+    }
+
+    categories {
+        int id PK
+        int user_id FK
+        string name
+        enum type
+    }
+
+    budget_category_plans {
+        int id PK
+        int budget_id FK
+        int category_id FK
+        decimal planned_amount
+        enum rollover_type
+    }
+
+    transactions {
+        int id PK
+        int budget_id FK
+        int category_id FK
+        decimal amount
+        enum type
+    }
+
+    transaction_splits {
+        int id PK
+        int transaction_id FK
+        int category_id FK
+        decimal amount
+    }
+
+    expense_shares {
+        int id PK
+        int transaction_id FK
+        int created_by_user_id FK
+    }
+
+    expense_share_participants {
+        int id PK
+        int expense_share_id FK
+        int linked_user_id FK
+        string email
+        decimal amount_owed
+        enum status
+    }
+
+    income_sources {
+        int id PK
+        int budget_id FK
+        string name
+        decimal amount
+    }
+
+    fund_transfers {
+        int id PK
+        int budget_id FK
+        int from_category_id FK
+        int to_category_id FK
+        decimal amount
+    }
+
+    goals {
+        int id PK
+        int user_id FK
+        string name
+        decimal target_amount
+    }
+
+    goal_contributions {
+        int id PK
+        int goal_id FK
+        decimal amount
+    }
+
+    credit_cards {
+        int id PK
+        int user_id FK
+        string label
+        decimal credit_limit
+    }
+
+    card_transactions {
+        int id PK
+        int card_id FK
+        string description
+        decimal amount
+    }
+
+    recurring_rules {
+        int id PK
+        int user_id FK
+        int category_id FK
+        enum frequency
+        date next_due
+    }
+
+    audit_logs {
+        int id PK
+        int user_id FK
+        string entity_type
+        int entity_id
+    }
+```
+
+### Relationship notes
+
+| Pattern | Tables | Meaning |
+|---|---|---|
+| User-owned | `budgets`, `categories`, `goals`, `credit_cards`, `recurring_rules` | `user_id` → `users.id` (CASCADE delete) |
+| Budget period | `transactions`, `income_sources`, `fund_transfers` | Scoped to one monthly budget |
+| Envelope planning | `budget_category_plans` | Many-to-many join: one category can appear in many budgets |
+| Category splits | `transaction_splits` | One transaction split across multiple categories |
+| Friend splits | `expense_shares` → `expense_share_participants` | One expense transaction, many friends who owe |
+| Mock cards | `card_transactions` | Separate from budget `transactions`; `category` is a plain string, not a FK |
+
+> Full column definitions live in `server/app/models/`. Tables are auto-created on API startup in dev; use Alembic for production migrations.
+
 ## Prerequisites
 
 - Node.js + **pnpm**

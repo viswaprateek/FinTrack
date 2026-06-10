@@ -4,10 +4,8 @@ from decimal import Decimal
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
-from app.core.config import settings
 from app.core.exceptions import BadRequestError, NotFoundError
 from app.core.utils import parse_id
-from app.integrations.email import expense_share_invite_email
 from app.integrations.exchange_rates import convert_amount
 from app.models.expense_share import ExpenseShare, ExpenseShareParticipant
 from app.models.transaction import Transaction
@@ -19,7 +17,6 @@ from app.schemas.expense_share import (
     FriendSplitInput,
     OwedExpenseResponse,
     ParticipantUpdateResult,
-    PublicOweResponse,
 )
 from app.services.expense_amount import friends_owed_total
 
@@ -27,18 +24,6 @@ from app.services.expense_amount import friends_owed_total
 class ExpenseShareService:
     def __init__(self, db: Session):
         self.db = db
-
-    def _format_currency(self, user: User, amount: Decimal) -> str:
-        return f"{user.default_currency} {amount:,.2f}"
-
-    def _payer_display_name(self, user: User) -> str:
-        if user.first_name:
-            return user.first_name
-        return user.email.split("@")[0]
-
-    def _owe_url(self, token: str) -> str:
-        base = settings.APP_BASE_URL.rstrip("/")
-        return f"{base}/owe/{token}"
 
     def _participant_response(self, p: ExpenseShareParticipant, payer: User) -> dict:
         result = {
@@ -180,31 +165,18 @@ class ExpenseShareService:
             linked = self.db.scalar(select(User).where(func.lower(User.email) == email))
             if email == self._normalized_email(user):
                 raise BadRequestError("You cannot split an expense with yourself")
+            if linked is None:
+                raise BadRequestError(f"No FinTrack account found for {email}")
             participant = ExpenseShareParticipant(
                 expense_share_id=share.id,
                 email=email,
-                linked_user_id=linked.id if linked else None,
+                linked_user_id=linked.id,
                 amount_owed=split.amount,
             )
             self.db.add(participant)
 
         self.db.flush()
         return self._load_share(share.id)
-
-    def send_initial_notifications(self, user: User, share: ExpenseShare) -> None:
-        payer = self._payer_display_name(user)
-        for participant in share.participants:
-            if participant.status != "pending":
-                continue
-            expense_share_invite_email(
-                to=participant.email,
-                payer_name=payer,
-                description=share.transaction.description,
-                amount=self._format_currency(user, participant.amount_owed),
-                owe_url=self._owe_url(participant.view_token),
-                is_reminder=False,
-            )
-            participant.last_reminded_at = dt.datetime.utcnow()
 
     def list_for_user(self, user: User) -> list[ExpenseShareResponse]:
         shares = self.db.scalars(
@@ -306,36 +278,6 @@ class ExpenseShareService:
             paidAt=participant.paid_at.isoformat() if participant.paid_at else None,
         )
 
-    def get_public_owe(self, token: str) -> PublicOweResponse:
-        participant = self.db.scalar(
-            select(ExpenseShareParticipant)
-            .where(ExpenseShareParticipant.view_token == token)
-            .options(
-                selectinload(ExpenseShareParticipant.expense_share).selectinload(
-                    ExpenseShare.transaction
-                ),
-                selectinload(ExpenseShareParticipant.expense_share).selectinload(
-                    ExpenseShare.created_by
-                ),
-            )
-        )
-        if participant is None:
-            raise NotFoundError("Owe link")
-
-        share = participant.expense_share
-        payer = share.created_by
-        payer_name = payer.first_name or payer.email.split("@")[0]
-        tx = share.transaction
-
-        return PublicOweResponse(
-            payerName=payer_name,
-            description=tx.description,
-            date=tx.date.isoformat(),
-            amountOwed=participant.amount_owed,
-            currency=payer.default_currency,
-            status=participant.status,
-        )
-
     def outstanding_total(self, user: User) -> Decimal:
         rows = self.db.scalars(
             select(ExpenseShareParticipant)
@@ -346,46 +288,3 @@ class ExpenseShareService:
             )
         ).all()
         return sum((r.amount_owed for r in rows), Decimal("0"))
-
-    def process_reminders(self) -> int:
-        """Send due weekly/monthly reminders. Returns count sent."""
-        now = dt.datetime.utcnow()
-        shares = self.db.scalars(
-            select(ExpenseShare)
-            .where(ExpenseShare.reminder_frequency.in_(["weekly", "monthly"]))
-            .options(
-                selectinload(ExpenseShare.participants),
-                selectinload(ExpenseShare.transaction),
-                selectinload(ExpenseShare.created_by),
-            )
-        ).all()
-
-        sent = 0
-        for share in shares:
-            payer = share.created_by
-            if not payer.share_reminders_enabled:
-                continue
-
-            delta = dt.timedelta(days=7 if share.reminder_frequency == "weekly" else 30)
-            payer_name = self._payer_display_name(payer)
-
-            for participant in share.participants:
-                if participant.status != "pending":
-                    continue
-                if participant.last_reminded_at and (now - participant.last_reminded_at) < delta:
-                    continue
-
-                ok = expense_share_invite_email(
-                    to=participant.email,
-                    payer_name=payer_name,
-                    description=share.transaction.description,
-                    amount=self._format_currency(payer, participant.amount_owed),
-                    owe_url=self._owe_url(participant.view_token),
-                    is_reminder=True,
-                )
-                if ok:
-                    participant.last_reminded_at = now
-                    sent += 1
-
-        self.db.commit()
-        return sent

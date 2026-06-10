@@ -162,13 +162,12 @@ class TransactionService:
             )
 
         if friend_splits:
-            share = self.expense_shares.create_for_transaction(
+            self.expense_shares.create_for_transaction(
                 user,
                 transaction,
                 friend_splits,
                 payload.reminder_frequency,
             )
-            self.expense_shares.send_initial_notifications(user, share)
 
         if payload.source == "assistant":
             self.db.add(
