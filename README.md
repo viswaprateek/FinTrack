@@ -195,6 +195,99 @@ erDiagram
 
 > Full column definitions live in `server/app/models/`. Tables are auto-created on API startup in dev; use Alembic for production migrations.
 
+## Calculation notes
+
+Logic lives in `server/app/services/` (mainly `category_service.py`, `budget_service.py`, `expense_amount.py`, `recurring_service.py`).
+
+**Envelopes**
+
+```
+planned (shown in UI) = planned_amount + starting_balance + manual_adjustment
+remaining             = planned − spent
+```
+
+- **Move funds** updates `manual_adjustment` between categories in the same budget.
+- **Spent** = sum of expenses in that category. Friend splits only count the payer’s share: `amount − Σ friends_owed`. Split lines are scaled to that share.
+
+**Budget**
+
+```
+plannedTotal = Σ planned_amount (expense envelopes only)
+spentTotal   = Σ payer share of expenses
+remaining    = plannedTotal − spentTotal
+```
+
+**Rollover** — each envelope has `reset` | `rollover` | `capped` (+ optional cap). Types are saved and copied to new budgets; auto carry to `starting_balance` is not implemented yet.
+
+**Recurring** — rules are templates. **Post** creates a transaction and bumps `next_due` by one step (`weekly` +7d, `monthly` +1mo, etc.). Dashboard shows bills due in the next 7 days.
+
+**Other** — Goals: `current / target`. Shared expenses: friends must be on FinTrack. Cards: mock ledger, separate from envelopes.
+
+---
+
+## In-app AI (Gemini)
+
+> This section documents **AI inside the product**, not tools used to write the code.
+
+**What it does** — floating assistant widget: parse bank SMS / receipts / natural language into transactions, or answer questions about your real budget data (“how much left in Groceries?”).
+
+**Enable** — set `GEMINI_API_KEY` in `server/.env` (optional `GEMINI_MODEL`, default `gemini-2.5-flash`). Without it, chat returns `503`.
+
+**Implementation**
+
+```
+Browser → POST /api/assistant/chat (Clerk JWT)
+       → gemini.py: Gemini agent + tool loop (max 5 rounds)
+       → assistant_tools.py: read budgets, categories, transactions from DB
+       → JSON: { kind: transaction | answer | clarification }
+       → User confirms → normal POST /api/transactions (source: assistant)
+```
+
+| Tool | Reads |
+|---|---|
+| `get_user_profile` | Currency, profile |
+| `list_budgets` / `get_budget_for_date` | Budget periods |
+| `list_categories` | Envelope planned & spent |
+| `search_transactions` | Recent txns |
+
+The model must call tools before quoting numbers. Nothing is saved until the user confirms.
+
+**Try it** — paste a UPI SMS, upload a receipt, or ask a spending question. Test in Swagger: `POST /api/assistant/chat` with Bearer token.
+
+---
+
+## Design tradeoffs
+
+| Choice | Tradeoff |
+|---|---|
+| Clerk auth | Fast setup; short-lived JWTs for manual API testing adds latency |
+| Gemini server-side | Key stays secret; extra latency |
+| Manual recurring post | User control; no auto cron |
+| Friend splits in-app only | Simple; both users need accounts |
+| Rollover types stored | UI ready; month-to-month carry not automated yet |
+
+---
+
+## Hosted demo
+
+**App:** https://fin-track-client-nine.vercel.app — sign up with Clerk.
+
+---
+
+## Notes on AI tool usage and external resources
+
+This project was developed with AI-assisted tools as part of the **implementation workflow** — not as a substitute for product thinking or domain design.
+
+**AI tools used (development)**
+
+- **Cursor** — AI-assisted editing, code completion, boilerplate, and refactoring suggestions while building the app.
+
+**Human-led design** — Requirements, schema, API design, architecture, and business logic (budgeting, splits, recurring) were done without generative AI. Ideas and UX came from self-directed brainstorming, informal user interviews, and a literature survey of budgeting apps and envelope-method practices.
+
+All AI-generated suggestions were reviewed, adapted, tested locally, and committed through a normal git history. The **in-app Gemini assistant** is a deliberate product feature (documented above) — separate from the Cursor tooling used to build the codebase.
+
+---
+
 ## Prerequisites
 
 - Node.js + **pnpm**
@@ -214,31 +307,19 @@ Creates `server/.venv` and installs Python + Node packages.
 
 ### 2. Configure environment
 
-**Backend** — copy and fill in Clerk + database values:
-
 ```bash
 cp server/.env.example server/.env
-```
-
-| Variable | Required | Notes |
-|---|---|---|
-| `DATABASE_URL` | Yes | See step 3 for local Docker URL |
-| `CLERK_JWKS_URL` | Yes | Clerk Dashboard → API Keys → JWKS URL |
-| `CLERK_SECRET_KEY` | Yes | Clerk secret key (`sk_test_…`) |
-| `CLERK_ISSUER` | No | Expected JWT issuer |
-| `GEMINI_API_KEY` | No | Enables the in-app assistant |
-| `APP_BASE_URL` | No | Defaults to `http://localhost:5173` |
-
-**Frontend** — copy and add your Clerk publishable key:
-
-```bash
 cp client/.env.example client/.env
 ```
 
-| Variable | Required | Notes |
-|---|---|---|
-| `VITE_CLERK_PUBLISHABLE_KEY` | Yes | Clerk publishable key (`pk_test_…`) |
-| `VITE_API_BASE_URL` | No | Defaults to `http://127.0.0.1:8000` |
+Fill in from [Clerk Dashboard](https://dashboard.clerk.com) → API Keys:
+
+| File | Required |
+|---|---|
+| `server/.env` | `DATABASE_URL`, `CLERK_JWKS_URL`, `CLERK_SECRET_KEY` |
+| `client/.env` | `VITE_CLERK_PUBLISHABLE_KEY` |
+
+Optional: `GEMINI_API_KEY` (assistant), `CLERK_ISSUER`, `VITE_API_BASE_URL`. Defaults work for local dev — see `.env.example` files.
 
 ### 3. Start the database
 
