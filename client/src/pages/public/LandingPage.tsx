@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { Button } from '../../components/ui/Button'
-import { IconArrowRight, IconWallet, IconRepeat, IconTrendingUp } from '../../components/ui/icons'
+import { IconArrowRight, IconWallet, IconRepeat, IconTarget } from '../../components/ui/icons'
 import { CursorTrail } from '../../components/landing/CursorTrail'
 import { Hero } from '../../components/landing/Hero'
 import { FeatureCards } from '../../components/landing/FeatureCards'
@@ -22,9 +22,9 @@ const features = [
     description: 'Automate rent, subscriptions, and bills. Get reminded before they post and never miss a payment.',
   },
   {
-    icon: IconTrendingUp,
-    title: 'Cashflow forecasting',
-    description: 'See your projected balance day by day, and catch risk of going negative before it happens.',
+    icon: IconTarget,
+    title: 'Savings goals',
+    description: 'Set targets for what you want to save, track progress month by month, and stay motivated.',
   },
 ]
 
@@ -48,7 +48,7 @@ export function LandingPage() {
           >
             <h2 className="text-3xl font-bold tracking-tight text-heading">Everything you need to stay on target</h2>
             <p className="mt-4 text-muted-fg">
-              Built around the way real people budget — by category, by month, and with an eye on what's coming next.
+              Built around the way real people budget — by category, by month, with goals that keep you on track.
             </p>
           </motion.div>
 

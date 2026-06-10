@@ -1,6 +1,5 @@
 import type { ComponentType } from 'react'
 import {
-  IconBarChart,
   IconCreditCard,
   IconLayoutDashboard,
   IconReceipt,
@@ -47,10 +46,7 @@ export const sidebarSections: NavSection[] = [
   },
   {
     label: 'Insights',
-    items: [
-      { to: '/reports', label: 'Reports', icon: IconBarChart },
-      { to: '/shared-expenses', label: 'Shared Expenses', icon: IconUsers },
-    ],
+    items: [{ to: '/shared-expenses', label: 'Shared Expenses', icon: IconUsers }],
   },
   {
     label: 'Tools',
@@ -94,12 +90,6 @@ export const mobileMoreNav: NavItem[] = [
     description: 'Savings targets',
   },
   {
-    to: '/reports',
-    label: 'Reports & Forecasts',
-    icon: IconBarChart,
-    description: 'Cashflow and trends',
-  },
-  {
     to: '/recurring',
     label: 'Recurring Bills',
     icon: IconRepeat,
@@ -119,6 +109,5 @@ export const pageTitles: Record<string, string> = {
   '/recurring': 'Recurring Bills',
   '/goals': 'Goals',
   '/cards': 'Cards',
-  '/reports': 'Reports & Forecasts',
   '/settings': 'Settings',
 }

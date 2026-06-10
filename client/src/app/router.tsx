@@ -17,7 +17,6 @@ import { BudgetCategoriesRedirect } from '../pages/app/BudgetCategoriesRedirect'
 import { CategoryLibraryPage } from '../pages/app/CategoryLibraryPage'
 import { TransactionsPage } from '../pages/app/TransactionsPage'
 import { RecurringPage } from '../pages/app/RecurringPage'
-import { ReportsPage } from '../pages/app/ReportsPage'
 import { SettingsPage } from '../pages/app/SettingsPage'
 import { GoalsPage } from '../pages/app/GoalsPage'
 import { CardsPage } from '../pages/app/CardsPage'
@@ -58,7 +57,6 @@ export const router = createBrowserRouter([
           { path: '/transactions', element: <TransactionsPage /> },
           { path: '/shared-expenses', element: <SharedExpensesPage /> },
           { path: '/recurring', element: <RecurringPage /> },
-          { path: '/reports', element: <ReportsPage /> },
           { path: '/goals', element: <GoalsPage /> },
           { path: '/cards', element: <CardsPage /> },
           { path: '/settings', element: <SettingsPage /> },

@@ -733,10 +733,10 @@ export function DashboardPage() {
                     {formatCurrency(Math.abs(remaining))} over plan
                   </p>
                   <Link
-                    to="/reports"
+                    to="/categories"
                     className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-amber-400 hover:text-amber-300"
                   >
-                    View forecast <IconArrowRight className="h-3 w-3" />
+                    Review envelopes <IconArrowRight className="h-3 w-3" />
                   </Link>
                 </div>
               </div>

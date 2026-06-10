@@ -101,8 +101,8 @@ export function Hero() {
             </h1>
 
             <p className="mx-auto mt-6 max-w-xl text-lg text-muted-fg lg:mx-0">
-              FinTrack helps you plan budgets, track spending, manage recurring bills, and forecast your
-              cashflow — all in one clean, modern workspace.
+              FinTrack helps you plan budgets, track spending, and manage recurring bills — all in one
+              clean, modern workspace.
             </p>
 
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start">

@@ -28,11 +28,11 @@ const steps = [
   },
   {
     number: '04',
-    title: 'See what\'s coming next',
+    title: 'Work toward your goals',
     description:
-      'Your cashflow forecast projects your balance day by day. Catch a shortfall weeks before it happens — not the morning your card declines.',
+      'Set savings targets for vacations, emergencies, or big purchases. Track progress each month and celebrate when you hit the mark.',
     align: 'right' as const,
-    Illustration: ForecastIllustration,
+    Illustration: GoalsIllustration,
   },
 ]
 
@@ -218,41 +218,32 @@ function RecurringIllustration() {
   )
 }
 
-function ForecastIllustration() {
-  const points = [30, 45, 38, 55, 48, 62, 58, 72, 65, 80, 75, 88]
-  const w = 280
-  const h = 100
-  const max = Math.max(...points)
-  const coords = points.map((p, i) => {
-    const x = (i / (points.length - 1)) * w
-    const y = h - (p / max) * h
-    return `${x},${y}`
-  })
-  const linePath = `M ${coords.join(' L ')}`
-  const areaPath = `${linePath} L ${w},${h} L 0,${h} Z`
+function GoalsIllustration() {
+  const goals = [
+    { name: 'Emergency fund', saved: 3200, target: 5000, color: 'bg-accent' },
+    { name: 'Vacation', saved: 450, target: 1500, color: 'bg-sky-400' },
+    { name: 'New laptop', saved: 200, target: 1200, color: 'bg-amber-400' },
+  ]
 
   return (
-    <div>
-      <div className="mb-3 flex items-baseline justify-between">
-        <div>
-          <p className="text-[10px] uppercase tracking-wider text-muted">Projected balance</p>
-          <p className="text-2xl font-bold text-heading">$1,470</p>
-        </div>
-        <span className="rounded-full bg-accent-muted px-2.5 py-1 text-[10px] font-medium text-accent">
-          +30 days
-        </span>
-      </div>
-      <svg viewBox={`0 0 ${w} ${h}`} className="w-full" aria-hidden>
-        <defs>
-          <linearGradient id="forecast-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#6366f1" stopOpacity="0.25" />
-            <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        <path d={areaPath} fill="url(#forecast-fill)" />
-        <path d={linePath} fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-        <line x1="0" y1={h * 0.85} x2={w} y2={h * 0.85} stroke="#f87171" strokeWidth="1" strokeDasharray="4 4" opacity="0.5" />
-      </svg>
+    <div className="space-y-3">
+      {goals.map((goal) => {
+        const pct = Math.round((goal.saved / goal.target) * 100)
+        return (
+          <div key={goal.name} className="rounded-xl border border-border bg-surface-muted p-4">
+            <div className="flex items-center justify-between text-sm">
+              <span className="font-medium text-heading">{goal.name}</span>
+              <span className="text-xs text-muted">{pct}%</span>
+            </div>
+            <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-border">
+              <div className={cn('h-full rounded-full', goal.color)} style={{ width: `${pct}%` }} />
+            </div>
+            <p className="mt-2 text-[10px] text-muted">
+              ${goal.saved.toLocaleString()} of ${goal.target.toLocaleString()}
+            </p>
+          </div>
+        )
+      })}
     </div>
   )
 }

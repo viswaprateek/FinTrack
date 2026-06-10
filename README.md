@@ -1,146 +1,158 @@
 # FinTrack
 
-A personal finance app for envelope budgeting — plan monthly budgets, track spending, manage recurring bills, and forecast cashflow.
+Envelope budgeting app — allocate income to categories, log transactions, and stay on top of recurring bills.
 
-## Tech Stack
+## Features
 
-| Layer | Technologies |
+- **Dashboard** — month-at-a-glance income, spending, and envelope health
+- **Budgets & categories** — monthly envelopes with planned vs actual tracking
+- **Transactions** — income, expenses, and transfers
+- **Recurring bills** — automated repeating payments
+- **Goals** — savings targets with progress tracking
+- **Shared expenses** — split bills with friends and track who owes what
+- **Cards** — mock credit cards for practice spending
+- **Assistant** — in-app finance helper (powered by Gemini, server-side)
+- **Onboarding** — guided first-budget setup for new users
+
+## Tech stack
+
+| Layer | Stack |
 |---|---|
-| **Frontend** | React 19, TypeScript, Vite, Tailwind CSS v4 |
-| **Auth** | Clerk |
-| **State** | TanStack Query, Redux Toolkit |
-| **Backend** | FastAPI, SQLAlchemy, Pydantic |
-| **Database** | MySQL |
-
-## Architecture
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS v4, TanStack Query, Redux Toolkit |
+| Auth | Clerk |
+| Backend | FastAPI, SQLAlchemy, Pydantic |
+| Database | MySQL 8.4 |
 
 ```
-Browser (React)  →  Clerk auth  →  FastAPI API  →  MySQL
-                      ↓
-              TanStack Query / Axios
-```
-
-- **Frontend** (`client/`) — SPA with public pages (landing, sign-in) and protected app pages (dashboard, budgets, transactions).
-- **Backend** (`server/`) — REST API under `/api`, JWT verification via Clerk JWKS, SQLAlchemy ORM.
-- **Database** — MySQL locally via Docker, or a hosted instance (e.g. Railway) in production.
-
-## Project Structure
-
-```
-personal_finance/
-├── client/
-│   └── src/
-│       ├── api/           # Axios client + endpoint modules
-│       ├── app/           # Router, Redux store
-│       ├── components/    # Reusable UI + feature widgets
-│       ├── layouts/       # Public and authenticated shells
-│       ├── pages/         # Route screens (public/ + app/)
-│       └── types/         # Shared TypeScript types
-├── server/
-│   └── app/
-│       ├── api/v1/routers/  # HTTP routes (thin controllers)
-│       ├── services/        # Business logic
-│       ├── models/          # SQLAlchemy models
-│       ├── schemas/         # Pydantic request/response types
-│       └── core/            # Config, database, utils, exceptions
-├── docker-compose.yml     # Local MySQL
-└── Makefile               # Common dev commands
+Browser (React)  →  Clerk  →  FastAPI /api  →  MySQL
 ```
 
 ## Prerequisites
 
-- **Node.js** + **pnpm**
-- **Python 3.11+**
-- **Docker** (for local MySQL) — or a remote MySQL connection string
+- Node.js + **pnpm**
+- Python **3.11+**
+- Docker (local MySQL) — or a remote MySQL URL
+- [Clerk](https://clerk.com) app (publishable key + JWKS URL)
 
-## Quick Start
+## Setup
 
-### 1. Database (local)
-
-```bash
-make dev-db
-```
-
-Starts MySQL 8.4 on port `3306` with:
-
-| Setting | Value |
-|---|---|
-| Database | `fintrack` |
-| User | `fintrack_user` |
-| Password | `fintrack_pass` |
-
-Connection string for `server/.env`:
-
-```
-DATABASE_URL=mysql://fintrack_user:fintrack_pass@localhost:3306/fintrack
-```
-
-### 2. Install dependencies
+### 1. Install dependencies
 
 ```bash
 make install
 ```
 
-### 3. Backend
+Creates `server/.venv` and installs Python + Node packages.
+
+### 2. Configure environment
+
+**Backend** — copy and fill in Clerk + database values:
 
 ```bash
-cd server
-cp .env.example .env   # set DATABASE_URL and Clerk JWKS URL
+cp server/.env.example server/.env
 ```
 
-For local Docker MySQL, use the connection string above. For production, use your hosted URL (e.g. Railway gives `mysql://...` — the app rewrites it to `mysql+pymysql://...` automatically).
+| Variable | Required | Notes |
+|---|---|---|
+| `DATABASE_URL` | Yes | See step 3 for local Docker URL |
+| `CLERK_JWKS_URL` | Yes | Clerk Dashboard → API Keys → JWKS URL |
+| `CLERK_SECRET_KEY` | Yes | Clerk secret key (`sk_test_…`) |
+| `CLERK_ISSUER` | No | Expected JWT issuer |
+| `GEMINI_API_KEY` | No | Enables the in-app assistant |
+| `APP_BASE_URL` | No | Defaults to `http://localhost:5173` |
+
+**Frontend** — copy and add your Clerk publishable key:
+
+```bash
+cp client/.env.example client/.env
+```
+
+| Variable | Required | Notes |
+|---|---|---|
+| `VITE_CLERK_PUBLISHABLE_KEY` | Yes | Clerk publishable key (`pk_test_…`) |
+| `VITE_API_BASE_URL` | No | Defaults to `http://127.0.0.1:8000` |
+
+### 3. Start the database
+
+```bash
+make dev-db
+```
+
+Local MySQL runs on port `3306`:
+
+| | |
+|---|---|
+| Database | `fintrack` |
+| User | `fintrack_user` |
+| Password | `fintrack_pass` |
+
+Use this in `server/.env`:
+
+```
+DATABASE_URL=mysql://fintrack_user:fintrack_pass@localhost:3306/fintrack
+```
+
+The API rewrites `mysql://` to `mysql+pymysql://` automatically. Tables are created on first startup (dev convenience).
+
+### 4. Start the API
 
 ```bash
 make dev-api
 ```
 
-- API: http://localhost:8000
+- API: http://localhost:8000  
 - Swagger: http://localhost:8000/docs
 
-On startup the API verifies the DB connection and creates tables if they don't exist (development convenience — use proper migrations before production).
-
-### 4. Frontend
+### 5. Start the frontend
 
 ```bash
-cd client
-cp .env.example .env   # add VITE_CLERK_PUBLISHABLE_KEY
 make dev-web
 ```
 
 - App: http://localhost:5173
 
-Required env vars are documented in `client/.env.example`.
+Sign up, complete onboarding, and you're in.
 
-## Development Workflow
+## Daily development
+
+Three terminals:
 
 ```bash
-# Terminal 1 — database (once)
-make dev-db
-
-# Terminal 2 — API
-make dev-api
-
-# Terminal 3 — frontend
-make dev-web
+make dev-db    # once — or leave running
+make dev-api   # terminal 1
+make dev-web   # terminal 2
 ```
 
-## Makefile Commands
+## Commands
 
 | Command | Description |
 |---|---|
-| `make install` | Create Python venv, install server + client deps |
-| `make dev-db` | Start local MySQL via Docker |
-| `make dev-api` | Run FastAPI with hot reload on port 8000 |
-| `make dev-web` | Run Vite dev server on port 5173 |
+| `make install` | Install server + client dependencies |
+| `make dev-db` | Start local MySQL (Docker) |
+| `make dev-api` | FastAPI with hot reload on :8000 |
+| `make dev-web` | Vite dev server on :5173 |
 | `make db-down` | Stop Docker containers |
-| `make db-logs` | Tail MySQL container logs |
+| `make db-logs` | Tail MySQL logs |
+| `cd client && pnpm build` | Production frontend build |
+| `cd client && pnpm lint` | ESLint |
 
-## Common Commands
+## Project structure
 
-| Task | Command |
-|---|---|
-| Backend dev | `make dev-api` |
-| Frontend dev | `make dev-web` |
-| Frontend build | `cd client && pnpm build` |
-| Frontend lint | `cd client && pnpm lint` |
-| Local database | `make dev-db` |
+```
+personal_finance/
+├── client/src/
+│   ├── api/           # Axios client + endpoint modules
+│   ├── app/           # Router, Redux store
+│   ├── components/    # UI + feature components
+│   ├── layouts/       # Public and app shells
+│   ├── pages/         # Route screens
+│   └── types/         # Shared TypeScript types
+├── server/app/
+│   ├── api/v1/routers/  # HTTP routes
+│   ├── services/        # Business logic
+│   ├── models/          # SQLAlchemy models
+│   ├── schemas/         # Pydantic types
+│   └── core/            # Config, DB, auth, exceptions
+├── docker-compose.yml
+└── Makefile
+```
