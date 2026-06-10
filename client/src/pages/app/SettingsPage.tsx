@@ -186,19 +186,6 @@ export function SettingsPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-red-500/30">
-        <CardHeader>
-          <CardTitle className="text-red-400">Danger Zone</CardTitle>
-        </CardHeader>
-        <CardContent className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-foreground">Delete all data</p>
-            <p className="mt-1 text-sm text-muted">Permanently remove all budgets, transactions, and rules. This cannot be undone.</p>
-          </div>
-          <Button variant="danger" size="sm">Delete all data</Button>
-        </CardContent>
-      </Card>
-
       {profileOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 px-4 py-8" onClick={() => setProfileOpen(false)}>
           <div onClick={(e) => e.stopPropagation()}>
