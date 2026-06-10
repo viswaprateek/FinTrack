@@ -4,6 +4,7 @@ import { AppLayout } from '../layouts/AppLayout'
 import { AppProviders } from '../layouts/AppProviders'
 import { ProtectedRoute } from '../components/guards/ProtectedRoute'
 import { OnboardingGate } from '../components/guards/OnboardingGate'
+import { NotFoundPage, RouteErrorPage } from '../pages/ErrorPage'
 
 import { LandingPage } from '../pages/public/LandingPage'
 import { SignInPage } from '../pages/public/SignInPage'
@@ -26,46 +27,52 @@ import { OwePage } from '../pages/public/OwePage'
 
 export const router = createBrowserRouter([
   {
-    element: <PublicLayout />,
+    errorElement: <RouteErrorPage />,
     children: [
-      { path: '/', element: <LandingPage /> },
-      { path: '/sign-in/sso-callback', element: <ClerkSsoCallbackPage /> },
-      { path: '/sign-up/sso-callback', element: <ClerkSsoCallbackPage /> },
-      { path: '/sign-in/*', element: <SignInPage /> },
-      { path: '/sign-up/*', element: <SignUpPage /> },
-      { path: '/owe/:token', element: <OwePage /> },
-    ],
-  },
-  {
-    element: <ProtectedRoute />,
-    children: [
-      { path: '/onboarding', element: <OnboardingPage /> },
       {
-        element: <OnboardingGate />,
+        element: <PublicLayout />,
         children: [
+          { path: '/', element: <LandingPage /> },
+          { path: '/sign-in/sso-callback', element: <ClerkSsoCallbackPage /> },
+          { path: '/sign-up/sso-callback', element: <ClerkSsoCallbackPage /> },
+          { path: '/sign-in/*', element: <SignInPage /> },
+          { path: '/sign-up/*', element: <SignUpPage /> },
+          { path: '/owe/:token', element: <OwePage /> },
+        ],
+      },
+      {
+        element: <ProtectedRoute />,
+        children: [
+          { path: '/onboarding', element: <OnboardingPage /> },
           {
-            element: <AppProviders />,
+            element: <OnboardingGate />,
             children: [
-          {
-            element: <AppLayout />,
-            children: [
-          { path: '/dashboard', element: <DashboardPage /> },
-          { path: '/budgets', element: <BudgetListPage /> },
-          { path: '/budgets/:id', element: <BudgetDetailPage /> },
-          { path: '/budgets/:id/categories', element: <BudgetCategoriesRedirect /> },
-          { path: '/categories', element: <CategoryLibraryPage /> },
-          { path: '/transactions', element: <TransactionsPage /> },
-          { path: '/shared-expenses', element: <SharedExpensesPage /> },
-          { path: '/recurring', element: <RecurringPage /> },
-          { path: '/goals', element: <GoalsPage /> },
-          { path: '/cards', element: <CardsPage /> },
-          { path: '/settings', element: <SettingsPage /> },
-            ],
-          },
+              {
+                element: <AppProviders />,
+                children: [
+                  {
+                    element: <AppLayout />,
+                    children: [
+                      { path: '/dashboard', element: <DashboardPage /> },
+                      { path: '/budgets', element: <BudgetListPage /> },
+                      { path: '/budgets/:id', element: <BudgetDetailPage /> },
+                      { path: '/budgets/:id/categories', element: <BudgetCategoriesRedirect /> },
+                      { path: '/categories', element: <CategoryLibraryPage /> },
+                      { path: '/transactions', element: <TransactionsPage /> },
+                      { path: '/shared-expenses', element: <SharedExpensesPage /> },
+                      { path: '/recurring', element: <RecurringPage /> },
+                      { path: '/goals', element: <GoalsPage /> },
+                      { path: '/cards', element: <CardsPage /> },
+                      { path: '/settings', element: <SettingsPage /> },
+                    ],
+                  },
+                ],
+              },
             ],
           },
         ],
       },
+      { path: '*', element: <NotFoundPage /> },
     ],
   },
 ])
