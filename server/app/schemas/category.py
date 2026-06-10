@@ -37,6 +37,7 @@ class CategoryResponse(BaseModel):
 
     id: str
     name: str
+    type: Literal["expense", "income"] = "expense"
     planned: Decimal
     spent: Decimal
     rolloverType: RolloverType

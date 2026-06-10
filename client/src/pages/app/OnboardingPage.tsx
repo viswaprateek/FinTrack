@@ -46,9 +46,9 @@ function todayIso() {
 
 function emptyTransactionDraft(categories: EnvelopeCategory[], type: 'income' | 'expense'): TransactionDraft {
   const preferred =
-    type === 'income'
-      ? categories.find((c) => c.name.toLowerCase() === 'salary') ?? categories[0]
-      : categories.find((c) => c.name.toLowerCase() !== 'salary') ?? categories[0]
+    type === 'expense'
+      ? categories.find((c) => c.name.toLowerCase() !== 'salary') ?? categories[0]
+      : categories.find((c) => c.name.toLowerCase() === 'salary')
 
   return {
     type,
@@ -329,7 +329,8 @@ export function OnboardingPage() {
 
   function addTransactionToList(form: TransactionDraft) {
     const amount = Number(form.amount)
-    if (!amount || !form.description.trim() || !form.categoryId) return false
+    if (!amount || !form.description.trim()) return false
+    if (form.type === 'expense' && !form.categoryId) return false
     setTransactionDrafts((prev) => [...prev, { ...form, amount: String(amount) }])
     return true
   }
@@ -625,7 +626,8 @@ export function OnboardingPage() {
               <div className="text-center">
                 <h1 className="text-2xl font-bold text-heading">Log your first transactions</h1>
                 <p className="mt-2 text-sm text-muted">
-                  Add one income and one expense — use the toggle to switch between them.
+                  Add one income and one expense — use the toggle to switch between them. Income is
+                  money received; only expenses need an envelope.
                 </p>
               </div>
 
@@ -693,7 +695,8 @@ export function OnboardingPage() {
                             tx.type === 'income' ? 'text-emerald-400' : 'text-red-400',
                           )}
                         >
-                          {tx.type === 'income' ? 'Income' : 'Expense'} · {tx.categoryName} · {tx.amount}
+                          {tx.type === 'income' ? 'Income' : 'Expense'}
+                          {tx.categoryName ? ` · ${tx.categoryName}` : ''} · {tx.amount}
                         </p>
                       </div>
                       <button
@@ -751,7 +754,12 @@ function TransactionFormCard({
   onAdd,
   disabled,
 }: TransactionFormCardProps) {
-  const canAdd = Number(form.amount) > 0 && form.description.trim() && form.categoryId
+  const expenseCategories = categories.filter((c) => c.name.toLowerCase() !== 'salary')
+  const envelopeCategories = form.type === 'expense' ? expenseCategories : categories
+  const canAdd =
+    Number(form.amount) > 0 &&
+    form.description.trim() &&
+    (form.type === 'income' || !!form.categoryId)
 
   return (
     <div className="space-y-3 rounded-2xl border border-border bg-surface-muted/20 p-4">
@@ -804,13 +812,13 @@ function TransactionFormCard({
         />
       </div>
 
-      {categories.length > 0 && (
+      {form.type === 'expense' && envelopeCategories.length > 0 && (
         <div>
           <label className="mb-1 block text-xs font-medium text-subtle">Envelope</label>
           <select
             value={form.categoryId}
             onChange={(e) => {
-              const cat = categories.find((c) => c.id === e.target.value)
+              const cat = envelopeCategories.find((c) => c.id === e.target.value)
               onChange({
                 ...form,
                 categoryId: e.target.value,
@@ -821,7 +829,7 @@ function TransactionFormCard({
             disabled={disabled}
           >
             <option value="">Select envelope</option>
-            {categories.map((c) => (
+            {envelopeCategories.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
               </option>

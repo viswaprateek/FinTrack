@@ -13,6 +13,7 @@ export interface Budget {
 export interface Category {
   id: string
   name: string
+  type?: 'expense' | 'income'
   planned: number
   spent: number
   rolloverType: RolloverType

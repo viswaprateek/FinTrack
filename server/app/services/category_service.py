@@ -21,6 +21,7 @@ from app.schemas.category import (
     MoveFundsRequest,
 )
 from app.services.budget_service import BudgetService
+from app.services.category_kind import is_income_category
 
 
 class CategoryService:
@@ -55,9 +56,11 @@ class CategoryService:
 
     def _to_response(self, plan: BudgetCategoryPlan, spent: Decimal) -> CategoryResponse:
         effective_planned = plan.planned_amount + plan.starting_balance + plan.manual_adjustment
+        category_type = "income" if is_income_category(plan.category) else "expense"
         return CategoryResponse(
             id=str(plan.category_id),
             name=plan.category.name,
+            type=category_type,
             planned=effective_planned,
             spent=spent,
             rolloverType=plan.rollover_type,
@@ -172,7 +175,17 @@ class CategoryService:
             select(Category).where(Category.user_id == user.id, Category.name == payload.name)
         )
         if category is None:
-            category = Category(user_id=user.id, name=payload.name, icon=payload.icon)
+            category_type = (
+                "income"
+                if payload.icon == "salary" or payload.name.lower() == "salary"
+                else "expense"
+            )
+            category = Category(
+                user_id=user.id,
+                name=payload.name,
+                icon=payload.icon,
+                type=category_type,
+            )
             self.db.add(category)
             self.db.flush()
         elif payload.icon and not category.icon:

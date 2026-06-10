@@ -11,6 +11,7 @@ import { ContentLoader } from '../../components/ui/Spinner'
 import { useApiClient, budgetsApi, categoriesApi, incomeSourcesApi, transactionsApi } from '../../api'
 import { useBudgetPeriod } from '../../contexts/BudgetPeriodContext'
 import { useCurrency } from '../../contexts/CurrencyContext'
+import { isExpenseEnvelope } from '../../lib/categoryKind'
 import { cn } from '../../lib/utils'
 import { IconArrowRight, IconPlus } from '../../components/ui/icons'
 import type { IncomeSchedule, RolloverType } from '../../types'
@@ -93,6 +94,7 @@ export function BudgetDetailPage() {
 
   const budget = budgetQuery.data
   const categories = categoriesQuery.data ?? []
+  const expenseCategories = categories.filter(isExpenseEnvelope)
   const incomeSources = incomeSourcesQuery.data ?? []
   const library = libraryQuery.data ?? []
   const transactions = useMemo(
@@ -184,7 +186,7 @@ export function BudgetDetailPage() {
               <CardTitle>Category Breakdown</CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
-              {categories.map((c) => (
+              {expenseCategories.map((c) => (
                 <div key={c.id}>
                   <div className="mb-2 flex items-center justify-between text-sm">
                     <span className="font-medium text-foreground">{c.name}</span>
@@ -193,7 +195,9 @@ export function BudgetDetailPage() {
                   <ProgressBar value={c.spent} max={c.planned} />
                 </div>
               ))}
-              {categories.length === 0 && <p className="text-sm text-muted">No categories yet for this budget.</p>}
+              {expenseCategories.length === 0 && (
+                <p className="text-sm text-muted">No spending envelopes yet for this budget.</p>
+              )}
             </CardContent>
           </Card>
         </div>

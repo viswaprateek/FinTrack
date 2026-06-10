@@ -8,9 +8,11 @@ from app.core.exceptions import ConflictError, NotFoundError
 from app.core.utils import format_period, parse_id
 from app.models.budget import Budget
 from app.models.budget_category_plan import BudgetCategoryPlan
+from app.models.category import Category
 from app.models.expense_share import ExpenseShare
 from app.models.transaction import Transaction
 from app.models.user import User
+from app.services.category_kind import income_category_clause
 from app.services.expense_amount import payer_expense_amount
 from app.schemas.budget import BudgetCreate, BudgetResponse, BudgetUpdate
 
@@ -21,9 +23,11 @@ class BudgetService:
 
     def _planned_total(self, budget_id: int) -> Decimal:
         total = self.db.scalar(
-            select(func.coalesce(func.sum(BudgetCategoryPlan.planned_amount), 0)).where(
-                BudgetCategoryPlan.budget_id == budget_id
-            )
+            select(func.coalesce(func.sum(BudgetCategoryPlan.planned_amount), 0))
+            .select_from(BudgetCategoryPlan)
+            .join(Category, BudgetCategoryPlan.category_id == Category.id)
+            .where(BudgetCategoryPlan.budget_id == budget_id)
+            .where(~income_category_clause())
         )
         return Decimal(total)
 
@@ -63,7 +67,10 @@ class BudgetService:
                 BudgetCategoryPlan.budget_id,
                 func.coalesce(func.sum(BudgetCategoryPlan.planned_amount), 0),
             )
+            .select_from(BudgetCategoryPlan)
+            .join(Category, BudgetCategoryPlan.category_id == Category.id)
             .where(BudgetCategoryPlan.budget_id.in_(budget_ids))
+            .where(~income_category_clause())
             .group_by(BudgetCategoryPlan.budget_id)
         ).all()
         return {budget_id: Decimal(total) for budget_id, total in rows}

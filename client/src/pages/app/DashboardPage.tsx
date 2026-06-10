@@ -42,6 +42,7 @@ import {
   IconPlus,
 } from '../../components/ui/icons'
 import { CHART_COLORS, useChartTheme } from '../../lib/chartTheme'
+import { isExpenseEnvelope } from '../../lib/categoryKind'
 
 // ─── Data helpers ─────────────────────────────────────────────────────────────
 
@@ -100,6 +101,7 @@ function buildCategoryPieFromTransactions(transactions: Transaction[]) {
 
 function buildBudgetVsActual(categories: Category[]) {
   return categories
+    .filter(isExpenseEnvelope)
     .sort((a, b) => toNum(b.planned) - toNum(a.planned))
     .slice(0, 6)
     .map((c) => ({
@@ -256,15 +258,16 @@ export function DashboardPage() {
   const transactions = bootstrap?.transactions ?? []
   const upcomingBills = bootstrap?.upcomingBills ?? []
 
-  const plannedTotal  = categories.reduce((sum, c) => sum + toNum(c.planned), 0)
-  const envelopeSpent = categories.reduce((sum, c) => sum + toNum(c.spent), 0)
+  const expenseCategories = categories.filter(isExpenseEnvelope)
+  const plannedTotal  = expenseCategories.reduce((sum, c) => sum + toNum(c.planned), 0)
+  const envelopeSpent = expenseCategories.reduce((sum, c) => sum + toNum(c.spent), 0)
   const uncategorizedSpent = transactions
     .filter((t) => toNum(t.amount) < 0 && (t.category === 'Uncategorized' || !t.category?.trim()))
     .reduce((sum, t) => sum + Math.abs(toNum(t.amount)), 0)
   const spentTotal = envelopeSpent + uncategorizedSpent
   const categoryPieData = buildCategoryPieFromTransactions(transactions)
   const remaining     = plannedTotal - spentTotal
-  const overspentCategories = categories.filter((c) => toNum(c.spent) > toNum(c.planned))
+  const overspentCategories = expenseCategories.filter((c) => toNum(c.spent) > toNum(c.planned))
   const savingsRate   = plannedTotal > 0 ? Math.max(0, Math.round(((plannedTotal - spentTotal) / plannedTotal) * 100)) : 0
   const friendsOweTotal = bootstrap?.friendsOweTotal ?? 0
   const youOweTotal = bootstrap?.youOweTotal ?? 0
