@@ -1,3 +1,4 @@
+from collections import defaultdict
 from decimal import Decimal
 
 from sqlalchemy import func, select
@@ -54,11 +55,57 @@ class BudgetService:
             raise NotFoundError("Budget")
         return budget
 
+    def _planned_totals_by_budget(self, budget_ids: list[int]) -> dict[int, Decimal]:
+        if not budget_ids:
+            return {}
+        rows = self.db.execute(
+            select(
+                BudgetCategoryPlan.budget_id,
+                func.coalesce(func.sum(BudgetCategoryPlan.planned_amount), 0),
+            )
+            .where(BudgetCategoryPlan.budget_id.in_(budget_ids))
+            .group_by(BudgetCategoryPlan.budget_id)
+        ).all()
+        return {budget_id: Decimal(total) for budget_id, total in rows}
+
+    def _spent_totals_by_budget(self, budget_ids: list[int]) -> dict[int, Decimal]:
+        if not budget_ids:
+            return {}
+        transactions = self.db.scalars(
+            select(Transaction)
+            .where(Transaction.budget_id.in_(budget_ids), Transaction.type == "expense")
+            .options(
+                selectinload(Transaction.expense_share).selectinload(ExpenseShare.participants)
+            )
+        ).all()
+        totals: dict[int, Decimal] = defaultdict(lambda: Decimal("0"))
+        for tx in transactions:
+            totals[tx.budget_id] += payer_expense_amount(tx)
+        return dict(totals)
+
     def list_budgets(self, user: User) -> list[BudgetResponse]:
         budgets = self.db.scalars(
             select(Budget).where(Budget.user_id == user.id).order_by(Budget.period_start.desc())
         ).all()
-        return [self._to_response(b) for b in budgets]
+        if not budgets:
+            return []
+
+        budget_ids = [b.id for b in budgets]
+        planned_by_budget = self._planned_totals_by_budget(budget_ids)
+        spent_by_budget = self._spent_totals_by_budget(budget_ids)
+
+        return [
+            BudgetResponse(
+                id=str(budget.id),
+                name=budget.name,
+                period=format_period(budget.period_start, budget.period_end),
+                periodStart=budget.period_start,
+                periodEnd=budget.period_end,
+                plannedTotal=planned_by_budget.get(budget.id, Decimal("0")),
+                spentTotal=spent_by_budget.get(budget.id, Decimal("0")),
+            )
+            for budget in budgets
+        ]
 
     def get_budget(self, user: User, budget_id: str) -> BudgetResponse:
         budget = self.get_owned_budget(user, budget_id)

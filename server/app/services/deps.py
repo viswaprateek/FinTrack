@@ -5,6 +5,7 @@ from app.core.database import get_db
 from app.services.activity_service import ActivityService
 from app.services.assistant_service import AssistantService
 from app.services.budget_service import BudgetService
+from app.services.dashboard_service import DashboardService
 from app.services.category_service import CategoryService
 from app.services.credit_card_service import CreditCardService
 from app.services.expense_share_service import ExpenseShareService
@@ -18,6 +19,10 @@ from app.services.user_service import UserService
 
 def get_budget_service(db: Session = Depends(get_db)) -> BudgetService:
     return BudgetService(db)
+
+
+def get_dashboard_service(db: Session = Depends(get_db)) -> DashboardService:
+    return DashboardService(db)
 
 
 def get_category_service(db: Session = Depends(get_db)) -> CategoryService:

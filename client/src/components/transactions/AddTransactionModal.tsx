@@ -153,6 +153,7 @@ export function AddTransactionModal({ open, onClose, initialBudgetId }: AddTrans
     queryClient.invalidateQueries({ queryKey: ['categories'] })
     queryClient.invalidateQueries({ queryKey: ['budgets'] })
     queryClient.invalidateQueries({ queryKey: ['expense-shares'] })
+    queryClient.invalidateQueries({ queryKey: ['dashboard'] })
   }
 
   const createCategory = useMutation({

@@ -1,25 +1,20 @@
 import { useQuery } from '@tanstack/react-query'
 import { Navigate, Outlet } from 'react-router-dom'
 import { useApiClient, usersApi } from '../../api'
-import { PageLoader } from '../ui/Spinner'
 
-/** Redirects users who haven't finished onboarding to `/onboarding`. */
+/**
+ * Redirects incomplete onboarding to `/onboarding`.
+ * Renders the app shell immediately while `/me` loads — no full-page blocker.
+ */
 export function OnboardingGate() {
   const client = useApiClient()
   const meQuery = useQuery({
     queryKey: ['me'],
     queryFn: () => usersApi.getMe(client),
+    staleTime: 5 * 60_000,
   })
 
-  if (meQuery.isLoading) {
-    return <PageLoader label="Loading your account…" />
-  }
-
-  if (meQuery.isError || !meQuery.data) {
-    return <PageLoader label="Loading your account…" />
-  }
-
-  if (!meQuery.data.onboardingCompleted) {
+  if (meQuery.isSuccess && !meQuery.data.onboardingCompleted) {
     return <Navigate to="/onboarding" replace />
   }
 

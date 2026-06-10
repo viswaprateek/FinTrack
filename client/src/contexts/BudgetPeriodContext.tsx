@@ -1,11 +1,10 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useLocation } from 'react-router-dom'
 import { useApiClient, budgetsApi } from '../api'
 import { budgetForDate } from '../lib/budgets'
+import { readStoredBudgetId, writeStoredBudgetId } from '../lib/budgetStorage'
 import type { Budget } from '../types'
-
-const STORAGE_KEY = 'active_budget_id'
-const LEGACY_STORAGE_KEY = 'dashboard_budget_id'
 
 interface BudgetPeriodContextValue {
   budgets: Budget[]
@@ -16,18 +15,21 @@ interface BudgetPeriodContextValue {
 
 export const BudgetPeriodContext = createContext<BudgetPeriodContextValue | null>(null)
 
-function readStoredBudgetId(): string | null {
-  return localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_STORAGE_KEY)
-}
-
 export function BudgetPeriodProvider({ children }: { children: ReactNode }) {
   const client = useApiClient()
+  const queryClient = useQueryClient()
+  const { pathname } = useLocation()
+  const onDashboard = pathname === '/dashboard'
 
   const budgetsQuery = useQuery({
     queryKey: ['budgets'],
     queryFn: () => budgetsApi.list(client),
+    staleTime: 5 * 60_000,
+    // Dashboard hydrates budgets via GET /api/dashboard — skip duplicate fetch.
+    enabled: !onDashboard,
   })
-  const budgets = budgetsQuery.data ?? []
+  const budgets =
+    queryClient.getQueryData<Budget[]>(['budgets']) ?? budgetsQuery.data ?? []
 
   const [selectedBudgetId, setSelectedBudgetId] = useState<string | null>(readStoredBudgetId)
 
@@ -43,7 +45,7 @@ export function BudgetPeriodProvider({ children }: { children: ReactNode }) {
 
   const selectBudget = useCallback((id: string) => {
     setSelectedBudgetId(id)
-    localStorage.setItem(STORAGE_KEY, id)
+    writeStoredBudgetId(id)
   }, [])
 
   const value = useMemo<BudgetPeriodContextValue>(

@@ -149,12 +149,21 @@ def get_current_user(
             is_new = False
 
     profile_changed = _sync_profile_from_claims(user, claims)
-    if settings.CLERK_SECRET_KEY:
+
+    # Clerk Backend API is slow (external HTTP). Only call when JWT lacks profile data.
+    claims_fields = _profile_fields_from_claims(claims)
+    needs_clerk_profile = (
+        settings.CLERK_SECRET_KEY
+        and (is_new or not user.email.strip() or not claims_fields.get("email"))
+    )
+    if needs_clerk_profile:
         profile_changed = _sync_profile_from_clerk_api(user, clerk_user_id) or profile_changed
 
     from app.services.expense_share_service import ExpenseShareService
 
-    linked = ExpenseShareService(db).link_participants_for_user(user)
+    linked = 0
+    if is_new or profile_changed:
+        linked = ExpenseShareService(db).link_participants_for_user(user)
 
     if is_new or profile_changed or linked:
         db.commit()

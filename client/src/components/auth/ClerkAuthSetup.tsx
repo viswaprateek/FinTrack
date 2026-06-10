@@ -1,6 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useAuth } from '@clerk/clerk-react'
 import { router } from '../../app/router'
+import { setAuthGetToken } from '../../api/setupAuthInterceptor'
 import { hasClerkAuthCallbackParams, stripClerkQueryParams } from '../../lib/clerkQueryParams'
 
 /** Where Clerk sends users after auth on Vercel (public route — handshake can finish here). */
@@ -16,7 +17,12 @@ function isSsoCallbackPath(pathname: string): boolean {
  * OAuth/SSO callbacks (/sign-in/sso-callback) are handled separately — do not redirect away.
  */
 export function ClerkAuthSetup() {
-  const { isLoaded, isSignedIn } = useAuth()
+  const { isLoaded, isSignedIn, getToken } = useAuth()
+  const getTokenRef = useRef(getToken)
+  getTokenRef.current = getToken
+
+  // Sync on every render so requests never use a stale getToken closure.
+  setAuthGetToken(() => getTokenRef.current())
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return

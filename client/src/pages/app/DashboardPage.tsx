@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   AreaChart,
   Area,
@@ -17,15 +17,15 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
-import { ContentLoader } from '../../components/ui/Spinner'
-import { useInitialLoading } from '../../hooks/useInitialLoading'
+import { DashboardSkeleton } from '../../components/dashboard/DashboardSkeleton'
 import { StatCard } from '../../components/ui/StatCard'
 import { ProgressBar } from '../../components/ui/ProgressBar'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
-import { useApiClient, categoriesApi, expenseSharesApi, incomeSourcesApi, transactionsApi, recurringApi } from '../../api'
+import { useApiClient, dashboardApi } from '../../api'
 import { useBudgetPeriod } from '../../contexts/BudgetPeriodContext'
 import { useCurrency } from '../../contexts/CurrencyContext'
+import { readStoredBudgetId } from '../../lib/budgetStorage'
 import { formatShortDate } from '../../lib/utils'
 import { AddTransactionModal } from '../../components/transactions/AddTransactionModal'
 import { TransactionListItem } from '../../components/transactions/TransactionListItem'
@@ -190,42 +190,71 @@ const healthStyles = {
 
 export function DashboardPage() {
   const client = useApiClient()
+  const queryClient = useQueryClient()
   const { formatCurrency } = useCurrency()
-  const { currentBudget, isLoading: budgetsLoading } = useBudgetPeriod()
+  const { currentBudget, selectBudget } = useBudgetPeriod()
   const chartTheme = useChartTheme()
   const [addTransactionOpen, setAddTransactionOpen] = useState(false)
 
-  const categoriesQuery = useQuery({
-    queryKey: ['categories', currentBudget?.id],
-    queryFn: () => categoriesApi.listForBudget(client, currentBudget!.id),
-    enabled: !!currentBudget,
-  })
-  const transactionsQuery = useQuery({
-    queryKey: ['transactions', { budgetId: currentBudget?.id }],
-    queryFn: () => transactionsApi.list(client, { budget_id: currentBudget!.id }),
-    enabled: !!currentBudget,
-  })
-  const upcomingBillsQuery = useQuery({
-    queryKey: ['recurring-rules', 'upcoming', 7],
-    queryFn: () => recurringApi.upcoming(client, 7),
-  })
-  const incomeSourcesQuery = useQuery({
-    queryKey: ['income-sources', currentBudget?.id],
-    queryFn: () => incomeSourcesApi.listForBudget(client, currentBudget!.id),
-    enabled: !!currentBudget,
-  })
-  const friendsOweQuery = useQuery({
-    queryKey: ['expense-shares', 'outstanding'],
-    queryFn: () => expenseSharesApi.outstandingTotal(client),
-  })
-  const youOweQuery = useQuery({
-    queryKey: ['expense-shares', 'owed-total'],
-    queryFn: () => expenseSharesApi.owedTotal(client),
+  // Stable key avoids a second fetch when bootstrap calls selectBudget on first load.
+  const [dashboardBudgetKey, setDashboardBudgetKey] = useState(
+    () => readStoredBudgetId() ?? 'auto',
+  )
+  const prevBudgetIdRef = useRef<string | undefined>(currentBudget?.id)
+
+  const bootstrapQuery = useQuery({
+    queryKey: ['dashboard', dashboardBudgetKey],
+    queryFn: () =>
+      dashboardApi.bootstrap(
+        client,
+        dashboardBudgetKey === 'auto' ? undefined : dashboardBudgetKey,
+      ),
+    staleTime: 30_000,
   })
 
-  const categories = categoriesQuery.data ?? []
-  const transactions = transactionsQuery.data ?? []
-  const upcomingBills = upcomingBillsQuery.data ?? []
+  useEffect(() => {
+    const data = bootstrapQuery.data
+    if (!data) return
+
+    queryClient.setQueryData(['budgets'], data.budgets)
+    queryClient.setQueryData(['recurring-rules', 'upcoming', 7], data.upcomingBills)
+    queryClient.setQueryData(['expense-shares', 'outstanding'], { total: data.friendsOweTotal })
+    queryClient.setQueryData(['expense-shares', 'owed-total'], { total: data.youOweTotal })
+
+    if (!data.activeBudgetId) return
+
+    queryClient.setQueryData(['categories', data.activeBudgetId], data.categories)
+    queryClient.setQueryData(
+      ['transactions', { budgetId: data.activeBudgetId }],
+      data.transactions,
+    )
+    queryClient.setQueryData(['income-sources', data.activeBudgetId], data.incomeSources)
+
+    if (dashboardBudgetKey === 'auto') {
+      selectBudget(data.activeBudgetId)
+    }
+  }, [bootstrapQuery.data, dashboardBudgetKey, queryClient, selectBudget])
+
+  // Refetch bootstrap only when the user changes month in the top bar.
+  useEffect(() => {
+    const id = currentBudget?.id
+    if (!id) return
+    const prev = prevBudgetIdRef.current
+    prevBudgetIdRef.current = id
+    if (prev && prev !== id && id !== dashboardBudgetKey) {
+      setDashboardBudgetKey(id)
+    }
+  }, [currentBudget?.id, dashboardBudgetKey])
+
+  const bootstrap = bootstrapQuery.data
+  const displayBudget =
+    currentBudget ??
+    bootstrap?.budgets.find((b) => b.id === bootstrap.activeBudgetId) ??
+    null
+
+  const categories = bootstrap?.categories ?? []
+  const transactions = bootstrap?.transactions ?? []
+  const upcomingBills = bootstrap?.upcomingBills ?? []
 
   const plannedTotal  = categories.reduce((sum, c) => sum + toNum(c.planned), 0)
   const envelopeSpent = categories.reduce((sum, c) => sum + toNum(c.spent), 0)
@@ -237,18 +266,18 @@ export function DashboardPage() {
   const remaining     = plannedTotal - spentTotal
   const overspentCategories = categories.filter((c) => toNum(c.spent) > toNum(c.planned))
   const savingsRate   = plannedTotal > 0 ? Math.max(0, Math.round(((plannedTotal - spentTotal) / plannedTotal) * 100)) : 0
-  const friendsOweTotal = friendsOweQuery.data?.total ?? 0
-  const youOweTotal = youOweQuery.data?.total ?? 0
-  const incomeSources = incomeSourcesQuery.data ?? []
+  const friendsOweTotal = bootstrap?.friendsOweTotal ?? 0
+  const youOweTotal = bootstrap?.youOweTotal ?? 0
+  const incomeSources = bootstrap?.incomeSources ?? []
   const expectedIncome = incomeSources.reduce((sum, s) => sum + toNum(s.amount), 0)
   const actualIncome = transactions
     .filter((t) => t.amount > 0)
     .reduce((sum, t) => sum + t.amount, 0)
 
   const periodProgress = useMemo(() => {
-    if (!currentBudget) return null
-    const start = new Date(`${currentBudget.periodStart}T00:00:00`)
-    const end = new Date(`${currentBudget.periodEnd}T00:00:00`)
+    if (!displayBudget) return null
+    const start = new Date(`${displayBudget.periodStart}T00:00:00`)
+    const end = new Date(`${displayBudget.periodEnd}T00:00:00`)
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const totalDays = Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1
@@ -257,14 +286,14 @@ export function DashboardPage() {
       Math.max(1, Math.round((today.getTime() - start.getTime()) / 86_400_000) + 1),
     )
     return { dayNum, totalDays, pct: Math.round((dayNum / totalDays) * 100) }
-  }, [currentBudget])
+  }, [displayBudget])
 
   const health         = getBudgetHealth(spentTotal, plannedTotal)
   const velocity       = getSpendingVelocity(transactions, plannedTotal)
   const spendingTrend  = buildSpendingTrend(
     transactions,
-    currentBudget?.periodStart ?? '',
-    currentBudget?.periodEnd ?? '',
+    displayBudget?.periodStart ?? '',
+    displayBudget?.periodEnd ?? '',
   )
   const categoryPie    = categoryPieData.slices
   const budgetVsActual = buildBudgetVsActual(categories)
@@ -272,14 +301,23 @@ export function DashboardPage() {
 
   const formatY = (v: number) => (v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(Math.round(v)))
 
-  const pageLoading = useInitialLoading([
-    { isLoading: budgetsLoading },
-    ...(currentBudget ? [categoriesQuery, transactionsQuery] : []),
-  ])
+  if (bootstrapQuery.isLoading && !bootstrap) return <DashboardSkeleton />
 
-  if (pageLoading) return <ContentLoader label="Loading dashboard…" />
+  if (bootstrapQuery.isError) {
+    return (
+      <Card>
+        <CardContent className="py-12 text-center">
+          <p className="text-sm font-medium text-foreground">Could not load dashboard</p>
+          <p className="mt-1 text-sm text-muted">Check that the API server is running, then try again.</p>
+          <Button className="mt-4" onClick={() => bootstrapQuery.refetch()}>
+            Retry
+          </Button>
+        </CardContent>
+      </Card>
+    )
+  }
 
-  if (!currentBudget) {
+  if (!displayBudget) {
     return (
       <Card>
         <CardContent className="py-16 text-center">
@@ -407,12 +445,12 @@ export function DashboardPage() {
           <CardHeader>
             <CardTitle>Spending Trend</CardTitle>
             <span className="text-xs text-muted">
-              Daily spending · {currentBudget.period}
+              Daily spending · {displayBudget.period}
             </span>
           </CardHeader>
           <CardContent>
             {spendingTrend.length > 0 ? (
-              <ResponsiveContainer key={`spending-${currentBudget.id}`} width="100%" height={220}>
+              <ResponsiveContainer key={`spending-${displayBudget.id}`} width="100%" height={220}>
                 <AreaChart data={spendingTrend} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
                   <defs>
                     <linearGradient id="spendGrad" x1="0" y1="0" x2="0" y2="1">
@@ -830,7 +868,7 @@ export function DashboardPage() {
       <AddTransactionModal
         open={addTransactionOpen}
         onClose={() => setAddTransactionOpen(false)}
-        initialBudgetId={currentBudget?.id}
+        initialBudgetId={displayBudget?.id}
       />
     </div>
   )
