@@ -76,15 +76,16 @@ function buildSpendingTrend(
     }))
 }
 
-/** Group all budget transactions by category — includes uncategorized and categories without envelopes. */
-function buildCategoryPieFromTransactions(transactions: Transaction[]) {
+/** Pie slices from API envelope spent + uncategorized (payer share), matching budget totals. */
+function buildCategoryPie(expenseCategories: Category[], uncategorizedSpent: number) {
   const byCategory = new Map<string, number>()
-  transactions
-    .filter((t) => toNum(t.amount) < 0)
-    .forEach((t) => {
-      const name = t.category?.trim() || 'Uncategorized'
-      byCategory.set(name, (byCategory.get(name) || 0) + Math.abs(toNum(t.amount)))
-    })
+  expenseCategories.forEach((c) => {
+    const spent = toNum(c.spent)
+    if (spent > 0) byCategory.set(c.name, spent)
+  })
+  if (uncategorizedSpent > 0) {
+    byCategory.set('Uncategorized', uncategorizedSpent)
+  }
 
   const spentTotal = [...byCategory.values()].reduce((sum, v) => sum + v, 0)
   const slices = [...byCategory.entries()]
@@ -259,13 +260,11 @@ export function DashboardPage() {
   const upcomingBills = bootstrap?.upcomingBills ?? []
 
   const expenseCategories = categories.filter(isExpenseEnvelope)
-  const plannedTotal  = expenseCategories.reduce((sum, c) => sum + toNum(c.planned), 0)
   const envelopeSpent = expenseCategories.reduce((sum, c) => sum + toNum(c.spent), 0)
-  const uncategorizedSpent = transactions
-    .filter((t) => toNum(t.amount) < 0 && (t.category === 'Uncategorized' || !t.category?.trim()))
-    .reduce((sum, t) => sum + Math.abs(toNum(t.amount)), 0)
-  const spentTotal = envelopeSpent + uncategorizedSpent
-  const categoryPieData = buildCategoryPieFromTransactions(transactions)
+  const plannedTotal = toNum(displayBudget?.plannedTotal)
+  const spentTotal = toNum(displayBudget?.spentTotal)
+  const uncategorizedSpent = Math.max(0, spentTotal - envelopeSpent)
+  const categoryPieData = buildCategoryPie(expenseCategories, uncategorizedSpent)
   const remaining     = plannedTotal - spentTotal
   const overspentCategories = expenseCategories.filter((c) => toNum(c.spent) > toNum(c.planned))
   const savingsRate   = plannedTotal > 0 ? Math.max(0, Math.round(((plannedTotal - spentTotal) / plannedTotal) * 100)) : 0
